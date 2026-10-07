@@ -1,28 +1,67 @@
 # Irshaye
 
-Irshaye is a clean, lightweight landing page project created to give the empty GitHub repository a real starting point.
+Irshaye is an agricultural technology platform for rural Ethiopian farmers, cooperatives, and agricultural organizations.
 
-## Features
+This repository is intentionally limited to the project foundation and documentation phase. It does not implement the complete product yet. Instead, it provides a clean, organized, GitHub-ready base for future development.
 
-- Modern, responsive landing page
-- Minimal static frontend without extra dependencies
-- Simple local preview using Python's built-in HTTP server
+## Scope of this phase
 
-## Run locally
+This phase includes:
 
-```bash
-cd C:/Users/lenovo/Irshaye
-python -m http.server 8000
-```
+- repository structure
+- architecture documentation
+- product requirements
+- demo flow documentation
+- database and API blueprints
+- environment variable template
+- setup and deployment planning
 
-Then open http://localhost:8000 in your browser.
+This phase does not include:
 
-## Project structure
+- full frontend implementation
+- full backend implementation
+- production Telegram bot
+- AI integration
+- weather integration
+- authentication implementation
+- production CI/CD
+- deployment configuration
 
-- `index.html` — main page markup
-- `styles.css` — visual design and responsive layout
-- `script.js` — small interactive enhancements
+## Intended stack
+
+- Frontend: Next.js, TypeScript, Tailwind CSS
+- Backend: Python, FastAPI
+- Database: Supabase, PostgreSQL
+- AI: Gemini API
+- Weather: Open-Meteo
+- MVP farmer channel: Telegram Bot API
+
+## Repository structure
+
+- docs/ — architecture, API, database, workflow, setup, product, and demo docs
+- frontend/ — future frontend workspace
+- backend/ — future backend workspace
+- telegram-bot/ — future Telegram MVP workspace
+- supabase/ — Supabase setup and migration notes
+- tests/ — future validation and test docs
+- .github/workflows/ — placeholder workflow documentation
+
+## Manual setup required
+
+Human-authenticated actions are required for:
+
+- GitHub sign-in and push permissions
+- Supabase project creation and keys
+- Telegram BotFather setup
+- Gemini API key generation
+- Vercel/Render deployment setup when the product is ready
+
+Do not store secrets in the repository.
+
+## Git status
+
+This repo is initialized as a local Git repository. GitHub authentication must be completed manually before any push operation.
 
 ## License
 
-This project is provided as a starter scaffold for the Irshaye repository.
+This project is licensed under the MIT License.
