@@ -7,38 +7,57 @@ Irshaye is a multi-channel agricultural platform for rural Ethiopian farmers, co
 ## High-level architecture
 
 ```text
-                    IRSHAYE
-                       │
-          ┌────────────┴────────────┐
-          │                         │
-     FARMER SIDE              ORGANIZATION SIDE
-          │                         │
-      Telegram MVP              Web Dashboard
-          │                         │
-          └────────────┬────────────┘
-                       │
-                    REST API
-                       │
-                    FastAPI
-                       │
-       ┌───────────────┼────────────────┐
-       │               │                │
-   AI Advisory    Weather/Risk     Core Services
-       │               │                │
-       └───────────────┼────────────────┘
-                       │
-                    Supabase
-                   PostgreSQL
+                        IRSHAYE
+                     ┌────────────┐
+                     │  Channel    │
+                     │  Adapters   │
+                     └────┬────────┘
+                          │
+      ┌──────────────────────┼──────────────────────┐
+      │                      │                      │
+Telegram MVP         USSD / SMS / Web / Mobile   Other future clients
+      │                      │                      │
+      └──────────────┬───────┴──────────────┬───────┘
+                     │                      │
+                     ▼                      ▼
+              Irshaye API (core)      Organization Web Dashboard
+                     │
+                     ▼
+               FastAPI backend
+                     │
+      ┌──────────────┼──────────────────────┐
+      │              │                      │
+      │     Business Services               │
+      │  - advisory                          │
+      │  - soil                              │
+      │  - risk/weather                      │
+      │  - farmer/cooperative records        │
+      │  - yield ledger                      │
+      │  - alerts                            │
+      │  - activity dashboard                │
+      │                                      │
+      └──────────────┼──────────────────────┘
+                     │
+                     ▼
+          External provider adapters
+        - AI provider adapter (Gemini initial)
+        - Weather provider adapter (Open-Meteo initial)
+                     │
+                     ▼
+                  Supabase
+                PostgreSQL
 ```
 
-## Future channel model
+## Channel model
 
 ```text
 Telegram ───┐
 USSD ───────┤
-SMS ────────┤──→ Irshaye API → Supabase
+SMS ────────┤──→ Irshaye API → Shared business services → Supabase
 Web ────────┘
 ```
+
+Telegram is a temporary MVP channel adapter only. It is not the Irshaye product architecture. The core business logic must never depend on Telegram-specific code. No channel-specific business logic should exist inside core services.
 
 ## Design principles
 
@@ -47,17 +66,25 @@ Web ────────┘
 - Telegram is a temporary MVP interface, not the core product.
 - User-facing channels should not duplicate business rules.
 - Supabase is the managed PostgreSQL platform that stores the core production data.
+- AI and weather providers are external service integrations behind adapters or interfaces.
+- The system must not claim real telecom integration or live external configuration unless the human has authenticated setup and validated it.
 
 ## Core backend domains
 
-- farmer information and profiles
-- advisory requests and responses
+- farmer profiles and cooperative membership
+- advisory requests and responses with evidence/source context
 - soil and crop guidance
-- weather and risk intelligence
-- cooperative and yield records
-- organization activity tracking
-- AI-supported advisory workflows
+- weather and agricultural risk intelligence from provider-backed sources
+- cooperative yield ledger and batch synchronization
+- organization activity tracking and dashboard data
+- AI-supported advisory workflows with cautious, evidence-based outputs
 - notifications and alerts
+
+## External service boundaries
+
+- AI provider: Gemini is the initial provider, but it must be isolated behind an AI service abstraction so another provider can replace it later without changing business logic.
+- Weather provider: Open-Meteo is the initial provider, and weather must be fetched through an external provider adapter/service rather than being hardcoded as the production data source.
+- Provider changes should be isolated to the adapter layer, not the core domain logic.
 
 ## Current scope boundary
 

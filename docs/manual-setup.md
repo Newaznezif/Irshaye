@@ -49,6 +49,14 @@ This repository intentionally requires human action for external service setup. 
 - configure backend environment variables
 - deploy the backend after implementation
 
+## Security and human-boundary rules
+
+- External credentials are managed manually by the human and must never be committed to GitHub.
+- Agents must not invent credentials, tokens, project URLs, or service configuration.
+- Agents must not claim external authentication is complete unless the human has performed the authenticated setup step.
+- An external service is considered connected only after the human performs authenticated setup and the integration is actually tested.
+- Do not treat Telegram, Supabase, Gemini, or deployment platforms as configured or live simply because the repository mentions them.
+
 ## Important warning
 
 Do not commit credentials. Use local environment configuration only, and keep secrets out of version control.

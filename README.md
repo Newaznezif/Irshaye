@@ -27,6 +27,14 @@ This phase does not include:
 - production CI/CD
 - deployment configuration
 
+## Architecture guardrails
+
+Irshaye is designed as an API-first, channel-agnostic agricultural platform. Telegram is only a temporary MVP interface and is not the product architecture. Future channels such as USSD, SMS, web, and mobile clients must connect through the same API and the same core business logic.
+
+Core business logic must not depend on Telegram-specific code. No channel-specific business logic should be embedded inside the core services layer. AI and weather capabilities are external provider-backed services behind an abstraction layer, not custom hardcoded logic.
+
+The current intended providers are Gemini for AI and Open-Meteo for weather. These are initial providers and must be isolated behind service adapters so they can be replaced later without rewriting business logic.
+
 ## Intended stack
 
 - Frontend: Next.js, TypeScript, Tailwind CSS

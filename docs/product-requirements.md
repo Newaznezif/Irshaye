@@ -42,7 +42,7 @@ Organizations need visibility into field activity, advisory requests, risks, ado
 
 ## MVP scope
 
-The first MVP will use Telegram as a temporary farmer interface because real telecom integration is outside the current scope.
+The first MVP will use Telegram as a temporary farmer interface because real telecom integration is outside the current scope. Telegram is only a prototype channel adapter and not the product architecture.
 
 The MVP should demonstrate:
 
@@ -63,12 +63,21 @@ The long-term vision is to support:
 - web dashboard for organizations and cooperatives
 - API-driven backend services shared across channels
 
-The same core business logic should serve farmers regardless of access channel.
+The same core business logic should serve farmers regardless of access channel. Future USSD, SMS, web, or mobile clients must connect through the same API and reuse the same business services.
 
-## Important constraints
+## Hard implementation constraints
 
-- Telegram is a temporary MVP channel, not the ultimate product identity.
+- Telegram is a temporary MVP channel adapter, not the ultimate product identity.
 - The system must remain API-first.
+- The core business logic must not depend on Telegram-specific code.
+- No channel-specific business logic should exist inside core services.
+- Gemini is the initial AI provider and must be isolated behind an AI provider abstraction.
+- Open-Meteo is the initial weather provider and must be accessed through an external provider adapter/service.
+- Weather and AI must never invent facts or guaranteed outcomes.
+- Never invent weather conditions, forecasts, soil lab results, farmer measurements, yield guarantees, or agricultural policies.
+- If laboratory soil data is unavailable, describe possible causes and recommend verification instead of claiming a diagnosis.
+- Never present uncertain information as certain.
+- Advisory responses should retain relevant source or evidence context where applicable.
 - Rural environments require communication simplicity and low-friction flows.
 - The design should prioritize usable farmer experiences over overly complex dashboards.
 - Data should be structured in a way that supports future analytics and reporting.

@@ -7,6 +7,15 @@ This document defines the proposed API shape for the platform. It is a planning 
 - Development: /api
 - Future environment-specific values will be configured later
 
+## Core architecture constraints
+
+- The core API is channel-agnostic.
+- Telegram is only a temporary MVP client adapter and not a core business API concern.
+- There should be no Telegram-specific business routes in the core API.
+- AI and weather functionality are provider-backed services and should be consumed through adapters or service interfaces.
+- Advisory responses should retain evidence or source context where applicable.
+- Authentication and authorization are design work for the implementation phase and are not being implemented in this repository.
+
 ## Core conventions
 
 - JSON request and response bodies
@@ -92,7 +101,8 @@ Each endpoint should eventually provide:
 - readable error responses
 - timestamps for record creation and updates
 - consistent field naming conventions
+- evidence/source metadata for advisory results when applicable
 
 ## Planning note
 
-This specification describes the intended API structure for the next implementation phase. It does not yet capture the full production contract, authentication model, or final schema details.
+This specification describes the intended API structure for the next implementation phase. It does not yet capture the full production contract, final authentication model, or final schema details, and it does not assume any external service is configured or live without authenticated human setup and testing.

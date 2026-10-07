@@ -18,14 +18,23 @@ This is not a full application implementation repository. It is a structured set
 
 ## Product direction
 
-Irshaye should be built as an API-first agricultural platform. Telegram will be used as a temporary MVP farmer interface, but the long-term design is channel-agnostic:
+Irshaye should be built as an API-first agricultural platform. Telegram is only a temporary MVP farmer interface, not the product architecture. The long-term design is channel-agnostic:
 
 - Telegram → API
 - USSD → API
 - SMS → API
-- Web → API
+- Web/mobile → API
 
-All channels should reuse the same backend business logic.
+All channels should reuse the same backend business logic. Core business logic must never depend on Telegram-specific code, and no channel-specific business logic should exist inside core services.
+
+## Architecture guardrails
+
+- Gemini is the initial AI provider, but it must be isolated behind an AI provider/service interface so another provider can replace it later without rewriting business logic.
+- Open-Meteo is the initial weather provider, and weather data must flow through an external provider adapter/service rather than being hardcoded as a production data source.
+- Weather, soil, and yield guidance must never invent facts or guaranteed outcomes.
+- If soil laboratory data is unavailable, the system should describe possible causes and recommend verification instead of claiming a diagnosis.
+- Advisory responses should retain relevant evidence or source context when available.
+- Supabase is the managed PostgreSQL platform and not a separate self-managed database service.
 
 ## Intended stack
 
@@ -61,6 +70,12 @@ MVP farmer interface:
 6. Ensure .env is excluded from version control.
 7. If authentication or external setup is required, stop and ask for human action instead of pretending it succeeded.
 8. Do not repeatedly retry failed commands.
+9. Do not invent credentials, tokens, or external service configuration.
+10. An external service is considered connected only after a human performs authenticated setup and the integration is actually tested.
+11. Do not claim real Ethio Telecom integration exists, and do not invent USSD short codes or telecom implementations.
+12. Do not design cybersecurity features in this phase.
+13. Do not include IoT sensors or sensor-driven architecture in the MVP.
+14. Never present uncertain information as certain; if evidence is insufficient, recommend verification.
 
 ## Repository scope
 
