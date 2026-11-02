@@ -44,6 +44,7 @@ export const LocationPicker = ({
   const [failed, setFailed] = useState<string | null>(null);
   const [lat, setLat] = useState(String(value.latitude));
   const [lon, setLon] = useState(String(value.longitude));
+  const [coordError, setCoordError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -130,7 +131,15 @@ export const LocationPicker = ({
               onClick={() => {
                 const latitude = Number(lat);
                 const longitude = Number(lon);
-                if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || Math.abs(latitude) > 90 || Math.abs(longitude) > 180) return;
+                if (lat.trim() === '' || lon.trim() === '' || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+                  setCoordError('Enter a latitude and a longitude as numbers.');
+                  return;
+                }
+                if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+                  setCoordError('Latitude must be between −90 and 90, longitude between −180 and 180.');
+                  return;
+                }
+                setCoordError(null);
                 onChange({ name: 'Selected coordinate', admin1: null, admin2: null, latitude, longitude });
               }}
               className="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
@@ -138,6 +147,11 @@ export const LocationPicker = ({
               Go
             </button>
           </div>
+          {coordError && (
+            <p role="alert" className="text-[11px] text-orange-600 dark:text-orange-400 mt-1.5">
+              {coordError}
+            </p>
+          )}
         </div>
       </div>
 

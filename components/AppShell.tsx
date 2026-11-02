@@ -69,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             aria-label="Toggle dark mode"
             className="grid h-9 w-9 place-items-center rounded-xl border border-gray-200 text-gray-600 dark:border-zinc-700 dark:text-zinc-300"
           >
-            {dark === null ? null : dark ? <Sun size={16} /> : <Moon size={16} />}
+            {dark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button
             type="button"
@@ -120,8 +120,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               onClick={toggle}
               className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-bold text-gray-600 hover:bg-gray-100 dark:text-zinc-300 dark:hover:bg-zinc-800"
             >
-              {dark === null ? null : dark ? <Sun size={14} /> : <Moon size={14} />}
-              {dark === null ? '…' : dark ? 'Light' : 'Dark'}
+              {dark ? <Sun size={14} /> : <Moon size={14} />}
+              {dark ? 'Light' : 'Dark'}
             </button>
           </div>
         </aside>

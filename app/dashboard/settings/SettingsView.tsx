@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useWorkbench } from '@/context/WorkbenchContext';
+import { useTheme } from '@/hooks/useTheme';
 import { Panel, Loading } from '@/components/data/ui';
 import { getCrop } from '@/lib/crops/catalog';
 
@@ -31,15 +32,9 @@ function IntegrationRow({ name, state, detail }: { name: string; state: string; 
 
 export default function SettingsPage() {
   const { place, cropId } = useWorkbench();
-  // Display echo of the class the shell applies; the button below writes through to it.
-  const [dark, setDark] = useState<boolean | null>(null);
+  const { dark, toggle } = useTheme();
   const [advisor, setAdvisor] = useState<AdvisorStatus | null>(null);
   const [dataStatus, setDataStatus] = useState<DataStatus | null>(null);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time echo of the applied theme class
-    setDark(document.documentElement.classList.contains('dark'));
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,16 +94,11 @@ export default function SettingsPage() {
       <Panel title="Appearance">
         <button
           type="button"
-          onClick={() => {
-            const next = !dark;
-            document.documentElement.classList.toggle('dark', next);
-            window.localStorage.setItem('irshaye.theme', next ? 'dark' : 'light');
-            setDark(next);
-          }}
+          onClick={toggle}
           className="inline-flex items-center gap-2 rounded-xl border border-gray-200 px-3.5 py-2 text-sm font-bold text-gray-700 hover:bg-gray-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-800"
         >
-          {dark === null ? null : dark ? <Sun size={15} /> : <Moon size={15} />}
-          {dark === null ? '…' : dark ? 'Switch to light' : 'Switch to dark'}
+          {dark ? <Sun size={15} /> : <Moon size={15} />}
+          {dark ? 'Switch to light' : 'Switch to dark'}
         </button>
       </Panel>
 

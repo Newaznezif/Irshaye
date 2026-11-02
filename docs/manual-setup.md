@@ -42,7 +42,7 @@ No migration has been executed anywhere as of this writing.
 
 ## Deployment (needs its own project)
 
-Create a **new** Vercel project from `Newaznezif/Irshaye`. Never add IRSHAYE to another application's project, domains, or environment. Fonts are self-hosted deliberately (`app/fonts.css`, `components/FontPreload.tsx`); do not switch to `next/font`, which broke the Turbopack build in the sibling project.
+Create a **new** Vercel project from `Newaznezif/Irshaye`. Never add IRSHAYE to another application's project, domains, or environment. Fonts are self-hosted through plain CSS in `app/fonts.css`; do not switch to `next/font`, which broke the Turbopack build in the sibling project.
 
 ## Deferred by decision
 

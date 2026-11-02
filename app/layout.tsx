@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { FontPreload } from "@/components/FontPreload";
 
 export const metadata: Metadata = {
   title: {
@@ -26,7 +25,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="app-font antialiased">
-        <FontPreload />
         {children}
       </body>
     </html>
