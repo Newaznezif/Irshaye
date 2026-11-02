@@ -1,6 +1,6 @@
 # Database schema blueprint
 
-This document is a planning blueprint only. It is intentionally lightweight and subject to review during the main architecture phase.
+A conceptual entity map. **`docs/database-plan.md` is the authoritative proposal** — it carries the actual table definitions, row-level-security intent, the six ported `data.*` migrations, and the apply order. No migration has been executed against any database, and IRSHAYE still has no Supabase project of its own.
 
 ## Purpose
 
@@ -275,4 +275,4 @@ The initial database design should include timestamps on most records:
 
 ## Review note
 
-This schema is meant as a candidate set of entities only. It is not a final production schema and should be reviewed again during the main architecture phase before implementation.
+This is a candidate set of entities, not a final production schema. Column types, constraints, and row-level-security policies live in `docs/database-plan.md`, and none of it may be applied until a separate IRSHAYE Supabase project exists.

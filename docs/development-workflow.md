@@ -1,56 +1,53 @@
 # Development workflow
 
-## Goal
+## Daily loop
 
-This repository is meant to support clear setup and handoff for future implementation agents. The workflow should remain simple and low-friction for human developers working in VS Code.
+```bash
+npm install
+npm run dev            # http://localhost:3000 — no keys required
+npm run typecheck      # tsc --noEmit
+npm run lint           # ESLint incl. the React Compiler rules
+npm run build          # production build
+npm run check:data     # live contract check against the running server
+```
 
-## Recommended process
+`npm run check:data` needs a server on port 3000 (`npm run dev` or `npm run start`). It calls every data route with valid and invalid parameters, asserts the provenance envelope, asserts that failures carry no leaked data or credentials, and finishes with a pass count. Treat a red assertion as a product bug, not a test flake: each one encodes a promise made to a farmer.
 
-1. Open the repository in VS Code.
-2. Review the architecture and planning documents.
-3. Edit files through the working tree.
-4. Use Source Control to review changes.
-5. Stage your files.
-6. Commit the changes.
-7. Push to GitHub when the repository is authenticated.
-8. Pull before starting significant work to keep the branch current.
+Do not pipe a long-running server (`npm run dev | head -n`). The pipe closes and kills the server with `SIGPIPE`.
 
-## Branching model
+## Branching
 
-Initial branch approach:
+- `main` — the pushed baseline.
+- `feat/irshaye-core-platform` — the current implementation branch.
+- `feature/*`, `fix/*`, `docs/*` for subsequent work.
 
-- main
-- feature/*
-- fix/*
-- docs/*
+Pull before starting significant work. Commit small, coherent changes; the message should say why, not what.
 
-The current setup phase should remain intentionally simple and avoid over-engineering branch strategy.
+## Before calling a change done
 
-## VS Code workflow
+1. `typecheck`, `lint`, and `build` are clean. Do not add `eslint-disable` unless the rule is genuinely wrong here, and say why in the comment.
+2. `check:data` passes.
+3. Any new value shown to a user carries source, units, and date, and states its `valueKind`.
+4. Every failure path renders an honest unavailable state. No placeholder, no silent zero, no cached-forever fallback.
+5. A reference figure without a citable source stays `null` and renders as a gap.
+6. Nothing claims yield, income, water savings, or a soil diagnosis.
+7. Screens that report integration status probe the integration; they do not echo configuration.
 
-Human developers should be able to use the VS Code Source Control panel to:
+## Reviews should catch
 
-- see modified files
-- stage changes
-- commit changes
-- push to GitHub
-- view Git history
+- a connector returning invented data when the publisher failed;
+- modelled or derived numbers presented as measurements;
+- business logic that reaches into a channel or UI layer;
+- `useMemo`/`useCallback` added where the React Compiler already handles it, or a lint rule suppressed instead of the effect restructured (the correct shape for a client-only store read is `useSyncExternalStore`);
+- a `metadata` export inside a `"use client"` file (it must be a server `page.tsx` wrapper around a `*View.tsx`);
+- a credential or upstream URL with a signature reaching a response.
 
-This reduces the need for repeated terminal command use during normal development.
+## Testing status, stated honestly
 
-## Validation and testing strategy
+There is **no unit-test runner installed** in this repository. Validation today is: the live route contract checker, the TypeScript compiler, ESLint with the React Compiler rules, the production build, and manual page checks against the running app. Pure parsers (`parseWbIndicator`, `parseWbCurrencyCsv`, the crop suitability functions) are exported for tests specifically so a runner can cover them later — adding Vitest (or similar) is the first step of that work.
 
-This repository is still planning-focused, but the implementation phase should follow a disciplined validation approach:
+Nothing in this document, and nothing in the app, may claim an integration works without a successful request against it in this deployment.
 
-- API contract tests for the core endpoints and payload contracts
-- service-level tests for advisory logic, risk evaluation, and alert creation
-- weather-provider adapter tests to validate response parsing and failure handling
-- AI-provider adapter tests to validate provider abstraction and error handling
-- yield synchronization validation for batch updates and reporting integrity
-- dashboard/API consistency checks to confirm organization summaries and activity endpoints align with stored data
-- manual verification of external integrations only after human-authenticated setup has occurred
-- no external integration may be claimed as working without a successful authenticated test
+## Infrastructure isolation
 
-## Important constraint
-
-This repository is not the final application. The workflow here is an environment setup and planning workflow, not a production-grade deployment pipeline.
+This project runs on its own infrastructure. Nexus AgriRise is a separate live product on another machine: never reuse its credentials or connection strings, never add it as a remote, never run a migration or a sync against its database, and never deploy IRSHAYE into its Vercel project. Verify `git remote -v` and the current branch before any push, and report the change set first.

@@ -1,75 +1,88 @@
-# Irshaye
+# IRSHAYE
 
-Irshaye is an agricultural technology platform for rural Ethiopian farmers, cooperatives, and agricultural organizations.
+**An AI-Assisted Digital Platform for Climate-Smart Agriculture in Ethiopia.**
 
-This repository is intentionally limited to the project foundation and documentation phase. It does not implement the complete product yet. Instead, it provides a clean, organized, GitHub-ready base for future development.
+IRSHAYE helps a farmer answer one question with evidence: *given my place and my crop, what should I do now, and how sure is the platform about that?*
 
-## Scope of this phase
+It is a working Next.js application, not a mockup. Every figure on screen is fetched from a named open-data publisher at request time, carries its source, units, and date, and is labelled as observed, forecast, modelled, or derived. Where a source has nothing to give, the interface says so instead of inventing a number.
 
-This phase includes:
+## What runs today
 
-- repository structure
-- architecture documentation
-- product requirements
-- demo flow documentation
-- database and API blueprints
-- environment variable template
-- setup and deployment planning
+```
+Location → Crop → Climate context → Agricultural information → Evidence-based recommendation
+```
 
-This phase does not include:
+| Area | Status |
+| --- | --- |
+| Farmer workbench (place + crop context, persisted locally) | implemented |
+| Climate Intelligence — Open-Meteo forecast and ERA5 archive, NASA POWER daily and 30-year normals | implemented, live |
+| Crop Advisory — 11 cited Ethiopian crop profiles with a live suitability comparison | implemented |
+| Soil Management — erosion-pressure signals from measured rainfall plus cited practice guidance | implemented, explicitly non-diagnostic |
+| Market Intelligence — WFP rEMS grain prices for 65 Ethiopian markets, NBE exchange rates | implemented, live |
+| AI Agricultural Advisor — Gemini over assembled evidence only, with citations, uncertainty and abstention | implemented; needs `GEMINI_API_KEY` |
+| Data Sources — per-publisher status, licence, cadence and staleness | implemented |
+| Settings — integration status read from live probes | implemented |
+| Accounts, saved records, offline sync (Supabase) | planned, see `docs/database-plan.md` — no migration has been run |
+| Telegram, SMS, USSD channels | deliberately deferred |
 
-- full frontend implementation
-- full backend implementation
-- production Telegram bot
-- AI integration
-- weather integration
-- authentication implementation
-- production CI/CD
-- deployment configuration
+`backend/`, `frontend/`, and `telegram-bot/` are placeholders from the pre-implementation planning phase. The application lives at the repository root (`app/`, `components/`, `lib/`, `hooks/`, `context/`).
 
-## Architecture guardrails
+## Architecture
 
-Irshaye is designed as an API-first, channel-agnostic agricultural platform. Telegram is only a temporary MVP interface and is not the product architecture. Future channels such as USSD, SMS, web, and mobile clients must connect through the same API and the same core business logic.
+Next.js-first. Route handlers under `app/api/` are the platform's service layer; there is no separate Python backend in the MVP, and none is planned until a requirement actually needs one.
 
-Core business logic must not depend on Telegram-specific code. No channel-specific business logic should be embedded inside the core services layer. AI and weather capabilities are external provider-backed services behind an abstraction layer, not custom hardcoded logic.
+Two rules survive that decision and are non-negotiable:
 
-The current intended providers are Gemini for AI and Open-Meteo for weather. These are initial providers and must be isolated behind service adapters so they can be replaced later without rewriting business logic.
+1. **Business logic does not depend on a channel.** Advisory, evidence assembly, and data connectors are plain TypeScript modules with no request or UI coupling. A later Telegram, SMS, or USSD front end calls the same functions the web pages call.
+2. **External providers stay behind adapters.** Open-Meteo, NASA POWER, NASA GIBS, ArcGIS, WFP/HDX, NBE, World Bank, and Gemini are each reached through one module that returns `{ ok, data, provenance }` or `{ ok, false, error, provenance }`. A provider can be swapped without touching a page.
 
-## Intended stack
+Data integrity is a feature, not a policy document:
 
-- Frontend: Next.js, TypeScript, Tailwind CSS
-- Backend: Python, FastAPI
-- Database: Supabase, PostgreSQL
-- AI: Gemini API
-- Weather: Open-Meteo
-- MVP farmer channel: Telegram Bot API
+- provenance is attached to every value and rendered next to it;
+- `valueKind` distinguishes `observed`, `forecast`, `modeled`, `estimated`, `imputed`;
+- a failed source produces an honest unavailable state — never a placeholder;
+- the advisor abstains locally when the evidence cannot support an answer, before spending a model call;
+- nothing claims yield, income, or water-savings outcomes, and nothing claims to diagnose soil from satellite vegetation.
 
-## Repository structure
+## Stack
 
-- docs/ — architecture, API, database, workflow, setup, product, and demo docs
-- frontend/ — future frontend workspace
-- backend/ — future backend workspace
-- telegram-bot/ — future Telegram MVP workspace
-- supabase/ — Supabase setup and migration notes
-- tests/ — future validation and test docs
-- .github/workflows/ — placeholder workflow documentation
+- Next.js 16 (App Router) + React 19 + TypeScript, strict
+- Tailwind CSS v4, self-hosted Inter and Noto Sans Ethiopic
+- `@google/generative-ai` for the advisor
+- `@supabase/supabase-js` for the (planned) persistence layer
+- No chart of anything the platform does not actually have data for
 
-## Manual setup required
+## Getting started
 
-Human-authenticated actions are required for:
+```bash
+npm install
+cp .env.example .env.local   # optional: every open-data route works with no keys
+npm run dev
+```
 
-- GitHub sign-in and push permissions
-- Supabase project creation and keys
-- Telegram BotFather setup
-- Gemini API key generation
-- Vercel/Render deployment setup when the product is ready
+Open `http://localhost:3000`. The dashboard works with zero configuration; `GEMINI_API_KEY` and a Supabase project add the advisor and accounts respectively.
 
-Do not store secrets in the repository.
+**Never reuse credentials from another application.** IRSHAYE is expected to run against its own Supabase project and its own deployment.
 
-## Git status
+## Commands
 
-This repo is initialized as a local Git repository. GitHub authentication must be completed manually before any push operation.
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | development server |
+| `npm run build` | production build |
+| `npm run start` | serve the production build |
+| `npm run lint` | ESLint, including the React Compiler rules |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm run check:data` | live contract check against every data route |
 
-## License
+## Documentation
 
-This project is licensed under the MIT License.
+- `docs/architecture.md` — layering, provenance model, connector design
+- `docs/api-specification.md` — the route handlers that exist
+- `docs/database-plan.md` — proposed schema and migration order; **nothing applied**
+- `docs/product-requirements.md` — the farmer problem being solved
+- `docs/development-workflow.md`, `docs/manual-setup.md`, `docs/deployment.md` — how to work on and ship it
+
+## Licence
+
+MIT.
