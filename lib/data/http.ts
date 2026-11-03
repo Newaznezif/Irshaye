@@ -107,7 +107,11 @@ async function attempt(
 
     const retryAfter = res.headers.get('retry-after');
 
-    if (!res.ok) {
+    // Only 200 carries a payload. The rest of the 2xx range can be an
+    // acknowledgement with no body: HDX's bot protection answers 202 while it
+    // queues us, and `res.ok` is true for that, which would then be parsed as if
+    // the publisher had served an empty file.
+    if (!res.ok || res.status !== 200) {
       const code = classify(res.status);
       const error: SourceError = {
         code,

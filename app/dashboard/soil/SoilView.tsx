@@ -1,10 +1,11 @@
 'use client';
 
 import { useMemo } from 'react';
+import { CloudRain, Layers, Sprout, TriangleAlert } from 'lucide-react';
 import { useWorkbench } from '@/context/WorkbenchContext';
 import { LocationPicker } from '@/components/data/LocationPicker';
-import { Panel, Loading, Metric } from '@/components/data/ui';
-import { ProvenanceLabel } from '@/components/data/ProvenanceLabel';
+import { Badge, Loading, Metric, PageHeader, Panel, SectionLabel, StateNotice } from '@/components/ui';
+import { ProvenanceLabel, SourceUnavailable, SourcesList } from '@/components/data/ProvenanceLabel';
 import { useLiveData } from '@/hooks/useLiveData';
 import type { ProvenanceView } from '@/components/data/ProvenanceLabel';
 import type { AgroclimateSeries } from '@/lib/data/types';
@@ -32,87 +33,100 @@ export default function SoilView() {
   }, [agro.data]);
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-black tracking-tight">Soil Management</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400 max-w-2xl">
-          Soil conservation and erosion-prevention guidance for Ethiopian farms, paired with the
-          observed rainfall that makes each practice timely.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Advisory"
+        title="Soil Management"
+        icon={Layers}
+        description="Soil conservation and erosion-prevention guidance for Ethiopian farms, paired with the observed rainfall that makes each practice timely."
+        status={agro.data !== null ? <Badge tone="brand" dot>Rainfall observed</Badge> : <Badge tone="neutral">No live reading</Badge>}
+      />
 
-      <div className="rounded-2xl border border-sky-200/70 bg-sky-50/60 p-4 text-sm leading-relaxed text-sky-900 dark:border-sky-900/50 dark:bg-sky-900/20 dark:text-sky-200">
-        <p className="font-black">Measured vs modelled — what this module can and cannot tell you.</p>
-        <p className="mt-1.5">
-          IRSHAYE has <strong>no soil measurements</strong> for your field. Rainfall figures below
-          are observations from NASA POWER with their dates attached; the practices are documented
-          extension guidance with citations. Nothing here diagnoses soil fertility or acidity —
-          that requires local sampling and a laboratory. Satellite vegetation indices describe
-          plant cover, not soil quality, and are never presented as soil data.
+      <StateNotice tone="info" title="Measured vs modelled — what this module can and cannot tell you" icon={TriangleAlert}>
+        <p>
+          IRSHAYE has <strong>no soil measurements</strong> for your field. Rainfall figures below are
+          observations from NASA POWER with their dates attached; the practices are documented extension
+          guidance with citations. Nothing here diagnoses soil fertility or acidity — that requires local
+          sampling and a laboratory.
         </p>
-      </div>
+        <p className="mt-2">
+          Satellite vegetation indices describe plant cover, not soil quality, and are never presented as
+          soil data.
+        </p>
+      </StateNotice>
 
       <LocationPicker value={place} onChange={setPlace} label="Your location" />
 
       <Panel
         title={`Rainfall drivers at ${place.name} — last 90 days`}
+        icon={CloudRain}
         hint="Observed daily precipitation (NASA POWER). Heavy-rain days are the practical trigger for erosion-prevention work."
+        footer={agro.data !== null ? <ProvenanceLabel provenance={agro.provenance} compact /> : undefined}
       >
         {agro.loading && <Loading label="Loading observed rainfall" />}
         {!agro.loading && agro.data === null && (
-          <p className="text-sm text-orange-700 dark:text-orange-400">
-            The rainfall publisher did not answer ({agro.error?.code ?? 'unreachable'}). No
-            substitute values are shown.
-          </p>
+          <SourceUnavailable error={agro.error ?? { code: 'network', message: 'unreachable' }} source="NASA POWER" />
         )}
         {agro.data !== null && (
-          <>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Metric
-                label="Heavy-rain days (≥12 mm)"
-                value={rainDays.withData > 0 ? String(rainDays.heavy) : '—'}
-                unit="of days with data"
-                tone={rainDays.heavy >= 8 ? 'warn' : undefined}
-              />
-              <Metric label="Total rainfall in window" value={rainDays.withData > 0 ? rainDays.total.toFixed(0) : '—'} unit="mm" />
-              <Metric label="Record coverage" value={`${rainDays.withData}/${rainDays.days}`} unit="days" />
-            </div>
-            <div className="mt-3">
-              <ProvenanceLabel provenance={agro.provenance} compact />
-            </div>
-          </>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <Metric
+              label="Heavy-rain days (≥12 mm)"
+              value={rainDays.withData > 0 ? String(rainDays.heavy) : '—'}
+              unit="of days with data"
+              tone={rainDays.heavy >= 8 ? 'warn' : undefined}
+              note="Threshold used to flag runoff risk; not a soil measurement."
+            />
+            <Metric
+              label="Total rainfall in window"
+              value={rainDays.withData > 0 ? rainDays.total.toFixed(0) : '—'}
+              unit="mm"
+              note={`Sum over ${rainDays.withData} days the publisher returned.`}
+            />
+            <Metric
+              label="Record coverage"
+              value={`${rainDays.withData}/${rainDays.days}`}
+              unit="days"
+              note="Days with a published value over days requested."
+            />
+          </div>
         )}
       </Panel>
 
       {SOIL_GUIDANCE.length === 0 ? (
         <Panel title="Conservation guidance">
-          <p className="text-sm text-gray-600 dark:text-zinc-400">
-            The curated, source-cited practice library for this module is being assembled now.
-            Until each entry carries a citable source, it is not shown — IRSHAYE will not present
-            uncited agronomic instructions. The rainfall context above works in the meantime.
+          <p className="text-[13.5px] leading-relaxed text-ink-muted">
+            The curated, source-cited practice library for this module is being assembled now. Until each
+            entry carries a citable source, it is not shown — IRSHAYE will not present uncited agronomic
+            instructions. The rainfall context above works in the meantime.
           </p>
         </Panel>
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
-          {SOIL_GUIDANCE.map((g) => (
-            <Panel key={g.id} title={g.title} hint={g.summary}>
-              <p className="text-sm leading-relaxed text-gray-700 dark:text-zinc-300">{g.detail}</p>
-              {g.watchIndicator && (
-                <p className="mt-3 rounded-xl bg-gray-50 p-2.5 text-xs text-gray-600 dark:bg-zinc-800/60 dark:text-zinc-400">
-                  <span className="font-black uppercase tracking-wider text-gray-400">When to act · </span>
-                  {g.watchIndicator}
-                </p>
-              )}
-              <p className="mt-3 flex flex-wrap gap-x-3 text-[11px] text-gray-500 dark:text-zinc-400">
-                {g.sources.map((s) => (
-                  <a key={s.url} href={s.url} target="_blank" rel="noreferrer" className="underline-offset-2 hover:underline">
-                    {s.title ?? s.name}
-                  </a>
-                ))}
-              </p>
-            </Panel>
-          ))}
-        </div>
+        <>
+          <SectionLabel>Documented conservation practices</SectionLabel>
+          <div className="grid gap-5 md:grid-cols-2">
+            {SOIL_GUIDANCE.map((g) => (
+              <Panel
+                key={g.id}
+                title={g.title}
+                icon={Sprout}
+                hint={g.summary}
+                className="h-full"
+              >
+                <p className="text-[13px] leading-relaxed text-ink-muted">{g.detail}</p>
+                {g.watchIndicator && (
+                  <p className="mt-4 rounded-xl border border-gold/25 bg-gold-soft/50 px-3.5 py-3 text-[12.5px] leading-relaxed text-ink-muted">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-gold-700 dark:text-gold-300">
+                      When to act
+                    </span>
+                    <br />
+                    {g.watchIndicator}
+                  </p>
+                )}
+                <SourcesList className="mt-4 border-t border-line pt-3" sources={g.sources} />
+              </Panel>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

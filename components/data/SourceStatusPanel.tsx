@@ -1,9 +1,10 @@
 'use client';
 import React, { useState } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { Database, RefreshCw } from 'lucide-react';
 
 import { useLiveData } from '@/hooks/useLiveData';
-import { Panel, Refreshing } from '@/components/data/ui';
+import { Badge, Button, Panel, Refreshing, SectionLabel, SegmentedControl, StateNotice, stamp } from '@/components/ui';
+import type { BadgeTone } from '@/components/ui';
 
 interface SourceRow {
   id: string;
@@ -44,12 +45,12 @@ const SYNC_LABEL: Record<SyncRow['status'], string> = {
   skipped_overlap: 'skipped, another run was active',
 };
 
-const STATE_STYLE: Record<SourceRow['state'], { label: string; dot: string; text: string }> = {
-  connected: { label: 'Connected', dot: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-400' },
-  stale: { label: 'Behind schedule', dot: 'bg-orange-500', text: 'text-orange-700 dark:text-orange-400' },
-  unavailable: { label: 'Unavailable', dot: 'bg-red-500', text: 'text-red-700 dark:text-red-400' },
-  auth_required: { label: 'Credentials needed', dot: 'bg-amber-500', text: 'text-amber-700 dark:text-amber-400' },
-  disabled: { label: 'Turned off', dot: 'bg-gray-400', text: 'text-gray-600 dark:text-gray-400' },
+const STATE_STYLE: Record<SourceRow['state'], { label: string; tone: BadgeTone }> = {
+  connected: { label: 'Connected', tone: 'brand' },
+  stale: { label: 'Behind schedule', tone: 'gold' },
+  unavailable: { label: 'Unavailable', tone: 'clay' },
+  auth_required: { label: 'Credentials needed', tone: 'info' },
+  disabled: { label: 'Turned off', tone: 'neutral' },
 };
 
 /**
@@ -59,93 +60,115 @@ const STATE_STYLE: Record<SourceRow['state'], { label: string; dot: string; text
  */
 export const SourceStatusPanel = () => {
   const [scope, setScope] = useState<'light' | 'all'>('light');
-  const { data, loading, refreshing, error, reload } = useLiveData<StatusPayload>(`/api/data/status?sources=${scope}&persisted=1`);
+  const { data, loading, refreshing, error, reload } = useLiveData<StatusPayload>(
+    `/api/data/status?sources=${scope}&persisted=1`,
+  );
 
   const rows = data?.sources ?? [];
 
   return (
     <Panel
       title="Source status"
+      icon={Database}
       hint="Each row is one live probe of the publisher itself. A source we cannot reach is reported as unreachable with the reason, never hidden or replaced."
       right={
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           {refreshing && <Refreshing />}
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={reload}
-            className="p-1.5 rounded-lg border border-gray-200 dark:border-zinc-700 text-gray-500 hover:text-emerald-600"
+            disabled={loading || refreshing}
             aria-label="Re-check sources"
+            leading={<RefreshCw size={14} className={refreshing ? 'animate-spin' : undefined} />}
+            className="px-2.5"
           >
-            <RefreshCw size={13} />
-          </button>
+            <span className="hidden lg:inline">Re-check</span>
+          </Button>
         </div>
       }
     >
-      <div className="flex items-center gap-2 mb-3">
-        {(['light', 'all'] as const).map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => setScope(option)}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider transition-colors ${
-              scope === option
-                ? 'bg-emerald-600 text-white'
-                : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
-            }`}
-          >
-            {option === 'light' ? 'Core sources' : 'All sources'}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <SegmentedControl
+          label="Probe scope"
+          size="sm"
+          value={scope}
+          onChange={setScope}
+          options={[
+            { value: 'light', label: 'Core sources' },
+            { value: 'all', label: 'All sources' },
+          ]}
+        />
         {data && (
-          <span className="text-[11px] text-gray-400 ml-auto">
-            {Object.entries(data.counts)
-              .map(([state, n]) => `${n} ${state.replace('_', ' ')}`)
-              .join(' · ')}
-          </span>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            {Object.entries(data.counts).map(([state, n]) => {
+              const style = STATE_STYLE[state as SourceRow['state']];
+              return (
+                <span key={state} className="flex items-center gap-1.5 text-[11.5px] font-semibold text-ink-muted">
+                  <span className="tabular text-ink">{n}</span>
+                  {style ? style.label : state.replace('_', ' ')}
+                </span>
+              );
+            })}
+          </div>
         )}
       </div>
 
-      {loading && <p className="py-6 text-sm text-gray-500">Probing sources…</p>}
-      {error && !loading && <p className="py-6 text-sm text-red-600 dark:text-red-400">{error.message}</p>}
+      {loading && (
+        <div className="mt-5">
+          <SectionLabel>Probing sources…</SectionLabel>
+          <div className="mt-3 space-y-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="skeleton h-12 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      )}
+      {error && !loading && (
+        <StateNotice tone="clay" title="Status probe failed" className="mt-5">
+          {error.message}
+        </StateNotice>
+      )}
 
       {rows.length > 0 && (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-[10px] font-black uppercase tracking-widest text-gray-400 border-b border-gray-100 dark:border-zinc-800">
-                <th className="py-2 pr-3">Source</th>
-                <th className="py-2 pr-3">State</th>
-                <th className="py-2 pr-3">Published as</th>
-                <th className="py-2 pr-3">Newest observation</th>
-                <th className="py-2">Detail</th>
+        <div className="mt-5 overflow-x-auto rounded-xl border border-line">
+          <table className="w-full min-w-[760px] text-[12.5px]">
+            <thead className="bg-canvas">
+              <tr className="border-b border-line text-left text-[10px] font-bold uppercase tracking-[0.12em] text-ink-faint">
+                <th scope="col" className="px-4 py-2.5 font-bold">Source</th>
+                <th scope="col" className="px-4 py-2.5 font-bold">State</th>
+                <th scope="col" className="px-4 py-2.5 font-bold">Cadence</th>
+                <th scope="col" className="px-4 py-2.5 font-bold">Newest observation</th>
+                <th scope="col" className="px-4 py-2.5 font-bold">Detail</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-line">
               {rows.map((row) => {
                 const style = STATE_STYLE[row.state] ?? STATE_STYLE.disabled;
                 return (
-                  <tr key={row.id} className="border-b border-gray-50 dark:border-zinc-800/60 align-top">
-                    <td className="py-2.5 pr-3">
+                  <tr key={row.id} className="align-top transition-colors hover:bg-canvas/70">
+                    <td className="px-4 py-3">
                       <a
                         href={row.homeUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-semibold text-gray-900 dark:text-white underline decoration-gray-200 dark:decoration-zinc-700 underline-offset-2 hover:text-emerald-600"
+                        className="font-bold text-ink underline decoration-line-strong underline-offset-2 transition-colors hover:text-brand-hover"
                       >
                         {row.name}
                       </a>
-                      <p className="text-[10px] text-gray-400 mt-0.5">{row.license}</p>
+                      <p className="mt-1 max-w-sm text-[11px] leading-relaxed text-ink-faint">{row.license}</p>
                     </td>
-                    <td className="py-2.5 pr-3">
-                      <span className={`flex items-center gap-1.5 whitespace-nowrap font-semibold ${style.text}`}>
-                        <span className={`w-2 h-2 rounded-full ${style.dot}`} />
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <Badge tone={style.tone} dot>
                         {style.label}
-                      </span>
-                      {row.requiresKey && <p className="text-[10px] text-gray-400 mt-0.5">API key required</p>}
+                      </Badge>
+                      {row.requiresKey && <p className="mt-1.5 text-[10px] text-ink-faint">API key required</p>}
                     </td>
-                    <td className="py-2.5 pr-3 text-gray-600 dark:text-gray-400 capitalize whitespace-nowrap">{row.cadence}</td>
-                    <td className="py-2.5 pr-3 text-gray-600 dark:text-gray-400 whitespace-nowrap">{row.observedAt ?? '—'}</td>
-                    <td className="py-2.5 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed max-w-md">{row.detail}</td>
+                    <td className="px-4 py-3 capitalize whitespace-nowrap text-ink-muted">{row.cadence}</td>
+                    <td className="tabular px-4 py-3 whitespace-nowrap text-ink-muted">
+                      {row.observedAt ?? <span className="text-ink-faint">—</span>}
+                    </td>
+                    <td className="max-w-md px-4 py-3 text-[11.5px] leading-relaxed text-ink-muted">{row.detail}</td>
                   </tr>
                 );
               })}
@@ -155,30 +178,37 @@ export const SourceStatusPanel = () => {
       )}
 
       {data && (
-        <p className="text-[11px] text-gray-400 mt-3">
-          Probes ran at {new Date(data.checkedAt).toLocaleString('en-GB', { timeZone: 'Africa/Addis_Ababa' })} EAT.{' '}
-          {scope === 'light' ? '“All sources” also checks the large price and indicator feeds, which take longer.' : ''}
+        <p className="mt-4 text-[11.5px] leading-relaxed text-ink-faint">
+          Probes ran at <span className="tabular font-semibold text-ink-muted">{stamp(data.checkedAt)}</span> EAT.{' '}
+          {scope === 'light'
+            ? '“All sources” also checks the large price and indicator feeds, which take longer.'
+            : ''}
         </p>
       )}
 
       {data && (
-        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-zinc-800">
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1.5">Stored pipeline</p>
+        <div className="mt-5 border-t border-line pt-4">
+          <SectionLabel>Stored pipeline</SectionLabel>
           {(data.sync ?? []).length === 0 ? (
-            <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-              No sync run has been recorded for this database, so nothing above is served from storage — every figure on
-              this dashboard came from the publisher in this request. That is the working configuration; the sync only
-              adds history and survives a publisher outage.
+            <p className="mt-2 text-[11.5px] leading-relaxed text-ink-muted">
+              No sync run has been recorded for this database, so nothing above is served from storage — every figure
+              on this dashboard came from the publisher in this request. That is the working configuration; the sync
+              only adds history and survives a publisher outage.
             </p>
           ) : (
-            <ul className="space-y-1">
+            <ul className="mt-2.5 space-y-2">
               {(data.sync ?? []).map((run) => (
-                <li key={run.sourceKey} className="text-[11px] text-gray-600 dark:text-gray-400 flex flex-wrap gap-x-2">
-                  <span className="font-semibold text-gray-800 dark:text-gray-200">{run.sourceKey}</span>
+                <li
+                  key={run.sourceKey}
+                  className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[11.5px] text-ink-muted"
+                >
+                  <span className="font-bold text-ink">{run.sourceKey}</span>
                   <span>{SYNC_LABEL[run.status] ?? run.status}</span>
-                  <span>{run.rowsWritten.toLocaleString('en-US')} rows</span>
-                  <span>{run.finishedAt ? new Date(run.finishedAt).toLocaleString('en-GB', { timeZone: 'Africa/Addis_Ababa' }) : 'unfinished'}</span>
-                  {run.errorMessage && <span className="text-red-600 dark:text-red-400">{run.errorMessage}</span>}
+                  <span className="tabular">{run.rowsWritten.toLocaleString('en-US')} rows</span>
+                  <span className="tabular">
+                    {run.finishedAt ? stamp(run.finishedAt) : 'unfinished'}
+                  </span>
+                  {run.errorMessage && <span className="text-clay-600 dark:text-clay-300">{run.errorMessage}</span>}
                 </li>
               ))}
             </ul>

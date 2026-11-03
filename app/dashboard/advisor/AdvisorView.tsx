@@ -1,12 +1,34 @@
 'use client';
 
 import { useState } from 'react';
+import { Bot, CircleAlert, ListChecks, Send, Sparkles } from 'lucide-react';
 import { useWorkbench } from '@/context/WorkbenchContext';
 import { LocationPicker } from '@/components/data/LocationPicker';
 import { CropPicker } from '@/components/CropPicker';
-import { Panel, Loading } from '@/components/data/ui';
+import {
+  Badge,
+  Button,
+  Field,
+  Loading,
+  PageHeader,
+  Panel,
+  SectionLabel,
+  StateNotice,
+  Textarea,
+} from '@/components/ui';
 import type { EvidenceGap, EvidenceItem } from '@/lib/advisor/evidence';
 import type { AdvisorAnswer } from '@/lib/advisor/answer';
+import type { BadgeTone } from '@/components/ui';
+
+/** Same kind→meaning mapping the provenance labels use, extended for reference material. */
+const KIND_TONE: Record<EvidenceItem['kind'], BadgeTone> = {
+  observed: 'brand',
+  modeled: 'info',
+  forecast: 'plum',
+  estimated: 'gold',
+  imputed: 'neutral',
+  reference: 'outline',
+};
 
 type AskResponse =
   | { ok: true; answer: AdvisorAnswer; evidence: { items: EvidenceItem[]; gaps: EvidenceGap[] } }
@@ -50,130 +72,156 @@ export default function AdvisorPage() {
   };
 
   return (
-    <div className="space-y-5">
-      <div>
-        <h1 className="text-2xl font-black tracking-tight">AI Agricultural Advisor</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-zinc-400 max-w-2xl">
-          The advisor may reason only over evidence the platform has assembled and traced to a
-          publisher. It cites its inputs, states uncertainty and limitations, and stays silent when
-          the evidence is insufficient. It will never promise yields or diagnose your soil.
-        </p>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow="Advisory"
+        title="AI Agricultural Advisor"
+        icon={Bot}
+        description="The advisor may reason only over evidence the platform has assembled and traced to a publisher. It cites its inputs, states uncertainty and limitations, and stays silent when the evidence is insufficient. It will never promise yields or diagnose your soil."
+        status={<Badge tone="neutral">Reasons over platform evidence only</Badge>}
+      />
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-2">
         <LocationPicker value={place} onChange={setPlace} label="Your location" />
         <CropPicker value={cropId} onChange={setCropId} />
       </div>
 
-      <Panel title="Ask about your season">
-        <textarea
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          rows={3}
-          maxLength={900}
-          placeholder="Example: rain is expected in the next few days — should I wait to sow, and what should I prepare meanwhile?"
-          className="w-full rounded-xl border border-gray-200 bg-gray-50 p-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-        />
-        <div className="mt-2 flex flex-wrap gap-2">
+      <Panel
+        title="Ask about your season"
+        icon={Sparkles}
+        hint={`The question is answered for ${place.name} and the selected crop, using only the evidence listed under the answer.`}
+      >
+        <Field label="Your question" htmlFor="advisor-question" hint={`${question.length}/900 characters`}>
+          <Textarea
+            id="advisor-question"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            rows={3}
+            maxLength={900}
+            placeholder="Example: rain is expected in the next few days — should I wait to sow, and what should I prepare meanwhile?"
+          />
+        </Field>
+
+        <div className="mt-4 flex flex-wrap gap-2">
           {EXAMPLE_QUESTIONS.map((q) => (
             <button
               key={q}
               type="button"
               onClick={() => setQuestion(q)}
-              className="rounded-full border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-600 hover:border-emerald-400 hover:text-emerald-700 dark:border-zinc-700 dark:text-zinc-300"
+              className="rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-semibold text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand-soft/60 hover:text-ink"
             >
               {q}
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          onClick={ask}
-          disabled={busy || !question.trim()}
-          className="mt-3 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-black text-white transition-colors hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {busy && <Loading label="" />}
-          {busy ? 'Assembling evidence…' : 'Get an evidence-based answer'}
-        </button>
+
+        <div className="mt-5 flex items-center gap-3 border-t border-line pt-5">
+          <Button
+            onClick={ask}
+            disabled={busy || !question.trim()}
+            aria-busy={busy}
+            leading={busy ? undefined : <Send size={15} />}
+          >
+            {busy ? 'Assembling evidence…' : 'Get an evidence-based answer'}
+          </Button>
+          {busy && <Loading label="" className="py-0" />}
+        </div>
       </Panel>
 
       {networkError && (
-        <Panel title="Advisor unavailable">
-          <p className="text-sm text-orange-700 dark:text-orange-400">{networkError}</p>
-        </Panel>
+        <StateNotice tone="clay" title="Advisor unavailable" icon={CircleAlert}>
+          {networkError}
+        </StateNotice>
       )}
 
       {response && !response.ok && (
-        <Panel title="Advisor unavailable">
-          <p className="text-sm text-orange-700 dark:text-orange-400">
-            {response.error.code === 'advisor_not_configured'
-              ? 'This deployment has no GEMINI_API_KEY configured, so the advisor cannot run. Everything else on the platform works without it — no fabricated answer is produced.'
-              : response.error.message}
-          </p>
-        </Panel>
+        <StateNotice
+          tone={response.error.code === 'advisor_not_configured' ? 'info' : 'clay'}
+          title="Advisor unavailable"
+          code={response.error.code}
+          icon={CircleAlert}
+        >
+          {response.error.code === 'advisor_not_configured'
+            ? 'This deployment has no GEMINI_API_KEY configured, so the advisor cannot run. Everything else on the platform works without it — no fabricated answer is produced.'
+            : response.error.message}
+        </StateNotice>
       )}
 
       {response && response.ok && (
         <>
           <Panel
-            title={response.answer.abstained ? 'Advisor abstains' : response.answer.headline}
+            title="Advisor response"
+            icon={Bot}
             right={
               response.answer.abstained ? (
-                <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                <Badge tone="gold" dot>
                   Insufficient evidence
-                </span>
-              ) : undefined
+                </Badge>
+              ) : (
+                <Badge tone="brand" dot>
+                  Evidence-backed
+                </Badge>
+              )
             }
           >
-            <p className="text-sm leading-relaxed text-gray-800 dark:text-zinc-200 whitespace-pre-wrap">
+            {/* The headline is model prose: it reads as content, never as an uppercase panel eyebrow. */}
+            <p className="text-[19px] leading-tight font-extrabold tracking-[-0.02em] text-ink">
+              {response.answer.abstained ? 'The advisor abstains' : response.answer.headline}
+            </p>
+
+            <p className="mt-3 text-[14px] leading-relaxed whitespace-pre-wrap text-ink">
               {response.answer.recommendation}
             </p>
 
-            <h3 className="mt-5 text-xs font-black uppercase tracking-widest text-gray-400">
-              Uncertainty
-            </h3>
-            <p className="mt-1.5 text-sm text-gray-600 dark:text-zinc-400">{response.answer.uncertainty}</p>
-
-            {response.answer.limitations.length > 0 && (
-              <>
-                <h3 className="mt-4 text-xs font-black uppercase tracking-widest text-gray-400">
-                  Limitations
-                </h3>
-                <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm text-gray-600 dark:text-zinc-400">
-                  {response.answer.limitations.map((l, i) => (
-                    <li key={i}>{l}</li>
-                  ))}
-                </ul>
-              </>
-            )}
+            <div className="mt-6 grid gap-5 border-t border-line pt-5 md:grid-cols-2">
+              <div>
+                <SectionLabel>Uncertainty</SectionLabel>
+                <p className="mt-2 text-[13px] leading-relaxed text-ink-muted">{response.answer.uncertainty}</p>
+              </div>
+              {response.answer.limitations.length > 0 && (
+                <div>
+                  <SectionLabel>Limitations</SectionLabel>
+                  <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-ink-muted">
+                    {response.answer.limitations.map((l, i) => (
+                      <li key={i} className="flex gap-2.5">
+                        <span aria-hidden className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-clay" />
+                        {l}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </Panel>
 
           <Panel
             title="Evidence behind this answer"
-            hint="Exactly what the advisor was allowed to use, with each value's classification and publisher."
+            icon={ListChecks}
+            hint="Exactly what the advisor was allowed to use, with each value’s classification and publisher."
           >
-            <ul className="space-y-2">
+            <ul className="divide-y divide-line border-y border-line">
               {response.evidence.items.map((item) => (
                 <li
                   key={item.id}
-                  className="flex flex-wrap items-baseline justify-between gap-2 rounded-xl border border-gray-100 px-3 py-2 dark:border-zinc-800"
+                  className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-2 py-3"
                 >
-                  <span className="text-sm font-semibold text-gray-800 dark:text-zinc-200">
-                    {item.label}
-                    <span className="ml-2 text-xs text-gray-500 dark:text-zinc-400">
+                  <span className="min-w-0">
+                    <span className="text-[13px] font-bold text-ink">{item.label}</span>
+                    <span className="tabular ml-2 text-[12.5px] text-ink-muted">
                       {item.value} {item.units}
                     </span>
                   </span>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                    {item.kind} · {item.source}
+                  <span className="flex shrink-0 items-center gap-2">
+                    <Badge tone={KIND_TONE[item.kind] ?? 'neutral'}>{item.kind}</Badge>
+                    <span className="text-[11px] font-semibold text-ink-faint">{item.source}</span>
                   </span>
                 </li>
               ))}
             </ul>
             {response.evidence.gaps.length > 0 && (
-              <p className="mt-3 text-xs text-gray-500 dark:text-zinc-400">
-                Known gaps considered: {response.evidence.gaps.map((g) => `${g.area} (${g.reason})`).join('; ')}.
-              </p>
+              <StateNotice tone="gold" title="Known gaps the advisor considered" className="mt-5">
+                {response.evidence.gaps.map((g) => `${g.area} (${g.reason})`).join('; ')}
+              </StateNotice>
             )}
           </Panel>
         </>

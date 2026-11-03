@@ -1,6 +1,7 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
-import { MapPin } from 'lucide-react';
+import { Compass, MapPin } from 'lucide-react';
+import { Badge, Button, Field, Input, Panel, Select, StateNotice } from '@/components/ui';
 
 export interface SelectedPlace {
   name: string;
@@ -73,94 +74,109 @@ export const LocationPicker = ({
 
   const isCustom = !places?.some((p) => p.name === value.name);
 
-  return (
-    <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-gray-100 dark:border-zinc-800 shadow-sm p-4 md:p-5">
-      <div className="flex flex-col md:flex-row md:items-end gap-4">
-        <div className="flex-1">
-          <label htmlFor="market-place" className="text-xs font-black uppercase tracking-widest text-gray-400">
-            {label}
-          </label>
-          <div className="mt-1.5 flex items-center gap-2">
-            <MapPin size={16} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <select
-              id="market-place"
-              value={isCustom ? '__custom__' : value.name}
-              onChange={(e) => {
-                const found = places?.find((p) => p.name === e.target.value);
-                if (!found) return;
-                setLat(String(found.latitude));
-                setLon(String(found.longitude));
-                onChange({ name: found.name, admin1: found.admin1, admin2: found.admin2, latitude: found.latitude, longitude: found.longitude });
-              }}
-              className="w-full bg-transparent text-sm font-semibold text-gray-900 dark:text-white focus:outline-none"
-            >
-              {isCustom && <option value="__custom__">Custom coordinate</option>}
-              {grouped.length === 0 && <option>{value.name}</option>}
-              {grouped.map(([region, list]) => (
-                <optgroup key={region} label={region}>
-                  {list.map((p) => (
-                    <option key={`${region}-${p.name}`} value={p.name}>
-                      {p.name}
-                    </option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-        </div>
+  const applyCustom = () => {
+    const latitude = Number(lat);
+    const longitude = Number(lon);
+    if (lat.trim() === '' || lon.trim() === '' || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      setCoordError('Enter a latitude and a longitude as numbers.');
+      return;
+    }
+    if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
+      setCoordError('Latitude must be between −90 and 90, longitude between −180 and 180.');
+      return;
+    }
+    setCoordError(null);
+    onChange({ name: 'Selected coordinate', admin1: null, admin2: null, latitude, longitude });
+  };
 
-        <div className="md:w-auto">
-          <span className="text-xs font-black uppercase tracking-widest text-gray-400">Own coordinates</span>
-          <div className="mt-1.5 flex items-center gap-2">
-            <input
+  return (
+    <Panel
+      title={label}
+      icon={MapPin}
+      right={
+        <Badge tone={value.admin1 ? 'brand' : 'outline'} dot={Boolean(value.admin1)}>
+          {value.admin1 ? 'Survey market' : 'Own point'}
+        </Badge>
+      }
+      hint="Towns come from WFP’s published market reference table, so a selection carries the publisher’s own coordinates and region labels."
+    >
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <Field label="Market centre" htmlFor="market-place">
+          <Select
+            id="market-place"
+            value={isCustom ? '__custom__' : value.name}
+            onChange={(e) => {
+              const found = places?.find((p) => p.name === e.target.value);
+              if (!found) return;
+              setLat(String(found.latitude));
+              setLon(String(found.longitude));
+              onChange({
+                name: found.name,
+                admin1: found.admin1,
+                admin2: found.admin2,
+                latitude: found.latitude,
+                longitude: found.longitude,
+              });
+            }}
+          >
+            {isCustom && <option value="__custom__">Custom coordinate</option>}
+            {grouped.length === 0 && <option>{value.name}</option>}
+            {grouped.map(([region, list]) => (
+              <optgroup key={region} label={region}>
+                {list.map((p) => (
+                  <option key={`${region}-${p.name}`} value={p.name}>
+                    {p.name}
+                    {p.admin2 ? ` — ${p.admin2}` : ''}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </Select>
+        </Field>
+
+        <Field label="Or type your own point" htmlFor="custom-latitude" hint="Used as given; no administrative names are attached to a typed coordinate.">
+          <div className="flex flex-wrap items-end gap-2">
+            <Input
+              id="custom-latitude"
               aria-label="Latitude"
               inputMode="decimal"
               value={lat}
               onChange={(e) => setLat(e.target.value)}
-              className="w-24 px-2 py-1.5 rounded-lg text-sm bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-white"
+              className="w-[7.5rem]"
             />
-            <input
+            <Input
               aria-label="Longitude"
               inputMode="decimal"
               value={lon}
               onChange={(e) => setLon(e.target.value)}
-              className="w-24 px-2 py-1.5 rounded-lg text-sm bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 text-gray-900 dark:text-white"
+              className="w-[7.5rem]"
             />
-            <button
-              type="button"
-              onClick={() => {
-                const latitude = Number(lat);
-                const longitude = Number(lon);
-                if (lat.trim() === '' || lon.trim() === '' || !Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-                  setCoordError('Enter a latitude and a longitude as numbers.');
-                  return;
-                }
-                if (Math.abs(latitude) > 90 || Math.abs(longitude) > 180) {
-                  setCoordError('Latitude must be between −90 and 90, longitude between −180 and 180.');
-                  return;
-                }
-                setCoordError(null);
-                onChange({ name: 'Selected coordinate', admin1: null, admin2: null, latitude, longitude });
-              }}
-              className="px-3 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider bg-emerald-600 text-white hover:bg-emerald-500 transition-colors"
-            >
-              Go
-            </button>
+            <Button size="md" variant="secondary" leading={<Compass size={15} />} onClick={applyCustom} className="shrink-0">
+              Apply
+            </Button>
           </div>
-          {coordError && (
-            <p role="alert" className="text-[11px] text-orange-600 dark:text-orange-400 mt-1.5">
-              {coordError}
-            </p>
-          )}
-        </div>
+        </Field>
       </div>
 
-      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-3">
+      <p className="mt-5 border-t border-line pt-4 text-[11.5px] leading-relaxed text-ink-faint">
+        <span className="tabular font-bold text-ink-muted">
+          {value.latitude.toFixed(3)}, {value.longitude.toFixed(3)}
+        </span>
         {value.admin1
-          ? `${value.name} — ${value.admin1}${value.admin2 ? ` · ${value.admin2}` : ''} (${value.latitude.toFixed(3)}, ${value.longitude.toFixed(3)}). Region and zone names are as published by WFP.`
-          : `${value.name} (${value.latitude.toFixed(3)}, ${value.longitude.toFixed(3)}) — your own point, so no administrative names are attached.`}
+          ? ` — ${value.name}, ${value.admin1}${value.admin2 ? ` · ${value.admin2}` : ''}. Region and zone names are as published by WFP.`
+          : ` — ${value.name}, your own point.`}
       </p>
-      {failed && <p className="text-[11px] text-orange-600 dark:text-orange-400 mt-1">{failed}</p>}
-    </div>
+
+      {coordError && (
+        <StateNotice tone="gold" title="Check the coordinates" className="mt-4">
+          {coordError}
+        </StateNotice>
+      )}
+      {failed && (
+        <StateNotice tone="clay" title="Location list unavailable" className="mt-4">
+          {failed}
+        </StateNotice>
+      )}
+    </Panel>
   );
 };

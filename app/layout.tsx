@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2e8b57",
+  themeColor: "#1a7f4b",
   width: "device-width",
   initialScale: 1,
 };
@@ -24,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="app-font antialiased">
+      <body className="app-font min-h-dvh bg-canvas text-ink antialiased">
         {children}
       </body>
     </html>

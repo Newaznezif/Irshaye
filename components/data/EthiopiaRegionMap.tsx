@@ -4,7 +4,7 @@ import { Crosshair, Layers, MapPinned, Minus, MousePointerClick, Plus, RotateCcw
 
 import { ProvenanceLabel, SourceUnavailable } from '@/components/data/ProvenanceLabel';
 import type { ProvenanceView } from '@/components/data/ProvenanceLabel';
-import { Loading, Metric, Panel, Refreshing, fmt, fmtInt } from '@/components/data/ui';
+import { Loading, Metric, Panel, Refreshing, fmt, fmtInt } from '@/components/ui';
 import { useLiveData } from '@/hooks/useLiveData';
 import { useVectorLayers } from '@/hooks/useVectorLayers';
 
