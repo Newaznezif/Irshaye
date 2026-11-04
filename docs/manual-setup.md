@@ -1,62 +1,55 @@
-# Manual setup guide
+# Manual setup
 
-This repository intentionally requires human action for external service setup. These steps should be performed manually and authenticated by the human developer.
+## Zero-configuration path
 
-## Local machine
+```bash
+npm install
+npm run dev
+```
 
-- Git
-- VS Code
-- Python
-- Node.js
-- npm
-- optional development tools as needed later
+Open `http://localhost:3000/dashboard`. Climate, agroclimate, geospatial, market, and exchange data all work: Open-Meteo, NASA POWER, NASA GIBS, ArcGIS, WFP rEMS via HDX, NBE, and World Bank publish without keys. The crop and soil reference layers are in the repository.
 
-## GitHub
+Two things are unavailable by default and say so on screen:
 
-- sign in to GitHub
-- authenticate Git locally or through GitHub CLI
-- create or connect the repository
-- push and pull changes through the normal GitHub flow
+- **AI Agricultural Advisor** — `GET /api/advisor/status` returns `{"configured": false}` and the page explains that no answer will be invented.
+- **Accounts and saved records** — no Supabase project is connected; nothing is persisted beyond this browser's workbench context.
 
-## Supabase
+## Gemini (enables the advisor)
 
-- create a Supabase project
-- obtain the project URL
-- obtain the API keys
-- configure the database and project settings
+1. Create a key in Google AI Studio.
+2. Add `GEMINI_API_KEY=...` to `.env.local`.
+3. Restart `npm run dev` and confirm `/api/advisor/status` now returns `{"configured": true}`.
 
-## Telegram
+`lib/advisor/server.ts` calls `gemini-1.5-flash-latest` with `responseMimeType: application/json`, and the reply is validated before display; a shape it cannot verify becomes a `502 advisor_failed` rather than a partial answer.
 
-- create a Telegram bot using BotFather
-- obtain the bot token
-- configure the token in the environment file when implementation begins
+## Supabase (enables accounts — not yet provisioned)
 
-## Google AI Studio / Gemini
+**IRSHAYE needs its own Supabase project.** Do not reuse another application's URL or keys, and do not run a migration against any project you did not create for IRSHAYE.
 
-- create or access the AI project
-- generate a Gemini API key
-- store it only in a local environment file
+Required steps, in order, when the project is ready:
 
-## Vercel
+1. Create the project; note its ref, region, URL, and anon key.
+2. Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and (server-only) `SUPABASE_SERVICE_ROLE_KEY` in `.env.local`, then in the deployment's environment.
+3. Review `docs/database-plan.md`. It describes six ported `data.*` migrations plus a proposed `app.*` wave.
+4. **Before applying anything:** edit `supabase/migrations/20261026000300_data_weather_and_agroclimate.sql` — it adds columns to `public.environmental_data`, a legacy table from the donor project that will not exist in a fresh IRSHAYE database. Applying it as written will fail.
+5. Apply migrations to the new project only, then run `npm run check:data` with `persisted=1` to confirm the pipeline reads back what it wrote.
 
-- connect the GitHub repository
-- configure environment variables
-- deploy the frontend when the app is ready
+No migration has been executed anywhere as of this writing.
 
-## Render
+## Scheduled sync (optional, needs a database)
 
-- connect the GitHub repository
-- configure backend environment variables
-- deploy the backend after implementation
+`POST /api/data/sync` runs the publisher → database pipeline and requires `SYNC_SECRET` in the environment plus `SUPABASE_SERVICE_ROLE_KEY`. Point a scheduler (Vercel Cron, GitHub Actions, a systemd timer) at it with `authorization: Bearer <SYNC_SECRET>`. `GET /api/data/sync` reports whether it is configured and which task is gated on a table.
 
-## Security and human-boundary rules
+## Deployment (needs its own project)
 
-- External credentials are managed manually by the human and must never be committed to GitHub.
-- Agents must not invent credentials, tokens, project URLs, or service configuration.
-- Agents must not claim external authentication is complete unless the human has performed the authenticated setup step.
-- An external service is considered connected only after the human performs authenticated setup and the integration is actually tested.
-- Do not treat Telegram, Supabase, Gemini, or deployment platforms as configured or live simply because the repository mentions them.
+Create a **new** Vercel project from `Newaznezif/Irshaye`. Never add IRSHAYE to another application's project, domains, or environment. Fonts are self-hosted through plain CSS in `app/fonts.css`; do not switch to `next/font`, which broke the Turbopack build in the sibling project.
 
-## Important warning
+## Deferred by decision
 
-Do not commit credentials. Use local environment configuration only, and keep secrets out of version control.
+Telegram, SMS, and USSD. There is no bot code, no BotFather setup, and no `TELEGRAM_BOT_TOKEN`. `python`/`FastAPI`/Render are not part of the MVP; route handlers are the service layer.
+
+## Rules that stay true
+
+- Secrets live in `.env.local` and platform secret stores only. `.env*` is gitignored; only `.env.example` is committed.
+- Agents must not invent credentials, project URLs, or service configuration.
+- An integration counts as connected only after a request against it has actually succeeded in this deployment — which is why Settings probes rather than asserts.

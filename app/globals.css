@@ -1,0 +1,345 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./fonts.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * IRSHAYE identity — Ethiopian highland farmland: deep forest green canopy, warm
+ * ivory daylight, harvest gold, and clay soil. The ramps below are the brand; the
+ * runtime variables further down are the semantic layer every component consumes,
+ * so a surface or a line never needs a literal colour at the call site.
+ */
+@theme {
+  --color-brand-50: oklch(0.972 0.022 152);
+  --color-brand-100: oklch(0.94 0.04 152);
+  --color-brand-200: oklch(0.885 0.063 153);
+  --color-brand-300: oklch(0.8 0.09 154);
+  --color-brand-400: oklch(0.69 0.116 154);
+  --color-brand-500: oklch(0.585 0.126 154);
+  --color-brand-600: oklch(0.5 0.112 155);
+  --color-brand-700: oklch(0.425 0.098 155);
+  --color-brand-800: oklch(0.35 0.078 155);
+  --color-brand-900: oklch(0.285 0.06 156);
+  --color-brand-950: oklch(0.205 0.042 157);
+
+  --color-gold-50: oklch(0.977 0.02 96);
+  --color-gold-100: oklch(0.945 0.05 94);
+  --color-gold-200: oklch(0.895 0.09 91);
+  --color-gold-300: oklch(0.84 0.115 87);
+  --color-gold-400: oklch(0.785 0.13 83);
+  --color-gold-500: oklch(0.72 0.14 78);
+  --color-gold-600: oklch(0.63 0.13 73);
+  --color-gold-700: oklch(0.52 0.11 68);
+
+  --color-clay-50: oklch(0.973 0.014 46);
+  --color-clay-100: oklch(0.938 0.032 44);
+  --color-clay-200: oklch(0.875 0.062 42);
+  --color-clay-300: oklch(0.79 0.088 40);
+  --color-clay-400: oklch(0.7 0.11 36);
+  --color-clay-500: oklch(0.62 0.125 32);
+  --color-clay-600: oklch(0.53 0.115 28);
+  --color-clay-700: oklch(0.44 0.1 25);
+
+  --color-slate-blue-400: oklch(0.72 0.08 235);
+  --color-slate-blue-500: oklch(0.62 0.1 235);
+  --color-slate-blue-600: oklch(0.53 0.1 235);
+  --color-slate-blue-700: oklch(0.45 0.09 235);
+
+  --font-sans: Inter, "Inter Fallback", "Noto Sans Ethiopic", "Noto Sans Ethiopic Fallback", sans-serif;
+  --font-ethiopic: "Noto Sans Ethiopic", "Noto Sans Ethiopic Fallback", Inter, sans-serif;
+
+  --shadow-card: 0 1px 2px oklch(0.32 0.04 155 / 6%), 0 1px 3px oklch(0.32 0.04 155 / 4%);
+  --shadow-panel: 0 1px 2px oklch(0.32 0.04 155 / 5%), 0 8px 24px -12px oklch(0.32 0.04 155 / 12%);
+  --shadow-lift: 0 2px 4px oklch(0.32 0.04 155 / 6%), 0 18px 40px -20px oklch(0.32 0.04 155 / 22%);
+  --shadow-brand: 0 10px 30px -12px oklch(0.5 0.112 155 / 45%);
+
+  --animate-fade-up: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.5s ease-out both;
+  --animate-rise: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-drift: drift 22s ease-in-out infinite;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -180% 0;
+  }
+  to {
+    background-position: 180% 0;
+  }
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-canvas-tint: var(--canvas-tint);
+  --color-surface: var(--surface);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-clay: var(--clay);
+  --color-clay-soft: var(--clay-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-plum: var(--plum);
+  --color-plum-soft: var(--plum-soft);
+
+  --color-background: var(--canvas);
+  --color-foreground: var(--ink);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--ink);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--ink);
+  --color-primary: var(--brand);
+  --color-primary-foreground: var(--brand-ink);
+  --color-secondary: var(--surface-sunken);
+  --color-secondary-foreground: var(--ink);
+  --color-muted: var(--surface-sunken);
+  --color-muted-foreground: var(--ink-muted);
+  --color-accent: var(--gold-soft);
+  --color-accent-foreground: var(--ink);
+  --color-destructive: var(--clay);
+  --color-input: var(--line-strong);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--surface);
+  --color-sidebar-foreground: var(--ink);
+  --color-sidebar-border: var(--line);
+  --color-sidebar-ring: var(--ring);
+
+  --font-heading: var(--font-sans);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.35);
+  --radius-2xl: calc(var(--radius) * 1.75);
+  --radius-3xl: calc(var(--radius) * 2.25);
+  --radius-4xl: calc(var(--radius) * 2.8);
+}
+
+:root {
+  --canvas: oklch(0.985 0.009 96);
+  --canvas-tint: oklch(0.968 0.015 100);
+  --surface: oklch(1 0 0);
+  --surface-sunken: oklch(0.963 0.013 104);
+  --line: oklch(0.912 0.015 110);
+  --line-strong: oklch(0.855 0.022 112);
+  --ink: oklch(0.262 0.022 155);
+  --ink-muted: oklch(0.505 0.028 155);
+  /* Provenance notes render at 10-13px, so this tier needs 4.5:1 on every light
+     background it sits on — canvas, canvas/50 footers and surface-sunken. */
+  --ink-faint: oklch(0.54 0.026 152);
+  --brand: oklch(0.5 0.112 155);
+  --brand-hover: oklch(0.44 0.105 155);
+  --brand-soft: oklch(0.955 0.034 152);
+  --brand-ink: oklch(0.985 0.01 145);
+  --gold: oklch(0.63 0.13 73);
+  --gold-soft: oklch(0.955 0.045 92);
+  --clay: oklch(0.53 0.115 28);
+  --clay-soft: oklch(0.958 0.03 44);
+  --info: oklch(0.53 0.1 235);
+  --info-soft: oklch(0.955 0.028 235);
+  --plum: oklch(0.52 0.14 300);
+  --plum-soft: oklch(0.955 0.028 300);
+  --ring: oklch(0.5 0.112 155);
+  --radius: 0.625rem;
+  color-scheme: light;
+}
+
+.dark {
+  --canvas: oklch(0.198 0.022 160);
+  --canvas-tint: oklch(0.224 0.024 160);
+  --surface: oklch(0.248 0.024 160);
+  --surface-sunken: oklch(0.212 0.022 160);
+  --line: oklch(1 0 0 / 11%);
+  --line-strong: oklch(1 0 0 / 19%);
+  --ink: oklch(0.955 0.012 145);
+  --ink-muted: oklch(0.755 0.02 150);
+  --ink-faint: oklch(0.66 0.022 152);
+  --brand: oklch(0.72 0.13 155);
+  --brand-hover: oklch(0.78 0.13 155);
+  --brand-soft: oklch(0.29 0.052 158);
+  --brand-ink: oklch(0.19 0.022 160);
+  --gold: oklch(0.8 0.13 85);
+  --gold-soft: oklch(0.29 0.05 92);
+  --clay: oklch(0.72 0.13 34);
+  --clay-soft: oklch(0.29 0.05 40);
+  --info: oklch(0.72 0.1 235);
+  --info-soft: oklch(0.29 0.045 235);
+  --plum: oklch(0.74 0.13 300);
+  --plum-soft: oklch(0.29 0.05 300);
+  --ring: oklch(0.72 0.13 155);
+  color-scheme: dark;
+}
+
+@layer base {
+  * {
+    @apply border-line outline-ring/50;
+  }
+
+  html {
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
+  }
+
+  body {
+    @apply bg-canvas text-ink antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: oklch(0.5 0.112 155 / 22%);
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
+  }
+
+  /* Amharic and Ge'ez script always render in the face designed for it. */
+  [lang='am'],
+  .ethiopic {
+    font-family: var(--font-ethiopic);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+
+  .scroll-slim::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 9999px;
+  }
+
+  .scroll-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* Scroll reveals are driven by IntersectionObserver in components/ui/Reveal.tsx;
+     the transition lives here so the markup stays free of timing values. */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .reveal[data-visible='true'] {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Without scripting the observer never runs, and content must still be readable. */
+  @media (scripting: none) {
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      var(--surface-sunken) 0%,
+      var(--line) 45%,
+      var(--surface-sunken) 90%
+    );
+    background-size: 220% 100%;
+    animation: shimmer 1.6s linear infinite;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+
+  /* Terrace lines: the brand's own texture, drawn from the contour of highland farms. */
+  .hairline-grid {
+    background-image:
+      linear-gradient(to right, oklch(0.5 0.112 155 / 7%) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(0.5 0.112 155 / 7%) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+
+  .dark .hairline-grid {
+    background-image:
+      linear-gradient(to right, oklch(1 0 0 / 5%) 1px, transparent 1px),
+      linear-gradient(to bottom, oklch(1 0 0 / 5%) 1px, transparent 1px);
+  }
+
+  .legible-over-photo {
+    text-shadow: 0 1px 2px oklch(0.15 0.03 160 / 45%), 0 12px 40px oklch(0.15 0.03 160 / 35%);
+  }
+}

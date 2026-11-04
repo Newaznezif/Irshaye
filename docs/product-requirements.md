@@ -42,33 +42,34 @@ Organizations need visibility into field activity, advisory requests, risks, ado
 
 ## MVP scope
 
-The first MVP will use Telegram as a temporary farmer interface because real telecom integration is outside the current scope. Telegram is only a prototype channel adapter and not the product architecture.
+The MVP is the **farmer-facing web application**. Telegram, SMS, and USSD are deferred by decision: they remain the long-term reach strategy for feature-phone users, but no channel work happens before the web decision-support workflow is solid.
 
-The MVP should demonstrate:
+The MVP must deliver:
 
-- farmer message-based interaction
-- advisory request capture
-- API-driven response flow
-- storage of relevant records
-- AI-assisted advisory generation
-- weather/risk contextualization
-- organization-side visibility
+- a place → crop → climate → information → recommendation workflow with no decorative steps
+- live weather, agroclimate, market, and exchange context from named open-data publishers
+- cited crop and soil reference layers, with gaps shown as gaps
+- an AI advisor that reasons only over assembled evidence, cites it, states uncertainty, and abstains when the evidence cannot support an answer
+- honest unavailability: a source that fails produces a stated gap, never a substitute value
+
+Record storage, cooperative dashboards, alerts, and channel adapters follow once independent infrastructure is provisioned (see `docs/database-plan.md`).
 
 ## Future direction
 
-The long-term vision is to support:
+In rough order:
 
-- USSD for voice and mobile keypad users
-- SMS for low-bandwidth communication
-- web dashboard for organizations and cooperatives
-- API-driven backend services shared across channels
+- accounts, farmer and cooperative records, advisory request history (Supabase, own project)
+- Telegram as a thin adapter over the existing advisory modules
+- SMS and USSD for low-bandwidth and keypad users
+- organization dashboards for cooperatives and agricultural organizations
+- analytics over accumulated, consented records
 
-The same core business logic should serve farmers regardless of access channel. Future USSD, SMS, web, or mobile clients must connect through the same API and reuse the same business services.
+The same core business logic must serve farmers regardless of access channel. Future Telegram, SMS, USSD, or mobile clients connect through the same service layer and reuse the same business modules — which is why nothing in `lib/advisor`, `lib/crops`, `lib/soil`, or `lib/data` imports React or a route handler.
 
 ## Hard implementation constraints
 
-- Telegram is a temporary MVP channel adapter, not the ultimate product identity.
-- The system must remain API-first.
+- Telegram, SMS, and USSD are channel adapters, deferred in the MVP and never the product identity.
+- The service layer is API-first: route handlers today, and any future channel calls the same modules.
 - The core business logic must not depend on Telegram-specific code.
 - No channel-specific business logic should exist inside core services.
 - Gemini is the initial AI provider and must be isolated behind an AI provider abstraction.
@@ -83,13 +84,16 @@ The same core business logic should serve farmers regardless of access channel. 
 - Data should be structured in a way that supports future analytics and reporting.
 - The project should remain modular enough for future agent-driven implementation.
 
-## Non-goals for this setup phase
+## Out of scope for the current build
 
-This phase does not implement:
+Implemented: the farmer-facing web workflow, live open-data connectors, cited crop and soil reference layers, the evidence-only advisor, market intelligence, and source status.
 
-- complete frontend UI
-- complete backend services
-- final AI pipeline
-- final weather integration
-- production deployment
-- production Kubernetes or cloud delivery setup
+Not built in this phase, on purpose:
+
+- accounts, authentication, and stored farmer records (needs its own Supabase project)
+- cooperative and organization dashboards
+- alerts, notifications, and yield ledgers
+- Telegram, SMS, and USSD adapters
+- IoT sensors and any sensor-driven claims
+- deployment to any hosting environment
+- a separate Python backend, which the Next.js service layer makes unnecessary for the MVP
