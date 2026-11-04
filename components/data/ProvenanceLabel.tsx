@@ -3,6 +3,7 @@ import React from 'react';
 import { CircleAlert, Database } from 'lucide-react';
 import { Badge, StateNotice, type BadgeTone } from '@/components/ui';
 import { stamp } from '@/components/ui/format';
+import { useLanguage } from '@/hooks/useLanguage';
 import { cn } from '@/lib/utils';
 
 /**
@@ -35,12 +36,12 @@ export interface SourceErrorView {
  * whether a number was measured, modelled, forecast, or derived by us. Each kind
  * keeps one colour across the whole application.
  */
-const KIND: Record<ProvenanceView['valueKind'], { label: string; tone: BadgeTone }> = {
-  observed: { label: 'Observed', tone: 'brand' },
-  modeled: { label: 'Modelled', tone: 'info' },
-  forecast: { label: 'Forecast', tone: 'plum' },
-  estimated: { label: 'Derived here', tone: 'gold' },
-  imputed: { label: 'Filled in', tone: 'neutral' },
+const KIND: Record<ProvenanceView['valueKind'], BadgeTone> = {
+  observed: 'brand',
+  modeled: 'info',
+  forecast: 'plum',
+  estimated: 'gold',
+  imputed: 'neutral',
 };
 
 interface Props {
@@ -59,6 +60,7 @@ interface Props {
  * answer is labelled cached, and a late publication is labelled stale.
  */
 export const ProvenanceLabel = ({ provenance, context, compact = false, onDark = false, className }: Props) => {
+  const { t, locale } = useLanguage();
   const bodyClass = cn(
     'flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-[11px] leading-relaxed',
     onDark ? 'text-brand-50/80' : 'text-ink-faint',
@@ -66,23 +68,23 @@ export const ProvenanceLabel = ({ provenance, context, compact = false, onDark =
   );
 
   if (!provenance) {
-    return <p className={bodyClass}>No source available for this figure.</p>;
+    return <p className={bodyClass}>{t('prov.noSource')}</p>;
   }
 
-  const kind = KIND[provenance.valueKind] ?? KIND.estimated;
+  const kind = provenance.valueKind ?? 'estimated';
   const separator = <span aria-hidden className={onDark ? 'text-brand-100/40' : 'text-line-strong'}>·</span>;
 
   return (
     <div className={bodyClass}>
-      <Badge tone={kind.tone}>{kind.label}</Badge>
+      <Badge tone={KIND[kind] ?? KIND.estimated}>{t(`prov.kind.${kind}`)}</Badge>
       {provenance.stale && (
         <Badge tone="clay">
-          <CircleAlert size={11} /> Behind schedule
+          <CircleAlert size={11} /> {t('prov.behindSchedule')}
         </Badge>
       )}
       {provenance.servedFromCache && (
         <Badge tone="neutral">
-          <Database size={11} /> Cached copy
+          <Database size={11} /> {t('prov.cachedCopy')}
         </Badge>
       )}
       <span className={cn('font-bold', onDark ? 'text-brand-50' : 'text-ink-muted')}>{provenance.source}</span>
@@ -95,14 +97,16 @@ export const ProvenanceLabel = ({ provenance, context, compact = false, onDark =
           onDark ? 'hover:text-white' : 'hover:text-brand-700 dark:hover:text-brand-300',
         )}
       >
-        source
+        {t('prov.sourceLink')}
       </a>
       {!compact && (
         <>
           {separator}
-          <span>observed {provenance.observedAt ? stamp(provenance.observedAt) : 'date not stated'}</span>
+          <span>
+            {t('prov.observedAt', { when: provenance.observedAt ? stamp(provenance.observedAt, locale) : t('prov.dateNotStated') })}
+          </span>
           {separator}
-          <span>fetched {stamp(provenance.retrievedAt)} (EAT)</span>
+          <span>{t('prov.fetchedAt', { when: stamp(provenance.retrievedAt, locale) })}</span>
           {separator}
           <span title={provenance.methodology}>{provenance.units}</span>
           {context && (
@@ -118,33 +122,38 @@ export const ProvenanceLabel = ({ provenance, context, compact = false, onDark =
 };
 
 /** Honest empty state: the reason, the source, and no invented number. */
-export const SourceUnavailable = ({ error, source }: { error: SourceErrorView; source?: string }) => (
-  <StateNotice tone="clay" title="Not available" code={error.code}>
-    <p>
-      {source ? `${source}: ` : ''}
-      {error.message}
-    </p>
-  </StateNotice>
-);
+export const SourceUnavailable = ({ error, source }: { error: SourceErrorView; source?: string }) => {
+  const { t } = useLanguage();
+  return (
+    <StateNotice tone="clay" title={t('prov.notAvailable')} code={error.code}>
+      <p>
+        {source ? `${source}: ` : ''}
+        {error.message}
+      </p>
+    </StateNotice>
+  );
+};
 
 /**
  * Citation strip under any curated reference block: one link per publisher, or the
  * bare name when the reference has no resolvable URL. Callers pass their own
- * spacing so the strip can sit inline or below a divider.
+ * spacing so the strip can sit inline or below a divider. Source names are
+ * citations and stay exactly as published.
  */
 export function SourcesList({
   sources,
-  label = 'Sources',
+  label,
   className,
 }: {
   sources: { name: string; url?: string; title?: string }[];
   label?: string;
   className?: string;
 }) {
+  const { t } = useLanguage();
   if (sources.length === 0) return null;
   return (
     <p className={cn('flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[11px] text-ink-faint', className)}>
-      <span className="font-bold uppercase tracking-[0.12em]">{label}</span>
+      <span className="font-bold uppercase tracking-[0.12em]">{label ?? t('common.sources')}</span>
       {sources.map((s, i) => (
         <span key={`${s.name}-${i}`}>
           {s.url ? (

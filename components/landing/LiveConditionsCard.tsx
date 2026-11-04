@@ -4,6 +4,7 @@ import { CloudRain, Droplets, MapPin, Thermometer } from 'lucide-react';
 import { ProvenanceLabel, type ProvenanceView } from '@/components/data/ProvenanceLabel';
 import { Badge, Skeleton } from '@/components/ui';
 import { fmt } from '@/components/ui/format';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useLiveData } from '@/hooks/useLiveData';
 import type { WeatherSeries } from '@/lib/data/types';
 
@@ -13,6 +14,7 @@ import type { WeatherSeries } from '@/lib/data/types';
  * answer, the card says so instead of showing a placeholder.
  */
 export function LiveConditionsCard() {
+  const { t } = useLanguage();
   const weather = useLiveData<WeatherSeries, ProvenanceView>(
     '/api/data/weather?lat=9.0204&lon=38.7468&days=7&pastDays=0&hourly=0',
   );
@@ -27,10 +29,10 @@ export function LiveConditionsCard() {
       <div className="flex items-center justify-between gap-3">
         <p className="flex items-center gap-2 text-[11px] font-bold tracking-[0.16em] text-brand-50/90 uppercase">
           <MapPin size={13} />
-          Addis Ababa, right now
+          {t('hero.placeNow')}
         </p>
         <Badge tone="brand" dot className="border border-white/20 bg-white/15 text-white ring-0 dark:text-white">
-          live
+          {t('common.live')}
         </Badge>
       </div>
 
@@ -44,7 +46,7 @@ export function LiveConditionsCard() {
 
       {!weather.loading && weather.data === null && (
         <p className="mt-4 text-[13px] leading-relaxed text-brand-50/90">
-          {weather.error?.message ?? 'The weather publisher did not answer.'} No substitute reading is shown.
+          {weather.error?.message ?? t('hero.publisherSilent')} {t('hero.noSubstitute')}
         </p>
       )}
 
@@ -59,7 +61,7 @@ export function LiveConditionsCard() {
           <dl className="mt-4 grid grid-cols-2 gap-2.5">
             <div className="rounded-xl border border-white/12 bg-white/8 px-3 py-2.5">
               <dt className="flex items-center gap-1.5 text-[10px] font-bold tracking-wide text-brand-100/80 uppercase">
-                <Droplets size={11} /> Humidity
+                <Droplets size={11} /> {t('hero.humidity')}
               </dt>
               <dd className="tabular mt-1 text-[15px] font-extrabold text-white">
                 {fmt(current.relativeHumidityPct, 0)}%
@@ -67,7 +69,7 @@ export function LiveConditionsCard() {
             </div>
             <div className="rounded-xl border border-white/12 bg-white/8 px-3 py-2.5">
               <dt className="flex items-center gap-1.5 text-[10px] font-bold tracking-wide text-brand-100/80 uppercase">
-                <CloudRain size={11} /> Rain, 7-day outlook
+                <CloudRain size={11} /> {t('hero.rainOutlook')}
               </dt>
               <dd className="tabular mt-1 text-[15px] font-extrabold text-white">
                 {forecast.length > 0 ? `${fmt(rainNext7, 1)} mm` : '—'}

@@ -16,6 +16,8 @@ import {
   StateNotice,
   Textarea,
 } from '@/components/ui';
+import { useLanguage } from '@/hooks/useLanguage';
+import type { TranslationKey } from '@/lib/i18n';
 import type { EvidenceGap, EvidenceItem } from '@/lib/advisor/evidence';
 import type { AdvisorAnswer } from '@/lib/advisor/answer';
 import type { BadgeTone } from '@/components/ui';
@@ -30,27 +32,33 @@ const KIND_TONE: Record<EvidenceItem['kind'], BadgeTone> = {
   reference: 'outline',
 };
 
+/** The classification words already exist for provenance badges; `reference` is advisor-only. */
+const KIND_LABEL: Record<EvidenceItem['kind'], TranslationKey> = {
+  observed: 'prov.kind.observed',
+  modeled: 'prov.kind.modeled',
+  forecast: 'prov.kind.forecast',
+  estimated: 'prov.kind.estimated',
+  imputed: 'prov.kind.imputed',
+  reference: 'advisor.kind.reference',
+};
+
 type AskResponse =
   | { ok: true; answer: AdvisorAnswer; evidence: { items: EvidenceItem[]; gaps: EvidenceGap[] } }
   | { ok: false; error: { code: string; message: string } };
 
-const EXAMPLE_QUESTIONS = [
-  'Is it a good time to prepare land and plant?',
-  'What weather risks should I plan around this week?',
-  'How should I time inputs given the rainfall outlook?',
-];
-
 export default function AdvisorPage() {
+  const { t, locale } = useLanguage();
   const { place, setPlace, cropId, setCropId } = useWorkbench();
   const [question, setQuestion] = useState('');
   const [busy, setBusy] = useState(false);
   const [response, setResponse] = useState<AskResponse | null>(null);
-  const [networkError, setNetworkError] = useState<string | null>(null);
+  /** A flag, not a sentence: the wording must follow the language chosen after the failure. */
+  const [networkFailed, setNetworkFailed] = useState(false);
 
   const ask = async () => {
     if (!question.trim() || busy) return;
     setBusy(true);
-    setNetworkError(null);
+    setNetworkFailed(false);
     try {
       const res = await fetch('/api/advisor', {
         method: 'POST',
@@ -65,7 +73,7 @@ export default function AdvisorPage() {
       });
       setResponse((await res.json()) as AskResponse);
     } catch {
-      setNetworkError('This service could not be reached. No answer is shown rather than a guess.');
+      setNetworkFailed(true);
     } finally {
       setBusy(false);
     }
@@ -74,43 +82,47 @@ export default function AdvisorPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Advisory"
-        title="AI Agricultural Advisor"
+        eyebrow={t('nav.group.Advisory')}
+        title={t('module.advisor.label')}
         icon={Bot}
-        description="The advisor may reason only over evidence the platform has assembled and traced to a publisher. It cites its inputs, states uncertainty and limitations, and stays silent when the evidence is insufficient. It will never promise yields or diagnose your soil."
-        status={<Badge tone="neutral">Reasons over platform evidence only</Badge>}
+        description={t('advisor.pageDescription')}
+        status={<Badge tone="neutral">{t('advisor.badgeEvidenceOnly')}</Badge>}
       />
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <LocationPicker value={place} onChange={setPlace} label="Your location" />
+        <LocationPicker value={place} onChange={setPlace} label={t('overview.yourLocation')} />
         <CropPicker value={cropId} onChange={setCropId} />
       </div>
 
       <Panel
-        title="Ask about your season"
+        title={t('advisor.askTitle')}
         icon={Sparkles}
-        hint={`The question is answered for ${place.name} and the selected crop, using only the evidence listed under the answer.`}
+        hint={t('advisor.askHint', { place: place.name })}
       >
-        <Field label="Your question" htmlFor="advisor-question" hint={`${question.length}/900 characters`}>
+        <Field
+          label={t('advisor.questionLabel')}
+          htmlFor="advisor-question"
+          hint={t('advisor.charCount', { count: question.length.toLocaleString(locale) })}
+        >
           <Textarea
             id="advisor-question"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             rows={3}
             maxLength={900}
-            placeholder="Example: rain is expected in the next few days — should I wait to sow, and what should I prepare meanwhile?"
+            placeholder={t('advisor.questionPlaceholder')}
           />
         </Field>
 
         <div className="mt-4 flex flex-wrap gap-2">
-          {EXAMPLE_QUESTIONS.map((q) => (
+          {(['advisor.example1', 'advisor.example2', 'advisor.example3'] as const).map((key) => (
             <button
-              key={q}
+              key={key}
               type="button"
-              onClick={() => setQuestion(q)}
+              onClick={() => setQuestion(t(key))}
               className="rounded-full border border-line bg-surface px-3 py-1.5 text-[12px] font-semibold text-ink-muted transition-colors hover:border-brand/40 hover:bg-brand-soft/60 hover:text-ink"
             >
-              {q}
+              {t(key)}
             </button>
           ))}
         </div>
@@ -122,51 +134,49 @@ export default function AdvisorPage() {
             aria-busy={busy}
             leading={busy ? undefined : <Send size={15} />}
           >
-            {busy ? 'Assembling evidence…' : 'Get an evidence-based answer'}
+            {busy ? t('advisor.assembling') : t('advisor.submit')}
           </Button>
           {busy && <Loading label="" className="py-0" />}
         </div>
       </Panel>
 
-      {networkError && (
-        <StateNotice tone="clay" title="Advisor unavailable" icon={CircleAlert}>
-          {networkError}
+      {networkFailed && (
+        <StateNotice tone="clay" title={t('advisor.unavailableTitle')} icon={CircleAlert}>
+          {t('advisor.networkError')}
         </StateNotice>
       )}
 
       {response && !response.ok && (
         <StateNotice
           tone={response.error.code === 'advisor_not_configured' ? 'info' : 'clay'}
-          title="Advisor unavailable"
+          title={t('advisor.unavailableTitle')}
           code={response.error.code}
           icon={CircleAlert}
         >
-          {response.error.code === 'advisor_not_configured'
-            ? 'This deployment has no GEMINI_API_KEY configured, so the advisor cannot run. Everything else on the platform works without it — no fabricated answer is produced.'
-            : response.error.message}
+          {response.error.code === 'advisor_not_configured' ? t('advisor.notConfigured') : response.error.message}
         </StateNotice>
       )}
 
       {response && response.ok && (
         <>
           <Panel
-            title="Advisor response"
+            title={t('advisor.responseTitle')}
             icon={Bot}
             right={
               response.answer.abstained ? (
                 <Badge tone="gold" dot>
-                  Insufficient evidence
+                  {t('advisor.badgeInsufficient')}
                 </Badge>
               ) : (
                 <Badge tone="brand" dot>
-                  Evidence-backed
+                  {t('advisor.badgeBacked')}
                 </Badge>
               )
             }
           >
             {/* The headline is model prose: it reads as content, never as an uppercase panel eyebrow. */}
             <p className="text-[19px] leading-tight font-extrabold tracking-[-0.02em] text-ink">
-              {response.answer.abstained ? 'The advisor abstains' : response.answer.headline}
+              {response.answer.abstained ? t('advisor.abstains') : response.answer.headline}
             </p>
 
             <p className="mt-3 text-[14px] leading-relaxed whitespace-pre-wrap text-ink">
@@ -175,12 +185,12 @@ export default function AdvisorPage() {
 
             <div className="mt-6 grid gap-5 border-t border-line pt-5 md:grid-cols-2">
               <div>
-                <SectionLabel>Uncertainty</SectionLabel>
+                <SectionLabel>{t('advisor.uncertainty')}</SectionLabel>
                 <p className="mt-2 text-[13px] leading-relaxed text-ink-muted">{response.answer.uncertainty}</p>
               </div>
               {response.answer.limitations.length > 0 && (
                 <div>
-                  <SectionLabel>Limitations</SectionLabel>
+                  <SectionLabel>{t('advisor.limitations')}</SectionLabel>
                   <ul className="mt-2 space-y-1.5 text-[13px] leading-relaxed text-ink-muted">
                     {response.answer.limitations.map((l, i) => (
                       <li key={i} className="flex gap-2.5">
@@ -194,11 +204,7 @@ export default function AdvisorPage() {
             </div>
           </Panel>
 
-          <Panel
-            title="Evidence behind this answer"
-            icon={ListChecks}
-            hint="Exactly what the advisor was allowed to use, with each value’s classification and publisher."
-          >
+          <Panel title={t('advisor.evidenceTitle')} icon={ListChecks} hint={t('advisor.evidenceHint')}>
             <ul className="divide-y divide-line border-y border-line">
               {response.evidence.items.map((item) => (
                 <li
@@ -212,14 +218,14 @@ export default function AdvisorPage() {
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-2">
-                    <Badge tone={KIND_TONE[item.kind] ?? 'neutral'}>{item.kind}</Badge>
+                    <Badge tone={KIND_TONE[item.kind] ?? 'neutral'}>{t(KIND_LABEL[item.kind])}</Badge>
                     <span className="text-[11px] font-semibold text-ink-faint">{item.source}</span>
                   </span>
                 </li>
               ))}
             </ul>
             {response.evidence.gaps.length > 0 && (
-              <StateNotice tone="gold" title="Known gaps the advisor considered" className="mt-5">
+              <StateNotice tone="gold" title={t('advisor.gapsTitle')} className="mt-5">
                 {response.evidence.gaps.map((g) => `${g.area} (${g.reason})`).join('; ')}
               </StateNotice>
             )}

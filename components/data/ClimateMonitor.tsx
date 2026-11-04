@@ -18,7 +18,19 @@ import { useWorkbench } from '@/context/WorkbenchContext';
 import { LocationPicker } from '@/components/data/LocationPicker';
 import { ProvenanceLabel, SourceUnavailable } from '@/components/data/ProvenanceLabel';
 import { SourceStatusPanel } from '@/components/data/SourceStatusPanel';
-import { Badge, Button, Loading, Metric, PageHeader, Panel, Refreshing, StateNotice, fmt, dayLabel } from '@/components/ui';
+import {
+  Badge,
+  Button,
+  Loading,
+  Metric,
+  PageHeader,
+  Panel,
+  Refreshing,
+  StateNotice,
+  dayLabel,
+  fmt,
+} from '@/components/ui';
+import { useLanguage } from '@/hooks/useLanguage';
 import { KIND_COLORS, SERIES_COLORS, tooltipContentStyle } from '@/lib/ui/chart';
 import { useChartTheme } from '@/hooks/useChartTheme';
 import { useLiveData, type LiveDataState } from '@/hooks/useLiveData';
@@ -110,6 +122,7 @@ interface SamplePayload {
 }
 
 export const ClimateMonitor = () => {
+  const { t, locale } = useLanguage();
   const { place, setPlace } = useWorkbench();
   const base = locationParams(place);
   const coords = coordinateParams(place);
@@ -126,24 +139,27 @@ export const ClimateMonitor = () => {
   const forecast = daily.filter((d) => d.isForecast);
   const firstForecastDay = forecast[0]?.date;
 
+  // Series keys stay English: they are the chart's data contract. The rendered
+  // names come from `name` props, which recharts shows in tooltips and legends.
   const chartRows = useMemo(
     () =>
       daily.map((d) => ({
-        day: dayLabel(d.date),
+        day: dayLabel(d.date, locale),
         'Rain, observed': d.isForecast ? null : d.precipitationSumMm,
         'Rain, forecast': d.isForecast ? d.precipitationSumMm : null,
         'Max °C': d.temperatureMaxC,
         'Min °C': d.temperatureMinC,
       })),
-    [daily],
+    [daily, locale],
   );
 
   const agroDays = agro.data?.daily ?? [];
-  const rainSeries = agroDays.map((d) => ({ day: dayLabel(d.date), 'Rain mm': d.precipitationMm }));
+  const rainSeries = agroDays.map((d) => ({ day: dayLabel(d.date, locale), 'Rain mm': d.precipitationMm }));
   const normalPerDay = agro.data?.annualNormalMmPerDay ?? null;
 
   const current = weather.data?.current ?? null;
-  const todayEt0 = daily.find((d) => d.date === new Date().toISOString().slice(0, 10))?.et0Mm ?? forecast[0]?.et0Mm ?? null;
+  const todayEt0 =
+    daily.find((d) => d.date === new Date().toISOString().slice(0, 10))?.et0Mm ?? forecast[0]?.et0Mm ?? null;
   const rainWindow = agroDays.reduce((sum, d) => sum + (d.precipitationMm ?? 0), 0);
   const anomaly = agro.data?.derived ?? null;
 
@@ -153,20 +169,20 @@ export const ClimateMonitor = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Intelligence"
-        title="Climate Intelligence"
+        eyebrow={t('nav.group.Intelligence')}
+        title={t('module.climate.label')}
         icon={CloudSun}
-        description="Live conditions and forecast from Open-Meteo, rainfall history and 30-year normals from NASA POWER, and satellite readings for the same point. Observed, forecast, modelled and derived values are always labelled as what they are."
+        description={t('climate.description')}
         status={
           anyRefreshing ? (
             <Refreshing />
           ) : hasLive ? (
             <Badge tone="brand" dot>
-              Live
+              {t('common.liveBadge')}
             </Badge>
           ) : (
             <Badge tone="clay" dot>
-              No live reading
+              {t('overview.badgeNoReading')}
             </Badge>
           )
         }
@@ -183,7 +199,7 @@ export const ClimateMonitor = () => {
             disabled={anyRefreshing}
             leading={<RefreshCw size={14} className={anyRefreshing ? 'animate-spin' : undefined} />}
           >
-            Refresh all
+            {t('common.refreshAll')}
           </Button>
         }
       />
@@ -192,30 +208,28 @@ export const ClimateMonitor = () => {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <Panel
-          title={`Current conditions · ${place.name}`}
-          hint="Open-Meteo’s analysed now-time for the grid cell, with the station-independent elevation the publisher reports."
+          title={t('climate.currentConditions', { place: place.name })}
+          hint={t('climate.currentHint')}
         >
-          {weather.loading && <Loading label="Reading Open-Meteo" />}
+          {weather.loading && <Loading label={t('climate.loadingWeather')} />}
           {!weather.loading && weather.error && <SourceUnavailable error={weather.error} source="Open-Meteo" />}
           {current && (
             <>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <Metric label="Temperature" value={fmt(current.temperatureC, 1)} unit="°C" />
-                <Metric label="Humidity" value={fmt(current.relativeHumidityPct, 0)} unit="%" />
-                <Metric label="Wind" value={fmt(current.windSpeedKmh, 1)} unit="km/h" />
-                <Metric label="Rain this hour" value={fmt(current.precipitationMm, 1)} unit="mm" />
+                <Metric label={t('climate.temperature')} value={fmt(current.temperatureC, 1, locale)} unit="°C" />
+                <Metric label={t('hero.humidity')} value={fmt(current.relativeHumidityPct, 0, locale)} unit="%" />
+                <Metric label={t('climate.wind')} value={fmt(current.windSpeedKmh, 1, locale)} unit="km/h" />
+                <Metric label={t('climate.rainThisHour')} value={fmt(current.precipitationMm, 1, locale)} unit="mm" />
               </div>
               <p className="mt-4 text-[11.5px] leading-relaxed text-ink-faint">
-                Grid elevation{' '}
+                {t('climate.gridElevation')}{' '}
                 <span className="tabular font-bold text-ink-muted">
                   {weather.data?.elevationM === null || weather.data?.elevationM === undefined
-                    ? 'not reported'
-                    : `${fmt(weather.data.elevationM, 0)} m`}
+                    ? t('climate.notReported')
+                    : `${fmt(weather.data.elevationM, 0, locale)} m`}
                 </span>{' '}
-                · timezone <span className="font-bold text-ink-muted">{weather.data?.timezone}</span>.{' '}
-                {weather.data &&
-                  !weather.data.withinEthiopia &&
-                  'This point falls outside Ethiopia’s published extent, so national sources may not cover it.'}
+                · {t('climate.timezoneLabel')} <span className="font-bold text-ink-muted">{weather.data?.timezone}</span>
+                . {weather.data && !weather.data.withinEthiopia && t('climate.outsideEthiopia')}
               </p>
               <div className="mt-4 border-t border-line pt-3.5">
                 <ProvenanceLabel provenance={weather.provenance} context={weather.data?.location.admin1 ?? undefined} />
@@ -225,10 +239,10 @@ export const ClimateMonitor = () => {
         </Panel>
 
         <Panel
-          title="The week just past and the week ahead"
-          hint="Green bars are analysed observations, violet bars are the forecast. One chart, two different kinds of number — never blended into one series."
+          title={t('climate.weekAround')}
+          hint={t('climate.weekHint')}
         >
-          {weather.loading && <Loading label="Building the outlook" />}
+          {weather.loading && <Loading label={t('climate.buildingOutlook')} />}
           {!weather.loading && weather.error && <SourceUnavailable error={weather.error} source="Open-Meteo" />}
           {chartRows.length > 0 && (
             <>
@@ -264,15 +278,16 @@ export const ClimateMonitor = () => {
                     {firstForecastDay && (
                       <ReferenceLine
                         yAxisId="rain"
-                        x={dayLabel(firstForecastDay)}
+                        x={dayLabel(firstForecastDay, locale)}
                         stroke={theme.reference}
                         strokeDasharray="4 4"
-                        label={{ value: 'today →', position: 'top', fontSize: 9, fill: theme.reference }}
+                        label={{ value: t('climate.todayMarker'), position: 'top', fontSize: 9, fill: theme.reference }}
                       />
                     )}
                     <Bar
                       yAxisId="rain"
                       dataKey="Rain, observed"
+                      name={t('climate.rainObserved')}
                       stackId="rain"
                       fill={KIND_COLORS.observed}
                       radius={[3, 0, 0, 0]}
@@ -281,6 +296,7 @@ export const ClimateMonitor = () => {
                     <Bar
                       yAxisId="rain"
                       dataKey="Rain, forecast"
+                      name={t('climate.rainForecast')}
                       stackId="rain"
                       fill={KIND_COLORS.forecast}
                       fillOpacity={0.8}
@@ -291,6 +307,7 @@ export const ClimateMonitor = () => {
                       yAxisId="temp"
                       type="monotone"
                       dataKey="Max °C"
+                      name={t('climate.maxTemp')}
                       stroke={SERIES_COLORS[1]}
                       strokeWidth={1.8}
                       dot={false}
@@ -299,6 +316,7 @@ export const ClimateMonitor = () => {
                       yAxisId="temp"
                       type="monotone"
                       dataKey="Min °C"
+                      name={t('climate.minTemp')}
                       stroke={SERIES_COLORS[2]}
                       strokeWidth={1.8}
                       dot={false}
@@ -309,45 +327,51 @@ export const ClimateMonitor = () => {
 
               <ChartKey
                 items={[
-                  { color: KIND_COLORS.observed, label: `Rain — observed (${observed.length} days)` },
-                  { color: KIND_COLORS.forecast, label: `Rain — forecast (${forecast.length} days)` },
-                  { color: SERIES_COLORS[1], label: 'Daily maximum temperature' },
-                  { color: SERIES_COLORS[2], label: 'Daily minimum temperature' },
+                  { color: KIND_COLORS.observed, label: t('climate.keyRainObserved', { count: observed.length }) },
+                  { color: KIND_COLORS.forecast, label: t('climate.keyRainForecast', { count: forecast.length }) },
+                  { color: SERIES_COLORS[1], label: t('climate.keyMaxTemp') },
+                  { color: SERIES_COLORS[2], label: t('climate.keyMinTemp') },
                 ]}
               />
 
               <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <Metric label={`Rain past ${observed.length} d`} value={fmt(sum(observed.map((d) => d.precipitationSumMm)), 1)} unit="mm" />
                 <Metric
-                  label={`Rain next ${forecast.length} d`}
-                  value={fmt(sum(forecast.map((d) => d.precipitationSumMm)), 1)}
+                  label={t('climate.rainPastDays', { count: observed.length })}
+                  value={fmt(sum(observed.map((d) => d.precipitationSumMm)), 1, locale)}
+                  unit="mm"
+                />
+                <Metric
+                  label={t('climate.rainNextDays', { count: forecast.length })}
+                  value={fmt(sum(forecast.map((d) => d.precipitationSumMm)), 1, locale)}
                   unit="mm"
                   tone="warn"
-                  note="Sum of modelled daily totals."
+                  note={t('climate.rainNextNote')}
                 />
-                <Metric label="ET0 today" value={fmt(todayEt0, 1)} unit="mm" note="FAO-56 reference evapotranspiration." />
+                <Metric label={t('climate.et0Today')} value={fmt(todayEt0, 1, locale)} unit="mm" note={t('climate.et0Note')} />
                 <Metric
-                  label="Rain prob today"
-                  value={fmt((observed.at(-1) ?? forecast[0])?.precipitationProbabilityMaxPct, 0)}
+                  label={t('climate.rainProbToday')}
+                  value={fmt((observed.at(-1) ?? forecast[0])?.precipitationProbabilityMaxPct, 0, locale)}
                   unit="%"
                 />
               </div>
 
               <div className="mt-6 -mx-5 overflow-x-auto border-t border-line md:-mx-6">
                 <div className="px-5 pt-4 md:px-6">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-faint">Daily detail</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-faint">
+                    {t('climate.dailyDetail')}
+                  </p>
                 </div>
                 <table className="mt-2 w-full min-w-[640px] text-[12.5px]">
                   <thead>
                     <tr className="border-y border-line text-left text-[10px] font-bold uppercase tracking-[0.12em] text-ink-faint">
-                      <th scope="col" className="py-2 pr-3 pl-5 font-bold md:pl-6">Date</th>
-                      <th scope="col" className="py-2 pr-3 font-bold">Kind</th>
-                      <th scope="col" className="py-2 pr-3 text-right font-bold">Rain mm</th>
-                      <th scope="col" className="py-2 pr-3 text-right font-bold">Prob %</th>
-                      <th scope="col" className="py-2 pr-3 text-right font-bold">Max / min °C</th>
-                      <th scope="col" className="py-2 pr-3 text-right font-bold">Humidity %</th>
-                      <th scope="col" className="py-2 pr-3 text-right font-bold">Wind km/h</th>
-                      <th scope="col" className="py-2 pr-5 text-right font-bold md:pr-6">ET0 mm</th>
+                      <th scope="col" className="py-2 pr-3 pl-5 font-bold md:pl-6">{t('climate.thDate')}</th>
+                      <th scope="col" className="py-2 pr-3 font-bold">{t('climate.thKind')}</th>
+                      <th scope="col" className="py-2 pr-3 text-right font-bold">{t('climate.thRainMm')}</th>
+                      <th scope="col" className="py-2 pr-3 text-right font-bold">{t('climate.thProbPct')}</th>
+                      <th scope="col" className="py-2 pr-3 text-right font-bold">{t('climate.thMaxMin')}</th>
+                      <th scope="col" className="py-2 pr-3 text-right font-bold">{t('climate.thHumidityPct')}</th>
+                      <th scope="col" className="py-2 pr-3 text-right font-bold">{t('climate.thWindKmh')}</th>
+                      <th scope="col" className="py-2 pr-5 text-right font-bold md:pr-6">{t('climate.thEt0Mm')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
@@ -356,19 +380,19 @@ export const ClimateMonitor = () => {
                         <td className="tabular py-2 pr-3 pl-5 font-bold whitespace-nowrap text-ink md:pl-6">{d.date}</td>
                         <td className="py-2 pr-3">
                           <Badge tone={d.isForecast ? 'plum' : 'brand'}>
-                            {d.isForecast ? 'Forecast' : 'Observed'}
+                            {d.isForecast ? t('prov.kind.forecast') : t('prov.kind.observed')}
                           </Badge>
                         </td>
-                        <td className="tabular py-2 pr-3 text-right text-ink-muted">{fmt(d.precipitationSumMm, 1)}</td>
+                        <td className="tabular py-2 pr-3 text-right text-ink-muted">{fmt(d.precipitationSumMm, 1, locale)}</td>
                         <td className="tabular py-2 pr-3 text-right text-ink-muted">
-                          {fmt(d.precipitationProbabilityMaxPct, 0)}
+                          {fmt(d.precipitationProbabilityMaxPct, 0, locale)}
                         </td>
                         <td className="tabular py-2 pr-3 whitespace-nowrap text-right text-ink-muted">
-                          {fmt(d.temperatureMaxC, 1)} / {fmt(d.temperatureMinC, 1)}
+                          {fmt(d.temperatureMaxC, 1, locale)} / {fmt(d.temperatureMinC, 1, locale)}
                         </td>
-                        <td className="tabular py-2 pr-3 text-right text-ink-muted">{fmt(d.relativeHumidityMeanPct, 0)}</td>
-                        <td className="tabular py-2 pr-3 text-right text-ink-muted">{fmt(d.windSpeedMaxKmh, 1)}</td>
-                        <td className="tabular py-2 pr-5 text-right text-ink-muted md:pr-6">{fmt(d.et0Mm, 1)}</td>
+                        <td className="tabular py-2 pr-3 text-right text-ink-muted">{fmt(d.relativeHumidityMeanPct, 0, locale)}</td>
+                        <td className="tabular py-2 pr-3 text-right text-ink-muted">{fmt(d.windSpeedMaxKmh, 1, locale)}</td>
+                        <td className="tabular py-2 pr-5 text-right text-ink-muted md:pr-6">{fmt(d.et0Mm, 1, locale)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -383,10 +407,10 @@ export const ClimateMonitor = () => {
         </Panel>
 
         <Panel
-          title={`Agroclimatology · ${place.name}`}
-          hint="NASA POWER daily surface values for this grid cell. The window ends yesterday because POWER publishes reanalysis with a 1–3 day lag."
+          title={t('climate.agroTitle', { place: place.name })}
+          hint={t('climate.agroHint')}
         >
-          {agro.loading && <Loading label="Reading NASA POWER" />}
+          {agro.loading && <Loading label={t('climate.loadingPower')} />}
           {!agro.loading && agro.error && <SourceUnavailable error={agro.error} source="NASA POWER" />}
           {rainSeries.length > 0 && (
             <>
@@ -415,12 +439,18 @@ export const ClimateMonitor = () => {
                         stroke={KIND_COLORS.estimated}
                         strokeDasharray="4 4"
                         ifOverflow="extendDomain"
-                        label={{ value: 'normal mm/day', position: 'insideTopRight', fontSize: 9, fill: KIND_COLORS.estimated }}
+                        label={{
+                          value: t('climate.normalMarker'),
+                          position: 'insideTopRight',
+                          fontSize: 9,
+                          fill: KIND_COLORS.estimated,
+                        }}
                       />
                     )}
                     <Area
                       type="monotone"
                       dataKey="Rain mm"
+                      name={t('climate.rainObserved')}
                       stroke={KIND_COLORS.observed}
                       strokeWidth={1.8}
                       fill="url(#rainFill)"
@@ -431,40 +461,58 @@ export const ClimateMonitor = () => {
 
               <ChartKey
                 items={[
-                  { color: KIND_COLORS.observed, label: 'Daily rainfall — POWER observations' },
-                  { color: KIND_COLORS.estimated, label: 'Climatological normal mm/day (dashed)' },
+                  { color: KIND_COLORS.observed, label: t('climate.keyDailyRain') },
+                  { color: KIND_COLORS.estimated, label: t('climate.keyNormal') },
                 ]}
               />
 
               <div className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-                <Metric label={`Rain ${agro.data?.window.days ?? 0} d`} value={fmt(rainWindow, 1)} unit="mm" />
-                <Metric label="Mean daily max" value={fmt(meanOf(agroDays.map((d) => d.temperatureMaxC)), 1)} unit="°C" />
-                <Metric label="Mean daily min" value={fmt(meanOf(agroDays.map((d) => d.temperatureMinC)), 1)} unit="°C" />
-                <Metric label="Mean shortwave" value={fmt(meanOf(agroDays.map((d) => d.shortwaveRadiationMjPerM2)), 1)} unit="MJ/m²" />
+                <Metric
+                  label={t('climate.rainWindowDays', { count: agro.data?.window.days ?? 0 })}
+                  value={fmt(rainWindow, 1, locale)}
+                  unit="mm"
+                />
+                <Metric
+                  label={t('climate.meanDailyMax')}
+                  value={fmt(meanOf(agroDays.map((d) => d.temperatureMaxC)), 1, locale)}
+                  unit="°C"
+                />
+                <Metric
+                  label={t('climate.meanDailyMin')}
+                  value={fmt(meanOf(agroDays.map((d) => d.temperatureMinC)), 1, locale)}
+                  unit="°C"
+                />
+                <Metric
+                  label={t('climate.meanShortwave')}
+                  value={fmt(meanOf(agroDays.map((d) => d.shortwaveRadiationMjPerM2)), 1, locale)}
+                  unit="MJ/m²"
+                />
               </div>
 
               {anomaly ? (
-                <StateNotice tone="gold" title="Rainfall anomaly — computed here, not published" className="mt-5">
+                <StateNotice tone="gold" title={t('climate.anomalyTitle')} className="mt-5">
                   <p>
-                    {fmt(anomaly.observedMm, 1)} mm fell against {fmt(anomaly.expectedMm, 1)} mm of climatology for{' '}
-                    {anomaly.period}: <strong>
+                    {t('climate.anomalyBody', {
+                      observed: fmt(anomaly.observedMm, 1, locale),
+                      expected: fmt(anomaly.expectedMm, 1, locale),
+                      period: anomaly.period,
+                    })}{' '}
+                    <strong>
                       {anomaly.anomalyPct === null
-                        ? 'not computable from the data returned'
-                        : `${anomaly.anomalyPct > 0 ? '+' : ''}${fmt(anomaly.anomalyPct, 0)}%`}
+                        ? t('climate.anomalyNotComputable')
+                        : `${anomaly.anomalyPct > 0 ? '+' : ''}${fmt(anomaly.anomalyPct, 0, locale)}%`}
                     </strong>
                     .
                   </p>
                   <p className="mt-2">
-                    Ratio of two published quantities (POWER daily against POWER 30-year normals for the same cell).
-                    Coverage {anomaly.daysWithData}/{anomaly.daysRequested} days
-                    {anomaly.sufficientCoverage ? '' : ' — too sparse to present as a season total'}.
+                    {t('climate.anomalyRatio', { has: anomaly.daysWithData, requested: anomaly.daysRequested })}
+                    {anomaly.sufficientCoverage ? '' : t('climate.anomalySparse')}
                   </p>
                 </StateNotice>
               ) : (
                 agro.data?.normalsUnavailableReason && (
-                  <StateNotice tone="gold" title="No anomaly shown" className="mt-5">
-                    The climatology request failed ({agro.data.normalsUnavailableReason}). The observed rainfall above
-                    is still real.
+                  <StateNotice tone="gold" title={t('climate.noAnomalyTitle')} className="mt-5">
+                    {t('climate.noAnomalyBody', { reason: agro.data.normalsUnavailableReason })}
                   </StateNotice>
                 )
               )}
@@ -476,19 +524,12 @@ export const ClimateMonitor = () => {
           )}
         </Panel>
 
-        <Panel
-          title="Satellite reading for this point"
-          icon={Satellite}
-          hint="A physical value read out of the published tile for this exact coordinate, decoded with the publisher’s own colour map."
-        >
+        <Panel title={t('climate.satelliteTitle')} icon={Satellite} hint={t('climate.satelliteHint')}>
           <div className="space-y-4">
-            <SampleCard title="Vegetation greenness (NDVI, 8-day composite)" icon={Sprout} state={ndvi} />
-            <SampleCard title="Precipitation rate (GPM IMERG)" icon={Satellite} state={imerg} />
+            <SampleCard title={t('climate.ndviTitle')} icon={Sprout} state={ndvi} />
+            <SampleCard title={t('climate.imergTitle')} icon={Satellite} state={imerg} />
           </div>
-          <p className="mt-4 text-[11.5px] leading-relaxed text-ink-faint">
-            The sampled footprint is one tile pixel — hundreds of metres across — not the farmer’s plot. Neither
-            product measures yield or soil conditions; the band wording above is the publisher’s own.
-          </p>
+          <p className="mt-4 text-[11.5px] leading-relaxed text-ink-faint">{t('climate.satelliteFootnote')}</p>
         </Panel>
       </div>
 
@@ -528,6 +569,7 @@ const SampleCard = ({
   icon: typeof Sprout;
   state: LiveDataState<SamplePayload>;
 }) => {
+  const { t, locale } = useLanguage();
   const sample = state.data;
   return (
     <div className="rounded-xl border border-line bg-canvas/60 p-4">
@@ -538,7 +580,7 @@ const SampleCard = ({
         <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-muted">{title}</p>
       </div>
 
-      {state.loading && <Loading label="Fetching tile" className="py-4" />}
+      {state.loading && <Loading label={t('climate.fetchingTile')} className="py-4" />}
       {!state.loading && state.error && (
         <div className="mt-3">
           <SourceUnavailable error={state.error} source="NASA GIBS" />
@@ -549,25 +591,26 @@ const SampleCard = ({
         <>
           <div className="mt-3 flex items-baseline gap-2">
             <p className="tabular text-[26px] leading-none font-extrabold tracking-tight text-ink">
-              {sample.value === null ? 'no value' : fmt(sample.value, 3)}
+              {sample.value === null ? t('climate.noValue') : fmt(sample.value, 3, locale)}
             </p>
             <span className="text-[11px] font-bold text-ink-faint">{sample.layer?.units}</span>
           </div>
           <p className="mt-2 text-[11.5px] leading-relaxed text-ink-faint">
-            {sample.band ? `Published band: “${sample.band}”. ` : 'This pixel carries no mapped value, so none is claimed. '}
-            Scene date <span className="tabular font-semibold text-ink-muted">{sample.tileDate}</span> · pixel ≈{' '}
-            <span className="tabular font-semibold text-ink-muted">{fmt(sample.pixelSizeMeters, 0)} m</span> · (
+            {sample.band ? t('climate.publishedBand', { band: sample.band }) : t('climate.noMappedValue')}{' '}
+            {t('climate.sceneDate')} <span className="tabular font-semibold text-ink-muted">{sample.tileDate}</span> ·{' '}
+            {t('climate.pixelSize')}{' '}
+            <span className="tabular font-semibold text-ink-muted">{fmt(sample.pixelSizeMeters, 0, locale)} m</span> · (
             <span className="tabular">{sample.latitude.toFixed(3)}, {sample.longitude.toFixed(3)}</span>)
-            {sample.withinEthiopia ? '' : ' — outside Ethiopia'}.
+            {sample.withinEthiopia ? '' : t('climate.outsideEthiopiaSuffix')}.
           </p>
           {sample.layer && (
             <p className="mt-2 text-[11.5px] leading-relaxed text-ink-muted">
-              <strong className="font-bold text-ink">What it means:</strong> {sample.layer.meaning}
+              <strong className="font-bold text-ink">{t('climate.whatItMeans')}</strong> {sample.layer.meaning}
             </p>
           )}
           {sample.layer && (
             <p className="mt-2 text-[11.5px] leading-relaxed text-clay-700 dark:text-clay-300">
-              <strong className="font-bold">Limit:</strong> {sample.layer.caveat}
+              <strong className="font-bold">{t('climate.limitLabel')}</strong> {sample.layer.caveat}
             </p>
           )}
           <div className="mt-3 border-t border-line pt-2.5">

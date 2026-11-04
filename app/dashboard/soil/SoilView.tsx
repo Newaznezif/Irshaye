@@ -6,6 +6,7 @@ import { useWorkbench } from '@/context/WorkbenchContext';
 import { LocationPicker } from '@/components/data/LocationPicker';
 import { Badge, Loading, Metric, PageHeader, Panel, SectionLabel, StateNotice } from '@/components/ui';
 import { ProvenanceLabel, SourceUnavailable, SourcesList } from '@/components/data/ProvenanceLabel';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useLiveData } from '@/hooks/useLiveData';
 import type { ProvenanceView } from '@/components/data/ProvenanceLabel';
 import type { AgroclimateSeries } from '@/lib/data/types';
@@ -19,6 +20,7 @@ import { SOIL_GUIDANCE } from '@/lib/soil/guidance';
  * indices are not soil quality, and nothing here diagnoses a field.
  */
 export default function SoilView() {
+  const { t, rich, locale } = useLanguage();
   const { place, setPlace } = useWorkbench();
   const agro = useLiveData<AgroclimateSeries, ProvenanceView>(
     `/api/data/agroclimate?lat=${place.latitude}&lon=${place.longitude}&days=90`,
@@ -35,88 +37,82 @@ export default function SoilView() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Advisory"
-        title="Soil Management"
+        eyebrow={t('nav.group.Advisory')}
+        title={t('module.soil.label')}
         icon={Layers}
-        description="Soil conservation and erosion-prevention guidance for Ethiopian farms, paired with the observed rainfall that makes each practice timely."
-        status={agro.data !== null ? <Badge tone="brand" dot>Rainfall observed</Badge> : <Badge tone="neutral">No live reading</Badge>}
+        description={t('soil.pageDescription')}
+        status={
+          agro.data !== null ? (
+            <Badge tone="brand" dot>
+              {t('soil.badgeRainfallObserved')}
+            </Badge>
+          ) : (
+            <Badge tone="neutral">{t('overview.badgeNoReading')}</Badge>
+          )
+        }
       />
 
-      <StateNotice tone="info" title="Measured vs modelled — what this module can and cannot tell you" icon={TriangleAlert}>
+      <StateNotice tone="info" title={t('soil.measuredTitle')} icon={TriangleAlert}>
         <p>
-          IRSHAYE has <strong>no soil measurements</strong> for your field. Rainfall figures below are
-          observations from NASA POWER with their dates attached; the practices are documented extension
-          guidance with citations. Nothing here diagnoses soil fertility or acidity — that requires local
-          sampling and a laboratory.
+          {rich('soil.measuredBody').map((part, i) =>
+            part.accent ? <strong key={i}>{part.text}</strong> : <span key={i}>{part.text}</span>,
+          )}
         </p>
-        <p className="mt-2">
-          Satellite vegetation indices describe plant cover, not soil quality, and are never presented as
-          soil data.
-        </p>
+        <p className="mt-2">{t('soil.measuredBodySecond')}</p>
       </StateNotice>
 
-      <LocationPicker value={place} onChange={setPlace} label="Your location" />
+      <LocationPicker value={place} onChange={setPlace} label={t('overview.yourLocation')} />
 
       <Panel
-        title={`Rainfall drivers at ${place.name} — last 90 days`}
+        title={t('soil.rainfallDriversTitle', { place: place.name })}
         icon={CloudRain}
-        hint="Observed daily precipitation (NASA POWER). Heavy-rain days are the practical trigger for erosion-prevention work."
+        hint={t('soil.rainfallDriversHint')}
         footer={agro.data !== null ? <ProvenanceLabel provenance={agro.provenance} compact /> : undefined}
       >
-        {agro.loading && <Loading label="Loading observed rainfall" />}
+        {agro.loading && <Loading label={t('soil.loadingRainfall')} />}
         {!agro.loading && agro.data === null && (
           <SourceUnavailable error={agro.error ?? { code: 'network', message: 'unreachable' }} source="NASA POWER" />
         )}
         {agro.data !== null && (
           <div className="grid gap-3 sm:grid-cols-3">
             <Metric
-              label="Heavy-rain days (≥12 mm)"
-              value={rainDays.withData > 0 ? String(rainDays.heavy) : '—'}
-              unit="of days with data"
+              label={t('soil.heavyRainDays')}
+              value={rainDays.withData > 0 ? rainDays.heavy.toLocaleString(locale) : '—'}
+              unit={t('soil.ofDaysWithData')}
               tone={rainDays.heavy >= 8 ? 'warn' : undefined}
-              note="Threshold used to flag runoff risk; not a soil measurement."
+              note={t('soil.heavyRainNote')}
             />
             <Metric
-              label="Total rainfall in window"
+              label={t('soil.totalRainfall')}
               value={rainDays.withData > 0 ? rainDays.total.toFixed(0) : '—'}
               unit="mm"
-              note={`Sum over ${rainDays.withData} days the publisher returned.`}
+              note={t('soil.totalRainfallNote', { count: rainDays.withData })}
             />
             <Metric
-              label="Record coverage"
+              label={t('soil.recordCoverage')}
               value={`${rainDays.withData}/${rainDays.days}`}
               unit="days"
-              note="Days with a published value over days requested."
+              note={t('soil.recordCoverageNote')}
             />
           </div>
         )}
       </Panel>
 
       {SOIL_GUIDANCE.length === 0 ? (
-        <Panel title="Conservation guidance">
-          <p className="text-[13.5px] leading-relaxed text-ink-muted">
-            The curated, source-cited practice library for this module is being assembled now. Until each
-            entry carries a citable source, it is not shown — IRSHAYE will not present uncited agronomic
-            instructions. The rainfall context above works in the meantime.
-          </p>
+        <Panel title={t('soil.guidanceTitle')}>
+          <p className="text-[13.5px] leading-relaxed text-ink-muted">{t('soil.guidanceEmpty')}</p>
         </Panel>
       ) : (
         <>
-          <SectionLabel>Documented conservation practices</SectionLabel>
+          <SectionLabel>{t('soil.practicesLabel')}</SectionLabel>
           <div className="grid gap-5 md:grid-cols-2">
             {SOIL_GUIDANCE.map((g) => (
-              <Panel
-                key={g.id}
-                title={g.title}
-                icon={Sprout}
-                hint={g.summary}
-                className="h-full"
-              >
+              <Panel key={g.id} title={g.title} icon={Sprout} hint={g.summary} className="h-full">
                 <p className="text-[13px] leading-relaxed text-ink-muted">{g.detail}</p>
                 {g.watchIndicator && (
                   <p className="mt-4 rounded-xl border border-gold/25 bg-gold-soft/50 px-3.5 py-3 text-[12.5px] leading-relaxed text-ink-muted">
                     <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-gold-700 dark:text-gold-300">
-                      When to act
+                      {t('soil.whenToAct')}
                     </span>
                     <br />
                     {g.watchIndicator}

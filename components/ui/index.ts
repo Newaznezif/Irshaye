@@ -10,4 +10,4 @@ export { Reveal } from './Reveal';
 export { SegmentedControl } from './SegmentedControl';
 export type { SegmentOption } from './SegmentedControl';
 export { EmptyState, Loading, Refreshing, Skeleton, SkeletonPanel, StateNotice } from './States';
-export { dayLabel, fmt, fmtInt, monthLabel, monthName, stamp } from './format';
+export { dayLabel, fmt, fmtInt, monthLabel, monthLong, monthName, stamp } from './format';

@@ -6,20 +6,23 @@ import { useEffect, useState } from 'react';
 import { Menu, Moon, Sprout, Sun, X } from 'lucide-react';
 import { MODULE_GROUPS, MODULES, moduleByHref } from '@/lib/modules';
 import { useTheme } from '@/hooks/useTheme';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useWorkbench } from '@/context/WorkbenchContext';
 import { getCrop } from '@/lib/crops/catalog';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { SectionLabel } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
 const CONTENT_WIDTH = 'mx-auto w-full max-w-[1280px]';
 
 function Brand({ onNavigate }: { onNavigate?: () => void }) {
+  const { t } = useLanguage();
   return (
     <Link
       href="/"
       onClick={onNavigate}
       className="group flex items-center gap-3 rounded-xl px-1 py-1 outline-offset-4"
-      aria-label="IRSHAYE home"
+      aria-label={t('a11y.landingHome')}
     >
       <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand text-brand-ink shadow-[0_8px_18px_-8px_oklch(0.5_0.112_155/70%)] transition-transform duration-300 group-hover:-translate-y-0.5">
         <Sprout size={19} strokeWidth={2.3} />
@@ -27,7 +30,7 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
       <span className="min-w-0 leading-tight">
         <span className="block text-[17px] font-extrabold tracking-[-0.01em] text-ink">IRSHAYE</span>
         <span className="block text-[9.5px] font-bold tracking-[0.19em] text-brand-700 uppercase dark:text-brand-300">
-          Climate-Smart Agriculture
+          {t('brand.tagline')}
         </span>
       </span>
     </Link>
@@ -36,6 +39,7 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   return (
     <div className="flex flex-col gap-6">
@@ -44,8 +48,8 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
         if (items.length === 0) return null;
         return (
           <div key={group}>
-            <SectionLabel className="px-3 pb-2">{group}</SectionLabel>
-            <nav aria-label={group} className="flex flex-col gap-0.5">
+            <SectionLabel className="px-3 pb-2">{t(`nav.group.${group}`)}</SectionLabel>
+            <nav aria-label={t(`nav.group.${group}`)} className="flex flex-col gap-0.5">
               {items.map((m) => {
                 const active =
                   m.href === '/dashboard' ? pathname === m.href : pathname.startsWith(m.href);
@@ -71,7 +75,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                         active ? 'text-brand-ink' : 'text-ink-faint group-hover:text-brand-600 dark:group-hover:text-brand-300',
                       )}
                     />
-                    <span className="truncate">{m.label}</span>
+                    <span className="truncate">{t(`module.${m.id}.label`)}</span>
                     {active && <span aria-hidden className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-current opacity-75" />}
                   </Link>
                 );
@@ -86,11 +90,12 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 function ThemeToggle() {
   const { dark, toggle } = useTheme();
+  const { t } = useLanguage();
   return (
     <button
       type="button"
       onClick={toggle}
-      aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={dark ? t('a11y.themeToLight') : t('a11y.themeToDark')}
       className="grid h-9 w-9 place-items-center rounded-xl border border-line bg-surface text-ink-muted transition-colors hover:border-line-strong hover:text-brand-700 dark:hover:text-brand-300"
     >
       {dark === null ? <span className="h-3.5 w-3.5 rounded-full bg-line-strong" /> : dark ? <Sun size={16} /> : <Moon size={16} />}
@@ -100,16 +105,17 @@ function ThemeToggle() {
 
 function SavedContext() {
   const { place, cropId } = useWorkbench();
+  const { t } = useLanguage();
   const crop = getCrop(cropId);
   return (
     <Link
       href="/dashboard"
       className="group block rounded-xl border border-line bg-canvas/70 px-3 py-2.5 transition-colors hover:border-brand/40 hover:bg-brand-soft/50"
     >
-      <p className="text-[9.5px] font-bold tracking-[0.16em] text-ink-faint uppercase">Working context</p>
+      <p className="text-[9.5px] font-bold tracking-[0.16em] text-ink-faint uppercase">{t('shell.workingContext')}</p>
       <p className="mt-1 truncate text-[13px] font-bold text-ink">{place.name}</p>
       <p className="mt-0.5 truncate text-[11.5px] font-semibold text-ink-muted">
-        {crop ? crop.name : 'No curated crop profile yet'}
+        {crop ? crop.name : t('shell.noCropProfile')}
       </p>
     </Link>
   );
@@ -118,6 +124,7 @@ function SavedContext() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { t } = useLanguage();
   const current = moduleByHref(pathname);
 
   useEffect(() => {
@@ -135,7 +142,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-lg focus:bg-brand focus:px-3 focus:py-2 focus:text-sm focus:font-bold focus:text-brand-ink"
       >
-        Skip to content
+        {t('a11y.skip')}
       </a>
 
       <div className="mx-auto flex w-full max-w-[1640px]">
@@ -147,7 +154,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="mt-5 space-y-3 border-t border-line pt-4">
             <SavedContext />
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-bold tracking-wide text-ink-faint uppercase">Appearance</span>
+              <span className="text-[11px] font-bold tracking-wide text-ink-faint uppercase">{t('shell.appearance')}</span>
               <ThemeToggle />
             </div>
           </div>
@@ -159,13 +166,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setOpen(true)}
-                aria-label="Open navigation"
+                aria-label={t('a11y.openNavigation')}
                 className="grid h-9 w-9 place-items-center rounded-xl border border-line bg-surface text-ink-muted transition-colors hover:text-ink lg:hidden"
               >
                 <Menu size={17} />
               </button>
 
-              <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label="IRSHAYE home">
+              <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label={t('a11y.landingHome')}>
                 <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-brand-ink">
                   <Sprout size={15} strokeWidth={2.3} />
                 </span>
@@ -174,12 +181,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
               <div className="hidden min-w-0 items-center gap-2 lg:flex">
                 <span className="text-[11px] font-bold tracking-[0.16em] text-ink-faint uppercase">
-                  {current?.group ?? 'Platform'}
+                  {current ? t(`nav.group.${current.group}`) : t('shell.breadcrumbPlatform')}
                 </span>
                 <span aria-hidden className="text-ink-faint">
                   /
                 </span>
-                <span className="truncate text-[13.5px] font-bold text-ink">{current?.label ?? 'IRSHAYE'}</span>
+                <span className="truncate text-[13.5px] font-bold text-ink">
+                  {current ? t(`module.${current.id}.label`) : t('shell.moduleFallback')}
+                </span>
               </div>
 
               <div className="ml-auto flex items-center gap-2">
@@ -188,20 +197,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   className="hidden items-center gap-2 rounded-full border border-line bg-surface px-3 py-1.5 text-[11px] font-bold text-ink-muted transition-colors hover:border-brand/40 hover:text-brand-700 sm:inline-flex dark:hover:text-brand-300"
                 >
                   <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-                  Open data, live
+                  {t('shell.openDataLive')}
                 </Link>
-                <div className="lg:hidden">
-                  <ThemeToggle />
-                </div>
+                <LanguageSelector />
+                <ThemeToggle />
               </div>
             </div>
           </header>
 
           {open && (
-            <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Navigation">
+            <div className="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label={t('a11y.navigation')}>
               <button
                 type="button"
-                aria-label="Close navigation"
+                aria-label={t('a11y.closeNavigation')}
                 className="absolute inset-0 bg-ink/45 backdrop-blur-sm"
                 onClick={() => setOpen(false)}
               />
@@ -211,7 +219,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    aria-label="Close navigation"
+                    aria-label={t('a11y.closeNavigation')}
                     className="grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-line text-ink-muted"
                   >
                     <X size={17} />

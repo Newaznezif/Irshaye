@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "check:data": "node scripts/check-data-routes.mjs"
+    "check:data": "node scripts/check-data-routes.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

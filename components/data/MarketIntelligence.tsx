@@ -13,7 +13,12 @@ import {
 } from 'recharts';
 import { ArrowDownRight, ArrowUpRight, Coins, RefreshCw, Store, TrendingUp } from 'lucide-react';
 
-import { ProvenanceLabel, SourceUnavailable, type ProvenanceView, type SourceErrorView } from '@/components/data/ProvenanceLabel';
+import {
+  ProvenanceLabel,
+  SourceUnavailable,
+  type ProvenanceView,
+  type SourceErrorView,
+} from '@/components/data/ProvenanceLabel';
 import { SourceStatusPanel } from '@/components/data/SourceStatusPanel';
 import {
   Badge,
@@ -33,6 +38,7 @@ import {
   fmtInt,
   monthLabel,
 } from '@/components/ui';
+import { useLanguage } from '@/hooks/useLanguage';
 import { SERIES_COLORS, tooltipContentStyle } from '@/lib/ui/chart';
 import { useChartTheme } from '@/hooks/useChartTheme';
 import { useLiveData } from '@/hooks/useLiveData';
@@ -111,7 +117,11 @@ interface ExchangeErrors {
 
 type ExchangeExtra = Partial<{ errors: ExchangeErrors }>;
 
-/** The five commodities this product tracks; every value comes from WFP’s own rows. */
+/**
+ * The five commodities this product tracks; every value comes from WFP’s own rows.
+ * The list values are query parameters and stay exactly as the publisher spells them;
+ * only the displayed label is localised.
+ */
 const COMMODITIES = ['Teff', 'Maize', 'Wheat', 'Sorghum', 'Coffee'] as const;
 
 /** One series per (commodity, unit, price type): the publisher’s units are never merged. */
@@ -149,13 +159,16 @@ function buildTrendSeries(rows: PriceRow[]): TrendSeries[] {
 }
 
 export const MarketIntelligence = () => {
+  const { t, locale } = useLanguage();
   const [commodity, setCommodity] = useState<(typeof COMMODITIES)[number]>('Teff');
   const [region, setRegion] = useState('');
 
   const theme = useChartTheme();
 
   const overview = useLiveData<OverviewPayload>('/api/data/markets?mode=overview');
-  const history = useLiveData<HistoryPayload>(`/api/data/markets?mode=history&commodity=${encodeURIComponent(commodity)}&months=36`);
+  const history = useLiveData<HistoryPayload>(
+    `/api/data/markets?mode=history&commodity=${encodeURIComponent(commodity)}&months=36`,
+  );
   const snapshot = useLiveData<SnapshotPayload>(
     `/api/data/markets?mode=snapshot&months=6&limit=400${region ? `&region=${encodeURIComponent(region)}` : ''}`,
   );
@@ -166,14 +179,14 @@ export const MarketIntelligence = () => {
   const chartData = useMemo(() => {
     const months = [...new Set(series.flatMap((s) => s.points.map((p) => p.month)))].sort();
     return months.map((month) => {
-      const row: Record<string, string | number | null> = { month: monthLabel(month) };
+      const row: Record<string, string | number | null> = { month: monthLabel(month, locale) };
       for (const s of series) {
         const hit = s.points.find((p) => p.month === month);
         row[s.label] = hit ? Number(hit.avg.toFixed(1)) : null;
       }
       return row;
     });
-  }, [series]);
+  }, [series, locale]);
 
   const regions = useMemo(() => {
     const names = new Set<string>();
@@ -182,12 +195,21 @@ export const MarketIntelligence = () => {
   }, [snapshot.data]);
 
   const changes = (snapshot.data?.changes ?? [])
-    .filter((c): c is PriceChange & { changePct: number; previousObservedOn: string } => c.changePct !== null && c.previousObservedOn !== null)
+    .filter(
+      (c): c is PriceChange & { changePct: number; previousObservedOn: string } =>
+        c.changePct !== null && c.previousObservedOn !== null,
+    )
     .sort((a, b) => Math.abs(b.changePct) - Math.abs(a.changePct))
     .slice(0, 14);
 
-  const officialSeries = (fx.data?.official ?? []).map((p) => ({ day: dayLabel(p.observedOn), 'ETB per US$': p.usdToEtb }));
-  const unofficialSeries = (fx.data?.unofficial ?? []).map((p) => ({ month: monthLabel(p.observedOn), 'ETB per US$': p.unofficialUsdToEtb }));
+  const officialSeries = (fx.data?.official ?? []).map((p) => ({
+    day: dayLabel(p.observedOn, locale),
+    'ETB per US$': p.usdToEtb,
+  }));
+  const unofficialSeries = (fx.data?.unofficial ?? []).map((p) => ({
+    month: monthLabel(p.observedOn, locale),
+    'ETB per US$': p.unofficialUsdToEtb,
+  }));
   const fxErrors = fx.extra?.errors;
 
   const anyRefreshing = overview.refreshing || history.refreshing || snapshot.refreshing || fx.refreshing;
@@ -203,20 +225,20 @@ export const MarketIntelligence = () => {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Intelligence"
-        title="Market Intelligence"
+        eyebrow={t('nav.group.Intelligence')}
+        title={t('module.markets.label')}
         icon={Store}
-        description="Prices surveyed in Ethiopian markets by the WFP rEMS monitoring programme, in ETB per the unit the publisher recorded. International commodity references are never presented as Ethiopian market prices here."
+        description={t('markets.description')}
         status={
           anyRefreshing ? (
             <Refreshing />
           ) : hasLive ? (
             <Badge tone="brand" dot>
-              Live survey
+              {t('markets.badgeLiveSurvey')}
             </Badge>
           ) : (
             <Badge tone="clay" dot>
-              No live reading
+              {t('overview.badgeNoReading')}
             </Badge>
           )
         }
@@ -228,17 +250,17 @@ export const MarketIntelligence = () => {
             disabled={anyRefreshing}
             leading={<RefreshCw size={14} className={anyRefreshing ? 'animate-spin' : undefined} />}
           >
-            Refresh all
+            {t('common.refreshAll')}
           </Button>
         }
       />
 
       <Panel
-        title="National grain prices · newest survey month"
-        hint="Average of the retail prices actually surveyed in that month, grouped strictly by commodity and unit."
+        title={t('markets.grainPricesTitle')}
+        hint={t('markets.grainPricesHint')}
         right={overview.refreshing ? <Refreshing /> : undefined}
       >
-        {overview.loading && <Loading label="Loading WFP prices" />}
+        {overview.loading && <Loading label={t('markets.loadingWfp')} />}
         {!overview.loading && overview.error && <SourceUnavailable error={overview.error} source="WFP via HDX" />}
         {overview.data && overview.data.commodities.length > 0 && (
           <>
@@ -247,16 +269,15 @@ export const MarketIntelligence = () => {
                 <Metric
                   key={`${c.commodity}-${c.unit}`}
                   label={`${c.commodity} · ${c.unit}`}
-                  value={fmt(c.avgEtbPerUnit, 0)}
+                  value={fmt(c.avgEtbPerUnit, 0, locale)}
                   unit="ETB"
-                  note={`Mean across ${c.markets} surveyed market${c.markets === 1 ? '' : 's'}.`}
+                  note={t('markets.meanAcrossMarkets', { count: c.markets })}
                 />
               ))}
             </div>
             <p className="mt-4 text-[11.5px] leading-relaxed text-ink-faint">
-              Survey month <span className="tabular font-bold text-ink-muted">{overview.data.asOf}</span>; each
-              figure is the mean across the markets shown in its card. Coffee is a beverage crop and is not in this
-              grain table — use the history panel below for it.
+              {t('markets.surveyMonth')} <span className="tabular font-bold text-ink-muted">{overview.data.asOf}</span>
+              {t('markets.grainNote')}
             </p>
             <div className="mt-4 border-t border-line pt-3.5">
               <ProvenanceLabel provenance={overview.provenance} />
@@ -266,28 +287,36 @@ export const MarketIntelligence = () => {
       </Panel>
 
       <Panel
-        title="Price history in Ethiopian markets"
+        title={t('markets.historyTitle')}
         icon={TrendingUp}
-        hint="One line per commodity · unit · price type, averaged over the markets surveyed that month. Where a publisher stopped surveying, the line has a real gap — nothing is interpolated."
-        right={history.refreshing ? <Refreshing /> : <span className="text-[11px] font-semibold text-ink-faint">last 36 survey months</span>}
+        hint={t('markets.historyHint')}
+        right={
+          history.refreshing ? (
+            <Refreshing />
+          ) : (
+            <span className="text-[11px] font-semibold text-ink-faint">{t('markets.last36Months')}</span>
+          )
+        }
       >
         <SegmentedControl
-          label="Commodity"
+          label={t('markets.commodity')}
           value={commodity}
           onChange={(v) => setCommodity(v as (typeof COMMODITIES)[number])}
-          options={COMMODITIES.map((c) => ({ value: c, label: c }))}
+          options={COMMODITIES.map((c) => ({
+            value: c,
+            label: t(`commodity.${c.toLowerCase() as Lowercase<(typeof COMMODITIES)[number]>}`),
+          }))}
         />
 
-        {history.loading && <Loading label={`Loading ${commodity} history`} className="mt-5" />}
+        {history.loading && <Loading label={t('markets.loadingHistory', { commodity })} className="mt-5" />}
         {!history.loading && history.error && (
           <div className="mt-5">
             <SourceUnavailable error={history.error} source="WFP via HDX" />
           </div>
         )}
         {!history.loading && history.data && series.length === 0 && (
-          <StateNotice tone="info" title="No series drawn" className="mt-5">
-            The publisher has no {commodity} series with at least two months under a single unit and price type.
-            No price is invented.
+          <StateNotice tone="info" title={t('markets.noSeriesTitle')} className="mt-5">
+            {t('markets.noSeriesBody', { commodity })}
           </StateNotice>
         )}
 
@@ -309,7 +338,7 @@ export const MarketIntelligence = () => {
                     tickLine={false}
                     axisLine={false}
                     width={68}
-                    tickFormatter={(v: number) => v.toLocaleString('en-US')}
+                    tickFormatter={(v: number) => v.toLocaleString(locale)}
                   />
                   <Tooltip contentStyle={tooltipContentStyle} />
                   {series.map((s) => (
@@ -331,15 +360,16 @@ export const MarketIntelligence = () => {
               {series.map((s) => (
                 <li key={s.label} className="flex items-center gap-2 text-[11.5px] font-semibold text-ink-muted">
                   <span aria-hidden className="h-0.5 w-3.5 shrink-0 rounded-full" style={{ background: s.color }} />
-                  {s.label} · {s.points.length} months · up to {Math.max(...s.points.map((p) => p.markets))} markets
+                  {t('markets.seriesLegend', {
+                    series: s.label,
+                    months: s.points.length,
+                    markets: Math.max(...s.points.map((p) => p.markets)),
+                  })}
                 </li>
               ))}
             </ul>
 
-            <p className="mt-3 text-[11.5px] leading-relaxed text-ink-faint">
-              Values are ETB per the stated unit, retail or wholesale as recorded by the surveyor — the two are
-              never averaged together.
-            </p>
+            <p className="mt-3 text-[11.5px] leading-relaxed text-ink-faint">{t('markets.unitsNote')}</p>
             <div className="mt-4 border-t border-line pt-3.5">
               <ProvenanceLabel provenance={history.provenance} />
             </div>
@@ -349,19 +379,19 @@ export const MarketIntelligence = () => {
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <Panel
-          title="Cross-market movement"
-          hint="Month-on-month change inside one market, commodity and unit. Comparing two markets compares two surveys, not one price."
+          title={t('markets.crossMarketTitle')}
+          hint={t('markets.crossMarketHint')}
           right={
             <div className="flex items-center gap-2">
               {snapshot.refreshing && <Refreshing />}
-              <Field label="Region" htmlFor="region-filter" className="w-44">
+              <Field label={t('markets.region')} htmlFor="region-filter" className="w-44">
                 <Select
                   id="region-filter"
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
                   className="h-9 text-[12.5px]"
                 >
-                  <option value="">All regions</option>
+                  <option value="">{t('markets.allRegions')}</option>
                   {regions.map((r) => (
                     <option key={r} value={r}>
                       {r}
@@ -372,7 +402,7 @@ export const MarketIntelligence = () => {
             </div>
           }
         >
-          {snapshot.loading && <Loading label="Loading latest survey month" />}
+          {snapshot.loading && <Loading label={t('markets.loadingLatest')} />}
           {!snapshot.loading && snapshot.error && <SourceUnavailable error={snapshot.error} source="WFP via HDX" />}
 
           {changes.length > 0 && snapshot.data && (
@@ -381,10 +411,10 @@ export const MarketIntelligence = () => {
                 <table className="w-full min-w-[520px] text-[12.5px]">
                   <thead className="sticky top-0 z-10 bg-canvas">
                     <tr className="border-b border-line text-left text-[10px] font-bold uppercase tracking-[0.12em] text-ink-faint">
-                      <th scope="col" className="px-4 py-2.5 font-bold">Market</th>
-                      <th scope="col" className="px-4 py-2.5 font-bold">Commodity</th>
-                      <th scope="col" className="px-4 py-2.5 text-right font-bold">Latest</th>
-                      <th scope="col" className="px-4 py-2.5 text-right font-bold">Change</th>
+                      <th scope="col" className="px-4 py-2.5 font-bold">{t('markets.thMarket')}</th>
+                      <th scope="col" className="px-4 py-2.5 font-bold">{t('markets.commodity')}</th>
+                      <th scope="col" className="px-4 py-2.5 text-right font-bold">{t('markets.thLatest')}</th>
+                      <th scope="col" className="px-4 py-2.5 text-right font-bold">{t('markets.thChange')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-line">
@@ -395,7 +425,8 @@ export const MarketIntelligence = () => {
                           {c.commodity} <span className="text-ink-faint">({c.unit})</span>
                         </td>
                         <td className="tabular px-4 py-2.5 whitespace-nowrap text-right text-ink">
-                          {fmtInt(c.latestPrice)} <span className="text-[11px] font-semibold text-ink-faint">{c.currency}</span>
+                          {fmtInt(c.latestPrice, locale)}{' '}
+                          <span className="text-[11px] font-semibold text-ink-faint">{c.currency}</span>
                         </td>
                         <td className="px-4 py-2.5 whitespace-nowrap text-right">
                           <span
@@ -404,9 +435,11 @@ export const MarketIntelligence = () => {
                             }`}
                           >
                             {c.changePct > 0 ? <ArrowUpRight size={13} /> : <ArrowDownRight size={13} />}
-                            {fmt(Math.abs(c.changePct), 1)}%
+                            {fmt(Math.abs(c.changePct), 1, locale)}%
                           </span>
-                          <span className="tabular ml-1.5 text-[10px] text-ink-faint">vs {c.previousObservedOn.slice(0, 7)}</span>
+                          <span className="tabular ml-1.5 text-[10px] text-ink-faint">
+                            {t('markets.vs')} {c.previousObservedOn.slice(0, 7)}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -414,11 +447,11 @@ export const MarketIntelligence = () => {
                 </table>
               </div>
               <p className="mt-4 text-[11.5px] leading-relaxed text-ink-faint">
-                The <span className="tabular font-bold text-ink-muted">{snapshot.data.asOfLatestObservation}</span>{' '}
-                survey covered <span className="font-bold text-ink-muted">{snapshot.data.markets}</span> markets and{' '}
-                <span className="font-bold text-ink-muted">{snapshot.data.commodities}</span> commodities. Rows above
-                exist only where the publisher has both this month and the previous month for the identical market,
-                commodity and unit.
+                {t('markets.surveyCoverage', {
+                  month: snapshot.data.asOfLatestObservation ?? '—',
+                  markets: snapshot.data.markets,
+                  commodities: snapshot.data.commodities,
+                })}
               </p>
               <div className="mt-4 border-t border-line pt-3.5">
                 <ProvenanceLabel provenance={snapshot.provenance} />
@@ -428,18 +461,18 @@ export const MarketIntelligence = () => {
         </Panel>
 
         <Panel
-          title="Ethiopian foreign exchange — three separate categories"
+          title={t('markets.fxTitle')}
           icon={Coins}
-          hint="The official rate is a daily NBE publication, the parallel rate is a World Bank monthly national average and the benchmark rate is an annual figure. They are different kinds of number and are shown apart."
+          hint={t('markets.fxHint')}
           right={fx.refreshing ? <Refreshing /> : undefined}
         >
-          {fx.loading && <Loading label="Loading NBE and World Bank" />}
+          {fx.loading && <Loading label={t('markets.loadingFx')} />}
           {!fx.loading && fx.error && <SourceUnavailable error={fx.error} source="NBE / World Bank" />}
 
           {fx.data && (
             <div className="space-y-6">
               <div>
-                <SectionLabel>Official · NBE daily indicative</SectionLabel>
+                <SectionLabel>{t('markets.officialLabel')}</SectionLabel>
                 {officialSeries.length > 0 ? (
                   <>
                     <div className="mt-3 h-32 w-full">
@@ -459,14 +492,17 @@ export const MarketIntelligence = () => {
                             width={54}
                           />
                           <Tooltip contentStyle={tooltipContentStyle} />
-                          <Bar dataKey="ETB per US$" fill={SERIES_COLORS[0]} radius={[3, 3, 0, 0]} maxBarSize={26} />
+                          <Bar
+                            dataKey="ETB per US$"
+                            name={t('markets.etbPerUsd')}
+                            fill={SERIES_COLORS[0]}
+                            radius={[3, 3, 0, 0]}
+                            maxBarSize={26}
+                          />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <p className="mt-2 text-[11.5px] leading-relaxed text-ink-faint">
-                      One bar per published trading date. This is a reference rate set by the central bank, not a rate
-                      a bureau quotes you.
-                    </p>
+                    <p className="mt-2 text-[11.5px] leading-relaxed text-ink-faint">{t('markets.officialNote')}</p>
                     {fx.provenance?.official && (
                       <div className="mt-2.5">
                         <ProvenanceLabel provenance={fx.provenance.official} compact />
@@ -479,7 +515,7 @@ export const MarketIntelligence = () => {
               </div>
 
               <div className="border-t border-line pt-5">
-                <SectionLabel>Parallel market · World Bank monthly national average</SectionLabel>
+                <SectionLabel>{t('markets.parallelLabel')}</SectionLabel>
                 {unofficialSeries.length > 0 ? (
                   <>
                     <div className="mt-3 h-32 w-full">
@@ -504,6 +540,7 @@ export const MarketIntelligence = () => {
                           <Line
                             type="monotone"
                             dataKey="ETB per US$"
+                            name={t('markets.etbPerUsd')}
                             stroke={SERIES_COLORS[2]}
                             strokeWidth={1.9}
                             dot={{ r: 1.8 }}
@@ -511,10 +548,7 @@ export const MarketIntelligence = () => {
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
-                    <p className="mt-2 text-[11.5px] leading-relaxed text-ink-faint">
-                      A monthly survey average, not a daily quotation: the newest point is the latest month the World
-                      Bank has compiled, which may be months behind today.
-                    </p>
+                    <p className="mt-2 text-[11.5px] leading-relaxed text-ink-faint">{t('markets.parallelNote')}</p>
                     {fx.provenance?.unofficial && (
                       <div className="mt-2.5">
                         <ProvenanceLabel provenance={fx.provenance.unofficial} compact />
@@ -527,7 +561,7 @@ export const MarketIntelligence = () => {
               </div>
 
               <div className="border-t border-line pt-5">
-                <SectionLabel>Benchmarks · World Bank annual indicators</SectionLabel>
+                <SectionLabel>{t('markets.benchmarkLabel')}</SectionLabel>
                 {fx.data.benchmarks && fx.data.benchmarks.length > 0 ? (
                   <div className="mt-3 space-y-2.5">
                     {fx.data.benchmarks.map((ind) => {
@@ -540,21 +574,22 @@ export const MarketIntelligence = () => {
                           <div className="min-w-0">
                             <p className="text-[13px] font-bold text-ink">{ind.name}</p>
                             <p className="mt-1 text-[11px] text-ink-faint">
-                              <span className="font-mono">{ind.code}</span> · published {ind.frequency} · {ind.unit}
+                              <span className="font-mono">{ind.code}</span> ·{' '}
+                              {t('markets.publishedFrequency', { frequency: ind.frequency })} · {ind.unit}
                             </p>
                           </div>
                           <p className="tabular shrink-0 text-right text-[15px] font-extrabold whitespace-nowrap text-ink">
-                            {fmt(latest?.value ?? null, 2)}
+                            {fmt(latest?.value ?? null, 2, locale)}
                             <span className="mt-0.5 block text-[10px] font-semibold text-ink-faint">
-                              reference {latest?.period ?? '—'}
+                              {t('markets.referencePeriod', { period: latest?.period ?? '—' })}
                             </span>
                           </p>
                         </div>
                       );
                     })}
                     {fx.provenance?.benchmark && <ProvenanceLabel provenance={fx.provenance.benchmark} compact />}
-                    <StateNotice tone="gold" title="Annual series, published in arrears">
-                      Context only — these are not current-month figures.
+                    <StateNotice tone="gold" title={t('markets.annualTitle')}>
+                      {t('markets.annualBody')}
                     </StateNotice>
                   </div>
                 ) : (
@@ -572,13 +607,15 @@ export const MarketIntelligence = () => {
 };
 
 /** A category with no rows shows the publisher’s actual failure, never a placeholder number. */
-const CategoryFailure = ({ label, error }: { label: string; error?: SourceErrorView | null }) =>
-  error ? (
+const CategoryFailure = ({ label, error }: { label: string; error?: SourceErrorView | null }) => {
+  const { t } = useLanguage();
+  return error ? (
     <div className="mt-3">
       <SourceUnavailable error={error} source={label} />
     </div>
   ) : (
-    <StateNotice tone="clay" title="No rows returned" className="mt-3">
-      {label}: this response carried no rows, and nothing was substituted for them.
+    <StateNotice tone="clay" title={t('markets.noRowsTitle')} className="mt-3">
+      {t('markets.noRowsBody', { label })}
     </StateNotice>
   );
+};

@@ -1,5 +1,8 @@
+'use client';
+
 import type { CSSProperties, ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
 import { cn } from '@/lib/utils';
 import type { IconType } from '@/components/ui/Card';
 
@@ -20,16 +23,18 @@ export function SkeletonPanel({ rows = 3, className }: { rows?: number; classNam
   );
 }
 
-export function Loading({ label = 'Loading', className }: { label?: string; className?: string }) {
+export function Loading({ label, className }: { label?: string; className?: string }) {
+  const { t } = useLanguage();
   return (
     <div className={cn('flex items-center gap-2.5 py-6 text-[13px] font-semibold text-ink-muted', className)}>
       <Loader2 size={15} className="animate-spin text-brand-600 dark:text-brand-400" />
-      {label}…
+      {(label ?? t('common.loading')) + '…'}
     </div>
   );
 }
 
 export function Refreshing({ className }: { className?: string }) {
+  const { t } = useLanguage();
   return (
     <span
       className={cn(
@@ -38,7 +43,7 @@ export function Refreshing({ className }: { className?: string }) {
       )}
     >
       <Loader2 size={10} className="animate-spin" />
-      updating
+      {t('common.updating')}
     </span>
   );
 }
@@ -96,6 +101,7 @@ export function StateNotice({
   children?: ReactNode;
   className?: string;
 }) {
+  const { t } = useLanguage();
   const map = {
     clay: 'border-clay/30 bg-clay-soft/70 text-clay-700 dark:text-clay-300',
     gold: 'border-gold/30 bg-gold-soft/70 text-gold-700 dark:text-gold-300',
@@ -121,8 +127,8 @@ export function StateNotice({
       {children && <div className={cn('mt-2 text-[13px] leading-relaxed', bodyTone)}>{children}</div>}
       {code && (
         <p className="mt-2 text-[11px] text-ink-faint">
-          Code <code className="rounded bg-surface/70 px-1 py-0.5 font-mono text-[10px]">{code}</code>. No substitute
-          value is shown for this source.
+          {t('states.codeLabel')} <code className="rounded bg-surface/70 px-1 py-0.5 font-mono text-[10px]">{code}</code>.{' '}
+          {t('states.codeNoSubstitute')}
         </p>
       )}
     </div>

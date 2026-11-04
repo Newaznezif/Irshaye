@@ -27,9 +27,12 @@ import {
   Refreshing,
   SectionLabel,
   StatCard,
+  dayLabel,
   fmt,
+  monthLong,
   stamp,
 } from '@/components/ui';
+import { useLanguage } from '@/hooks/useLanguage';
 import { useLiveData } from '@/hooks/useLiveData';
 import type { ProvenanceView } from '@/components/data/ProvenanceLabel';
 import type { WeatherSeries } from '@/lib/data/types';
@@ -38,9 +41,8 @@ import { MODULES } from '@/lib/modules';
 
 type WeatherPayload = WeatherSeries;
 
-const MONTH_NAME = new Intl.DateTimeFormat('en', { month: 'long' });
-
 export default function OverviewPage() {
+  const { t, locale } = useLanguage();
   const { place, cropId, setPlace, setCropId, ready } = useWorkbench();
 
   const params = `lat=${place.latitude}&lon=${place.longitude}`;
@@ -72,20 +74,20 @@ export default function OverviewPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Today"
-        title="Farm overview"
+        eyebrow={t('nav.group.Today')}
+        title={t('overview.title')}
         icon={LayoutDashboard}
-        description="Pick your place and your crop. Everything below is live data with its source attached, and the platform says plainly when a figure is a forecast or a model output rather than a measurement."
+        description={t('overview.description')}
         status={
           weather.data !== null ? (
             <Badge tone="brand" dot>
-              Live
+              {t('overview.badgeLive')}
             </Badge>
           ) : weather.loading ? (
-            <Badge tone="neutral">Connecting</Badge>
+            <Badge tone="neutral">{t('overview.badgeConnecting')}</Badge>
           ) : (
             <Badge tone="clay" dot>
-              No live reading
+              {t('overview.badgeNoReading')}
             </Badge>
           )
         }
@@ -98,24 +100,24 @@ export default function OverviewPage() {
               disabled={weather.loading || weather.refreshing}
               leading={<RefreshCw size={14} className={weather.refreshing ? 'animate-spin' : undefined} />}
             >
-              Refresh
+              {t('common.refresh')}
             </Button>
             <ButtonLink variant="ghost" size="sm" href="/dashboard/settings" className="hidden sm:inline-flex">
-              Change saved context
+              {t('overview.changeContext')}
             </ButtonLink>
           </>
         }
       />
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <LocationPicker value={place} onChange={setPlace} label="Your location" />
+        <LocationPicker value={place} onChange={setPlace} label={t('overview.yourLocation')} />
         <CropPicker value={cropId} onChange={setCropId} />
       </div>
 
       <Panel
-        title={`Season context — ${place.name}`}
+        title={t('overview.seasonContext', { place: place.name })}
         icon={CloudRain}
-        hint={`Month of ${MONTH_NAME.format(now)}. Guidance compares the live forecast with your crop’s documented reference requirements.`}
+        hint={t('overview.seasonHint', { month: monthLong(now, locale) })}
         right={weather.refreshing ? <Refreshing /> : undefined}
         footer={
           weather.data !== null ? (
@@ -127,13 +129,13 @@ export default function OverviewPage() {
               {current && (
                 <>
                   <span className="tabular inline-flex items-center gap-1.5">
-                    <CloudRain size={12} /> rain now {fmt(current.precipitationMm, 1)} mm
+                    <CloudRain size={12} /> {t('overview.rainNow', { value: fmt(current.precipitationMm, 1, locale) })}
                   </span>
                   <span className="tabular inline-flex items-center gap-1.5">
-                    <Wind size={12} /> {fmt(current.windSpeedKmh, 0)} km/h
+                    <Wind size={12} /> {fmt(current.windSpeedKmh, 0, locale)} km/h
                   </span>
                   <span className="tabular inline-flex items-center gap-1.5">
-                    <Droplets size={12} /> {fmt(current.relativeHumidityPct, 0)}%
+                    <Droplets size={12} /> {fmt(current.relativeHumidityPct, 0, locale)}%
                   </span>
                 </>
               )}
@@ -142,7 +144,7 @@ export default function OverviewPage() {
           ) : undefined
         }
       >
-        {weather.loading && <Loading label="Loading live weather" />}
+        {weather.loading && <Loading label={t('overview.loadingWeather')} />}
 
         {!weather.loading && weather.data === null && weather.error && (
           <SourceUnavailable error={weather.error} source="Open-Meteo" />
@@ -153,60 +155,58 @@ export default function OverviewPage() {
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <StatCard
                 icon={Thermometer}
-                label="Temperature now"
-                value={fmt(current?.temperatureC, 1)}
+                label={t('overview.tempNow')}
+                value={fmt(current?.temperatureC, 1, locale)}
                 unit="°C"
                 supporting={
-                  current ? `Observed ${stamp(current.observedAt ?? weather.fetchedAt ?? '')}` : 'No observation returned'
+                  current
+                    ? t('overview.observedAt', { when: stamp(current.observedAt ?? weather.fetchedAt ?? '', locale) })
+                    : t('overview.noObservation')
                 }
               />
               <StatCard
                 icon={CloudRain}
-                label="Rain, 7-day outlook"
-                value={forecast.length > 0 ? fmt(rainNext7, 1) : '—'}
+                label={t('hero.rainOutlook')}
+                value={forecast.length > 0 ? fmt(rainNext7, 1, locale) : '—'}
                 unit="mm"
                 tone={rainNext7 > 25 ? 'brand' : rainNext7 > 0 ? 'gold' : 'clay'}
                 supporting={
-                  forecast.length > 0
-                    ? 'Sum of forecast daily totals — a modelled outlook, not a measurement.'
-                    : 'No forecast days were returned.'
+                  forecast.length > 0 ? t('overview.rainOutlookNote') : t('overview.noForecastDays')
                 }
               />
               <StatCard
                 icon={CalendarClock}
-                label="Next day ≥ 1 mm"
-                value={
-                  nextRainDay
-                    ? new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(
-                        new Date(`${nextRainDay.date}T00:00:00`),
-                      )
-                    : 'None in 7d'
-                }
-                supporting="First forecast day reaching one millimetre of rainfall."
+                label={t('overview.nextRainDay')}
+                value={nextRainDay ? dayLabel(nextRainDay.date, locale) : t('overview.noneIn7d')}
+                supporting={t('overview.nextRainDayNote')}
                 tone="info"
               />
               <StatCard
                 icon={Droplets}
-                label="Humidity now"
-                value={fmt(current?.relativeHumidityPct, 0)}
+                label={t('overview.humidityNow')}
+                value={fmt(current?.relativeHumidityPct, 0, locale)}
                 unit="%"
-                supporting="Relative humidity from the same observation as the temperature."
+                supporting={t('overview.humidityNote')}
               />
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
-              <Metric label="Forecast days shown" value={forecast.length} note="Open-Meteo horizon for this point." />
               <Metric
-                label="Warmest outlook"
-                value={fmt(maxOutlookTemp, 1)}
-                unit="°C"
-                note="Highest daily maximum among the forecast days returned."
+                label={t('overview.forecastDays')}
+                value={forecast.length.toLocaleString(locale)}
+                note={t('overview.forecastDaysNote')}
               />
               <Metric
-                label="Cooliest outlook"
-                value={fmt(minOutlookTemp, 1)}
+                label={t('overview.warmest')}
+                value={fmt(maxOutlookTemp, 1, locale)}
                 unit="°C"
-                note="Lowest daily minimum among the forecast days returned."
+                note={t('overview.warmestNote')}
+              />
+              <Metric
+                label={t('overview.cooliest')}
+                value={fmt(minOutlookTemp, 1, locale)}
+                unit="°C"
+                note={t('overview.cooliestNote')}
               />
             </div>
 
@@ -222,38 +222,39 @@ export default function OverviewPage() {
                         </span>
                       )}
                       <Badge tone={plantingNow ? 'brand' : harvestNow ? 'gold' : 'neutral'}>
-                        {plantingNow ? 'Planting window' : harvestNow ? 'Harvest window' : 'Outside documented windows'}
+                        {plantingNow
+                          ? t('overview.plantingWindow')
+                          : harvestNow
+                            ? t('overview.harvestWindow')
+                            : t('overview.outsideWindows')}
                       </Badge>
                     </p>
                     <p className="mt-2 max-w-2xl text-[12.5px] leading-relaxed text-ink-muted">
                       {plantingNow
-                        ? 'This month sits inside a documented planting window for this crop.'
+                        ? t('overview.plantingNowNote')
                         : harvestNow
-                          ? 'This month sits inside a documented harvest window for this crop.'
-                          : 'This month is outside the documented planting and harvest windows — the crop profile shows which months the sources name.'}
+                          ? t('overview.harvestNowNote')
+                          : t('overview.outsideWindowsNote')}
                     </p>
                   </div>
                   <Link
                     href="/dashboard/crops"
                     className="group inline-flex items-center gap-1.5 self-start rounded-xl bg-brand px-3.5 py-2 text-[13px] font-bold text-brand-ink transition-colors hover:bg-brand-hover md:self-auto"
                   >
-                    Open Crop Advisory
+                    {t('overview.openCrops')}
                     <ArrowRight size={14} className="transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 </div>
               ) : (
-                <p className="text-[12.5px] leading-relaxed text-ink-muted">
-                  Crop reference profiles are curated with sources. Until a profile exists for this crop, no
-                  planting guidance is shown — the platform will not guess.
-                </p>
+                <p className="text-[12.5px] leading-relaxed text-ink-muted">{t('overview.noCropProfileNote')}</p>
               )}
             </div>
           </div>
         )}
       </Panel>
 
-      <section aria-label="Modules">
-        <SectionLabel>Go deeper</SectionLabel>
+      <section aria-label={t('overview.modulesAria')}>
+        <SectionLabel>{t('overview.goDeeper')}</SectionLabel>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {MODULES.filter((m) => m.href !== '/dashboard').map((m) => {
             const Icon = m.icon;
@@ -268,13 +269,17 @@ export default function OverviewPage() {
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center justify-between gap-2">
-                    <span className="text-[13.5px] font-extrabold tracking-tight text-ink">{m.label}</span>
+                    <span className="text-[13.5px] font-extrabold tracking-tight text-ink">
+                      {t(`module.${m.id}.label`)}
+                    </span>
                     <ArrowRight
                       size={15}
                       className="shrink-0 text-ink-faint transition-all group-hover:translate-x-0.5 group-hover:text-brand"
                     />
                   </span>
-                  <span className="mt-1.5 block text-[12px] leading-relaxed text-ink-muted">{m.description}</span>
+                  <span className="mt-1.5 block text-[12px] leading-relaxed text-ink-muted">
+                    {t(`module.${m.id}.description`)}
+                  </span>
                 </span>
               </Link>
             );

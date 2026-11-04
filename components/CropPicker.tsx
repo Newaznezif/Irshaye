@@ -2,6 +2,7 @@
 
 import { Sprout } from 'lucide-react';
 import { CROP_PROFILES } from '@/lib/crops/catalog';
+import { useLanguage } from '@/hooks/useLanguage';
 import { Field, Panel, Select } from '@/components/ui';
 
 export const CropPicker = ({
@@ -13,11 +14,12 @@ export const CropPicker = ({
   onChange: (cropId: string) => void;
   id?: string;
 }) => {
+  const { t } = useLanguage();
   const selected = CROP_PROFILES.find((c) => c.id === value);
 
   return (
     <Panel
-      title="Your crop"
+      title={t('crops.yourCrop')}
       icon={Sprout}
       right={
         selected?.amharicName ? (
@@ -26,9 +28,9 @@ export const CropPicker = ({
           </span>
         ) : undefined
       }
-      hint="Guidance is curated reference material with citations. Suitability compares it with live climate data and is labelled as modelled guidance, never as a measurement."
+      hint={t('crops.pickerHint')}
     >
-      <Field label="Crop profile" htmlFor={id}>
+      <Field label={t('crops.cropProfile')} htmlFor={id}>
         <Select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
           {CROP_PROFILES.map((c) => (
             <option key={c.id} value={c.id}>

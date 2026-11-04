@@ -5,10 +5,14 @@ import { Bot, Database, MapPin, Moon, Settings, Sprout, Sun, User } from 'lucide
 import { useWorkbench } from '@/context/WorkbenchContext';
 import { useTheme } from '@/hooks/useTheme';
 import { Badge, Button, DataRow, PageHeader, Panel, SkeletonPanel } from '@/components/ui';
+import { useLanguage } from '@/hooks/useLanguage';
 import { getCrop } from '@/lib/crops/catalog';
 
 type AdvisorStatus = { configured: boolean };
 type DataStatus = { ok: boolean; data?: { sources?: { id: string; status: string }[] } | null };
+
+/** Only these three states are reportable here, so the badge wording stays a closed set. */
+type IntegrationState = 'connected' | 'unavailable' | 'not_configured';
 
 function IntegrationRow({
   icon: Icon,
@@ -18,11 +22,11 @@ function IntegrationRow({
 }: {
   icon: typeof Bot;
   name: string;
-  state: string;
+  state: IntegrationState;
   detail: string;
 }) {
-  const tone =
-    state === 'connected' ? 'brand' : state === 'not_configured' ? 'gold' : 'clay';
+  const { t } = useLanguage();
+  const tone = state === 'connected' ? 'brand' : state === 'not_configured' ? 'gold' : 'clay';
   return (
     <div className="flex items-start justify-between gap-5 border-b border-line py-4 last:border-0">
       <div className="flex min-w-0 gap-3.5">
@@ -35,13 +39,14 @@ function IntegrationRow({
         </div>
       </div>
       <Badge tone={tone} className="mt-1 shrink-0">
-        {state.replaceAll('_', ' ')}
+        {t(`statusLabel.${state}`)}
       </Badge>
     </div>
   );
 }
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const { place, cropId } = useWorkbench();
   const { dark, toggle } = useTheme();
   const [advisor, setAdvisor] = useState<AdvisorStatus | null>(null);
@@ -75,27 +80,23 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow="Platform"
-        title="Settings"
+        eyebrow={t('nav.group.Platform')}
+        title={t('module.settings.label')}
         icon={Settings}
-        description="Every control on this page does something real. Accounts and shared workspaces arrive once the independent Irshaye Supabase project is provisioned — until then preferences are stored on this device only."
+        description={t('settings.pageDescription')}
       />
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
-        <Panel
-          title="Your saved context"
-          icon={MapPin}
-          hint="Stored in this browser. It drives the Overview workflow and every module’s default location."
-        >
+        <Panel title={t('settings.savedContext')} icon={MapPin} hint={t('settings.savedContextHint')}>
           <dl className="divide-y divide-line">
-            <DataRow label="Location">
+            <DataRow label={t('picker.location')}>
               {place.name}
               {place.admin1 ? ` — ${place.admin1}` : ''}{' '}
               <span className="tabular text-ink-faint">
                 ({place.latitude.toFixed(3)}, {place.longitude.toFixed(3)})
               </span>
             </DataRow>
-            <DataRow label="Crop">
+            <DataRow label={t('settings.crop')}>
               {crop ? (
                 <>
                   {crop.name}
@@ -106,79 +107,73 @@ export default function SettingsPage() {
                   )}
                 </>
               ) : (
-                'No curated profile yet'
+                t('settings.noCuratedProfile')
               )}
             </DataRow>
-            <DataRow label="Storage">
-              <span className="text-[12.5px] font-semibold text-ink-muted">
-                This device only — no account is created
-              </span>
+            <DataRow label={t('settings.storage')}>
+              <span className="text-[12.5px] font-semibold text-ink-muted">{t('settings.storageDeviceOnly')}</span>
             </DataRow>
           </dl>
         </Panel>
 
         <Panel
-          title="Appearance"
+          title={t('shell.appearance')}
           icon={dark ? Sun : Moon}
-          hint="The dark canvas keeps the same value-kind colours, so a forecast stays violet and an observation stays green either way."
+          hint={t('settings.appearanceHint')}
         >
           <Button
             variant="secondary"
             onClick={toggle}
             leading={dark ? <Sun size={15} /> : <Moon size={15} />}
           >
-            {dark ? 'Switch to light' : 'Switch to dark'}
+            {dark ? t('settings.switchToLight') : t('settings.switchToDark')}
           </Button>
           <p className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4 text-[11.5px] text-ink-faint">
             <Badge tone="brand" dot>
-              observed
+              {t('prov.kind.observed')}
             </Badge>
             <Badge tone="info" dot>
-              modelled
+              {t('prov.kind.modeled')}
             </Badge>
             <Badge tone="plum" dot>
-              forecast
+              {t('prov.kind.forecast')}
             </Badge>
             <Badge tone="gold" dot>
-              derived here
+              {t('common.derivedHere')}
             </Badge>
-            <span>— the same colour semantics in both canvases.</span>
+            <span>{t('settings.colourSemantics')}</span>
           </p>
         </Panel>
       </div>
 
-      <Panel
-        title="Integration status"
-        icon={Database}
-        hint="What this deployment can actually reach right now. Nothing here is decorative."
-      >
+      <Panel title={t('settings.integrationStatus')} icon={Database} hint={t('settings.integrationHint')}>
         {!advisor || !dataStatus ? (
           <SkeletonPanel rows={4} />
         ) : (
           <div className="divide-y divide-line">
             <IntegrationRow
               icon={Database}
-              name="Open data publishers (weather, climate, prices, satellite)"
+              name={t('settings.openDataName')}
               state={dataStatus.ok ? 'connected' : 'unavailable'}
-              detail="Key-free public APIs probed live via /api/data/status."
+              detail={t('settings.openDataDetail')}
             />
             <IntegrationRow
               icon={Bot}
-              name="AI Agricultural Advisor (Gemini)"
+              name={t('settings.advisorName')}
               state={advisor.configured ? 'connected' : 'not_configured'}
-              detail="Requires GEMINI_API_KEY in this environment. The advisor degrades to an honest unavailable state without it."
+              detail={t('settings.advisorDetail')}
             />
             <IntegrationRow
               icon={Sprout}
-              name="Crop and soil reference library"
+              name={t('settings.referenceName')}
               state="connected"
-              detail="Curated, citation-backed profiles shipped with the application; not a live publisher."
+              detail={t('settings.referenceDetail')}
             />
             <IntegrationRow
               icon={User}
-              name="Accounts & saved records (Supabase)"
+              name={t('settings.accountsName')}
               state="not_configured"
-              detail="Irshaye needs its own Supabase project before accounts are enabled. No shared credentials with any other application."
+              detail={t('settings.accountsDetail')}
             />
           </div>
         )}
