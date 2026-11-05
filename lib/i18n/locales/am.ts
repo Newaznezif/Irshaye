@@ -748,6 +748,27 @@ export const am: Dictionary = {
   'markets.ov.limitBody':
     'እነዚህ በየተሰየሙ ገበያዎች የተጠኑ የቸኮላና ማከላከያ ዋጋዎች ናቸው — ብሔራዊ የዋጋ ማውጫ አይደሉም፣ የእርሻ በር ዋጋ አይደሉም፣ ትንቢያም አይደሉም። ምንም ምርት፣ ገቢ ወይም ቁጠባ አልተገለጸም፤ ቁጥር የሌለው የክትትል ወር እንደ ክፍተት ይቆያል።',
 
+  // --- Markets module · coverage scope ---
+  'markets.scope.title': 'ይህ የውሂብ ስብስብ ምን ይሸፍናል',
+  'markets.scope.body': 'እነዚህን ቁጥሮች እንደ የተደረጉ መረጃ-ሰብሰቦች ወሰን እንጂ እንደ የኢትዮጵያ ገበያ ሁኔታ አታዩ።',
+  'markets.scope.markets': '{markets} ገበያዎች በ{regions} ክልሎች፣ በ{dates} የምርመራ ቀናት።',
+  'markets.scope.publishers': 'እዚህ ያለው እያንዳንዱ ዋጋ በ{publishers} የታተመ የምርመራ ምልከታ ነው።',
+  'markets.scope.age': 'የቅርቡ ምልከታ {date} ሲሆን ዕድሜው {age} ነው።',
+  'markets.scope.priceTypes': 'ዋጋዎች እንደ {types} በ{currencies} ታትመዋል። ሌሎች የዋጋ ዓይነቶችና ሌሎች ምንዛሪዎች አሳታሚው ሲያስመዘግቡ ብቻ ይታያሉ።',
+  'markets.scope.notNationwide': 'ይህ አገሪቱን ሁሉ ሸፍኖ አይደለም፤ ምርመራዎቹ ወደ ላሉባቸው ገበያዎችና ክልሎች በዝርዝሮቹ ውስጥ አይገኙም፣ በዜሮም አይቀርቡም።',
+  'markets.scope.refused': 'አይገኝም፦ {publishers} ለዋጋ ፋይሉ HTTP {status} መልሷል። አሳታሚው ተያይዟል፤ ለዝርዝሮቹ ምንም ግምት አልተተካም።',
+  'markets.scope.refusedChallenge':
+    'አይገኝም፦ የ{publishers} የቦት ጥበቃ ራስ-ሰር የፋይል መዳረሽን ውድቅ ያደርጋል። አሳታሚው ተያይዟል፤ ለዝርዝሮቹ ምንም ግምት አልተተካም።',
+  'markets.ov.ageLabel': 'የቅርቡ ምልከታ ዕድሜ',
+  'markets.ov.ageNote': 'አሳታሚው {cadence} ይለቃል፤ የዕድሜ ደረጃው {tier} ነው።',
+  'markets.age.today': 'በዚያው ቀን',
+  'markets.age.oneDay': 'ወደ አንድ ቀን',
+  'markets.age.days': '{n} ቀናት',
+  'markets.age.weeks': 'ወደ {n} ሳምንታት',
+  'markets.age.months': 'ወደ {n} ወራት',
+  'markets.src.coverageCounts': '{dates} የምርመራ ቀናት · {markets} ገበያዎች · {commodities} የእቃ+መለኪያ ተከታታይ',
+  'markets.src.noRowsRetrieved': 'ምንም ዝርዝር ስላልተገኘ መሸፈን አልታወሰም',
+
   // --- Markets module · explorer ---
   'markets.ex.title': 'የዋጋ መመርመሪያ',
   'markets.ex.hint':

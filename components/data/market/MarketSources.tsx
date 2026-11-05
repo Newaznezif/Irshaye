@@ -119,7 +119,21 @@ export const MarketSources = ({ reports }: Props) => {
                   </DataRow>
                 )}
                 <DataRow label={t('markets.src.coverage')}>
-                  <span className="text-[12.5px] text-ink-muted">{report.coverage}</span>
+                  {/* Composed here from the report's own counts: the server's `coverage` string is
+                      English prose for machine readers, and this panel has five. A publisher that
+                      returned nothing gets no counts at all — "0 markets" would read as a claim
+                      about the publisher's reach rather than about our access to it. */}
+                  <span className="text-[12.5px] text-ink-muted">
+                    {report.rows === 0
+                      ? t('markets.src.noRowsRetrieved')
+                      : report.surveyDates !== null
+                        ? t('markets.src.coverageCounts', {
+                            dates: report.surveyDates.toLocaleString(locale),
+                            markets: report.markets.toLocaleString(locale),
+                            commodities: report.commodities.toLocaleString(locale),
+                          })
+                        : report.coverage}
+                  </span>
                 </DataRow>
                 <DataRow label={t('common.newestObservation')}>
                   <span className="tabular text-[12.5px]">

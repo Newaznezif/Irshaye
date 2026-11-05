@@ -749,6 +749,31 @@ export const sw: Dictionary = {
   'markets.ov.limitBody':
     'Hizi ni bei za reja na za jumla zilizopimwa katika masoko yaliyotajwa — si kielelezo cha bei cha taifa, si bei ya ukutani, na si utabiri. Hakuna mavuno, mapato au akiba inayodaiwa, na mwezi wa utafiti usio na thamani unabaki ukosekane.',
 
+  // --- Markets module · coverage scope ---
+  'markets.scope.title': 'Kifuniko cha data hii',
+  'markets.scope.body': 'Soma takwima hizi kama kikoa cha tafiti zilizofanyika, si hali ya soko la Uhabeshi.',
+  'markets.scope.markets': 'Masoko {markets} katika mikoa {regions}, tarehe {dates} za tafiti.',
+  'markets.scope.publishers': 'Kila bei katika ukurasa huu ni uangalisho wa tafiti lililochapishwa na {publishers}.',
+  'markets.scope.age': 'Uangalisho la karib ni {date}, likiwa na umri wa {age}.',
+  'markets.scope.priceTypes':
+    'Bei zimechapishwa kama {types} kwa {currencies}. Aina nyingine za bei na sarufi nyingine zinaonekana tu mratibu anapozirekodi.',
+  'markets.scope.notNationwide':
+    'Hii si kifuniko cha taifa zima: masoko na mikoa ambayo tafiti hazikufika hazipo katika orodha yoyote, na havionyeswi kama sifuri.',
+  'markets.scope.refused':
+    'Haijibu: {publishers} imerudisha HTTP {status} kwa faili yake ya bei. Kimebaki kimeunganishwa, na hakuna makadirio yaliyoweka badala ya safu zake.',
+  'markets.scope.refusedChallenge':
+    'Haijibu: kinga ya boti ya {publishers} inakataza ufunguzi wa kiotomatiki wa faili. Kimebaki kimeunganishwa, na hakuna makadirio yaliyoweka badala ya safu zake.',
+  'markets.ov.ageLabel': 'Umri wa uangalisho la karib',
+  'markets.ov.ageNote': 'Mchapishaji hutoa {cadence}; data hii imepimwa kama {tier}.',
+  'markets.age.today': 'siku ileile',
+  'markets.age.oneDay': 'karibu siku moja',
+  'markets.age.days': 'siku {n}',
+  'markets.age.weeks': 'karibu wiki {n}',
+  'markets.age.months': 'karibu miezi {n}',
+  'markets.src.coverageCounts':
+    'tarehe {dates} za tafiti · masoko {markets} · mfululizo {commodities} wa bidhaa+kipimo',
+  'markets.src.noRowsRetrieved': 'Hakuna safu zilizopatikana, kwa hivyo kifuniko hakidaiwi',
+
   // --- Markets module · explorer ---
   'markets.ex.title': 'Kichunguzi cha bei',
   'markets.ex.hint':

@@ -749,6 +749,30 @@ export const om: Dictionary = {
   'markets.ov.limitBody':
     'Kun gatii gabaa fi gurgurtaa naannoo gaaba bakka himame qoratame — madaalli gatii biyyoolessaa miti, gatii darachaa miti, duraa ba’uu miti. Oomisha, galii yookiin qusannaa hin ibsine; ji’a qorannoo gatii hin qabne bakka duwwaa hafa.',
 
+  // --- Markets module · coverage scope ---
+  'markets.scope.title': 'Kuusaan deetaa kanaa waan hammattu',
+  'markets.scope.body': 'Lakkoofsota kana akka daangaa qorannoo ta\'e ilaali, akka haala gabaa Itoophiyaa miti.',
+  'markets.scope.markets': 'Gabaa {markets} naannoo {regions} keessatti, guyyaa qorannoo {dates}.',
+  'markets.scope.publishers': 'Gatii marfama kanaa hundi wanta {publishers} ifa baase qorannoodha.',
+  'markets.scope.age': 'Mul\'ataan haaraan {date} dha, umurii isaa {age}.',
+  'markets.scope.priceTypes':
+    'Gatiin akka {types} {currencies} keessatti ifa ba\'e. Halli gatii fi sarfii biraa maddi galmeesse malee hin mul\'atu.',
+  'markets.scope.notNationwide':
+    'Kun hammachaa biyya guutuu miti; gabaa fi naannoo qorannoon hin geenye galmee hunda keessatti dhabamu, zeroon hin agarsiifamu.',
+  'markets.scope.refused':
+    'Deebii hin kennu: {publishers} fayilii gatiif HTTP {status} deebise. Maddichi cachaa isaa keessa jira, tilmaanni bakka safaru isaa bu\'ame miti.',
+  'markets.scope.refusedChallenge':
+    'Deebii hin kennu: eegumsa bootii {publishers} sassaabbuu ofumaan dhorka. Maddichi cachaa isaa keessa jira, tilmaanni bakka safaru isaa bu\'ame miti.',
+  'markets.ov.ageLabel': 'Umurii mul\'ataa haaraa',
+  'markets.ov.ageNote': 'Barruuqa\'aa isaa {cadence} erga; kunsaan kun {tier} godhamu ramaddame.',
+  'markets.age.today': 'guyyaa sanuma',
+  'markets.age.oneDay': 'guyyaa tokko haa ta\'u',
+  'markets.age.days': 'guyyaa {n}',
+  'markets.age.weeks': 'torban {n} haa ta\'u',
+  'markets.age.months': 'ji\'a {n} haa ta\'u',
+  'markets.src.coverageCounts': 'guyyaa qorannoo {dates} · gabaa {markets} · {commodities} sirna meeshaa+yuunitii',
+  'markets.src.noRowsRetrieved': 'Safaru hin argamne, kanaaf hammachni hin beekamne',
+
   // --- Markets module · explorer ---
   'markets.ex.title': 'Qorattoo gatii',
   'markets.ex.hint':

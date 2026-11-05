@@ -34,8 +34,65 @@ export const MarketOverview = ({ summary, catalog, reports, provenance, refreshi
   const spanFrom = summary.earliestObservation;
   const spanTo = summary.latestObservation;
 
+  // The overall newest observation belongs to whichever answering publisher reported the latest
+  // date, so its age and its release cadence are read from that publisher's own report rather
+  // than from a rounded guess about how old the page's data is.
+  const answering = reports.filter((r) => r.rows > 0);
+  const silent = reports.filter((r) => r.rows === 0);
+  const freshest = answering.reduce<MarketSourceReport | null>(
+    (best, r) => (!best || (r.latestObservation ?? '') > (best.latestObservation ?? '') ? r : best),
+    null,
+  );
+  const namesOf = (list: MarketSourceReport[]) => list.map((r) => r.sourceName).join(' · ');
+  const ageOf = freshest?.observationAgeSeconds ?? null;
+
+  /** Age in the unit a reader thinks in, from the seconds the server measured against its own clock. */
+  const ageText = (seconds: number | null): string => {
+    if (seconds === null) return t('common.unknown');
+    const days = Math.max(0, Math.round(seconds / 86_400));
+    if (days < 1) return t('markets.age.today');
+    if (days === 1) return t('markets.age.oneDay');
+    if (days < 14) return t('markets.age.days', { n: days });
+    if (days < 84) return t('markets.age.weeks', { n: Math.round(days / 7) });
+    return t('markets.age.months', { n: Math.round(days / 30.44) });
+  };
+
   return (
     <div className="space-y-5">
+      <StateNotice tone="info" title={t('markets.scope.title')}>
+        <p>{t('markets.scope.body')}</p>
+        <ul className="mt-2 list-disc space-y-1.5 pl-4">
+          <li>
+            {t('markets.scope.markets', {
+              markets: fmtInt(summary.marketsMonitored, locale),
+              regions: fmtInt(summary.regionsMonitored, locale),
+              dates: fmtInt(summary.surveyDates, locale),
+            })}
+          </li>
+          <li>{t('markets.scope.publishers', { publishers: namesOf(answering) || '—' })}</li>
+          <li>
+            {t('markets.scope.age', {
+              date: spanTo ? dayLabel(spanTo, locale) : '—',
+              age: ageText(ageOf),
+            })}
+          </li>
+          <li>
+            {t('markets.scope.priceTypes', {
+              types: summary.priceTypes.join(' · ') || '—',
+              currencies: summary.currencies.join(' · ') || '—',
+            })}
+          </li>
+          <li>{t('markets.scope.notNationwide')}</li>
+          {silent.map((r) => (
+            <li key={r.sourceId}>
+              {r.accessChallenged
+                ? t('markets.scope.refusedChallenge', { publishers: r.sourceName })
+                : t('markets.scope.refused', { publishers: r.sourceName, status: r.upstreamStatus ?? t('common.unknown') })}
+            </li>
+          ))}
+        </ul>
+      </StateNotice>
+
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           icon={Table}
@@ -79,11 +136,23 @@ export const MarketOverview = ({ summary, catalog, reports, provenance, refreshi
           </div>
         }
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Metric
             label={t('markets.ov.newest')}
             value={spanTo ? dayLabel(spanTo, locale) : '—'}
             note={t('markets.ov.newestNote', { tier: t(`freshness.${summary.freshness}`) })}
+          />
+          <Metric
+            label={t('markets.ov.ageLabel')}
+            value={ageText(ageOf)}
+            note={
+              freshest
+                ? t('markets.ov.ageNote', {
+                    cadence: t(`cadence.${freshest.cadence}`),
+                    tier: t(`freshness.${freshest.freshness ?? 'unknown'}`),
+                  })
+                : t('markets.noRowsBody')
+            }
           />
           <Metric
             label={t('markets.ov.oldest')}

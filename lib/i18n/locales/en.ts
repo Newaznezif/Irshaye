@@ -750,6 +750,31 @@ export const en = {
   'markets.ov.limitBody':
     'These are surveyed retail and wholesale prices at named markets — not a national price index, not a farm-gate price and not a forecast. No yield, income or saving is claimed, and a survey month with no figure stays missing.',
 
+  // --- Markets module · coverage scope ---
+  'markets.scope.title': 'What this dataset covers',
+  'markets.scope.body':
+    'Read these figures as the reach of the surveys that produced them, not as the state of the Ethiopian market.',
+  'markets.scope.markets': '{markets} markets in {regions} regions, on {dates} survey dates.',
+  'markets.scope.publishers': 'Every price on this page is a survey observation published by {publishers}.',
+  'markets.scope.age': 'The newest observation is {date}, which is {age} old.',
+  'markets.scope.priceTypes':
+    'Prices are published as {types} in {currencies}. Other price types and other currencies appear only when a publisher records them.',
+  'markets.scope.notNationwide':
+    'This is not nationwide coverage: markets and regions the surveys did not reach are absent from every list here, and are never shown as zero.',
+  'markets.scope.refused':
+    'Not answering: {publishers} returned HTTP {status} for its price file. It stays integrated, and no estimate is substituted for its rows.',
+  'markets.scope.refusedChallenge':
+    'Not answering: the bot protection on {publishers} refuses automated file access. It stays integrated, and no estimate is substituted for its rows.',
+  'markets.ov.ageLabel': 'Age of the newest',
+  'markets.ov.ageNote': 'Its publisher releases {cadence}; this data is graded {tier}.',
+  'markets.age.today': 'the same day',
+  'markets.age.oneDay': 'about a day',
+  'markets.age.days': '{n} days',
+  'markets.age.weeks': 'about {n} weeks',
+  'markets.age.months': 'about {n} months',
+  'markets.src.coverageCounts': '{dates} survey dates · {markets} markets · {commodities} commodity-and-unit series',
+  'markets.src.noRowsRetrieved': 'No rows were retrieved, so no coverage is claimed',
+
   // --- Markets module · explorer ---
   'markets.ex.title': 'Price explorer',
   'markets.ex.hint':
