@@ -99,6 +99,7 @@ export const am: Dictionary = {
   'cadence.hourly': 'በየሰዓቱ',
   'cadence.daily': 'በየቀኑ',
   'cadence.8daily': 'የ8 ቀን ድብልቅ',
+  'cadence.weekly': 'በሳምንት',
   'cadence.monthly': 'በየወሩ',
   'cadence.quarterly': 'የሦስት ወር',
   'cadence.annual': 'ዓመታዊ',
@@ -617,31 +618,21 @@ export const am: Dictionary = {
 
   // --- Markets module ---
   'markets.description':
-    'በWFP rEMS የክትትል ፕሮግራም በኢትዮጵያ ገበያዎች ውስጥ የተጠኑ ዋጋዎች — አቅራቢው በመዘገበው መለኪያ መሠረት በETB። ዓለም አቀፍ የእቃ ማጣቀሻዎች እዚህ በጭራሽ እንደ የኢትዮጵያ ገበያ ዋጋ አይቀርቡም።',
+    'በWFP rEMS የክትትል ፕሮግራምና በFEWS NET ሳምንታዊ የገበያ ክትትል በኢትዮጵያ ገበያዎች የተጠኑ ዋጋዎች — እያንዳንዱ አቅራቢ በመዘገበው ምንዛሪና መለኪያ መሠረት። እዚህ ምንም በሞዴል አልተሰራም፣ አይተነብይም፣ በጭራሽ አልሞላም፦ ምላሽ ያልጠቀም ምንጭ አይገኝም ብሎ ይታያል።',
   'markets.badgeLiveSurvey': 'ቀጥታ ክትትል',
-  'markets.grainPricesTitle': 'ብሔራዊ የእህል ዋጋዎች · አዲሱ የክትትል ወር',
-  'markets.grainPricesHint':
-    'በዚያ ወር በእውነት የተጠኑ የቸኮላ ዋጋዎች አማካይ — በጥብቅ በእቃና በመለኪያ ብቻ የተከፋፈለ።',
-  'markets.loadingWfp': 'የWFP ዋጋዎች በመጫን ላይ',
-  'markets.meanAcrossMarkets': 'በ{count} የተጠኑ ገበያዎች አማካይ።',
   'markets.surveyMonth': 'የክትትል ወር',
-  'markets.grainNote':
-    '; እያንዳንዱ ቁጥር በካርዱ ውስጥ ከታዩት ገበያዎች አማካይ ነው። ቡን የመጠጥ ሰብል ስለሆነ በዚህ የእህል ሰንጠረዥ ውስጥ አይገኝም — ለቡን ከታች ባለው የታሪክ ሰሌዳ ይጠቀሙ።',
   'markets.historyTitle': 'በኢትዮጵያ ገበያዎች የዋጋ ታሪክ',
   'markets.historyHint':
-    'ለእያንዳንዱ እቃ · መለኪያ · የዋጋ ዓይነት አንድ መስመር — በዚያ ወር ለተጠኑ ገበያዎች አማካይ። አቅራቢው ክትትል ያቋረጠበት ቦታ ላይ መስመሩ እውነተኛ ክፍተት አለው — ምንም በጭራሽ አይሞላም።',
-  'markets.last36Months': 'የመጨረሻዎቹ 36 የክትትል ወራት',
+    'በአንድ ጊዜ አንድ ተከታታይ — እቃ፣ አቅራቢው ያመዘገበው መለኪያና አንድ የዋጋ ዓይነት። አማካይው፣ ዝቅተኛውና ከፍተኛው እዚህ ከተመዘገቡት ረድፎች ላይ ተሰልተዋል — ዋጋ ባልኖረበት ወረፍ መስመሩ ከመሃል መተሳሰር ይልቅ ይቋረጣል።',
   'markets.commodity': 'እቃ',
   'markets.loadingHistory': 'የ{commodity} ታሪክ በመጫን ላይ',
   'markets.noSeriesTitle': 'ምንም ተከታታይ አልሳለም',
-  'markets.noSeriesBody':
-    'አቅራቢው በአንድ መለኪያና በአንድ የዋጋ ዓይነት ቢያንስ ሁለት ወሮች ያሏቸው የ{commodity} ተከታታዮች የሉትም። ምንም ዋጋ አይፈጠርም።',
-  'markets.seriesLegend': '{series} · {months} ወራት · እስከ {markets} ገበያዎች',
+  'markets.noSeriesBody': 'በዚህ መለኪያ፣ የዋጋ ዓይነትና ወረፍ ውስጥ ለ{commodity} ምንም ክትትል ዋጋ ስላልዘገበ ምንም መስመር አይሳልም፤ ዋጋም አይፈጠርም።',
   'markets.unitsNote':
-    'ዋጋዎቹ በተገለጸው መለኪያ በETB ናቸው — የክትትል ሠራተኛው እንደመዘገበው ቸኮላ ወይም ማከላከያ — ሁለቱ በአንድ አማካይ ውስጥ በጭራሽ አይዋሃዱም።',
-  'markets.crossMarketTitle': 'በገበያዎች መካከል ያለ እንቅስቃሴ',
+    'ዋጋዎቹ የክትትል ሠራተኛው በመዘገበው ምንዛሪና መለኪያ ውስጥ ናቸው — ቸኮላና ማከላከያ በአንድ አማካይ ውስጥ በጭራሽ አይዋሃዱም፣ የአንድ እቃ ሁለት መለኪያዎች ሁለት የተለያዩ ተከታታዮች ሆነው ይቀራሉ።',
+  'markets.crossMarketTitle': 'ክፍለ ሀገሮችና ገበያዎች · አንድ የክትትል ወር',
   'markets.crossMarketHint':
-    'በአንድ ገበያ፣ በአንድ እቃና በአንድ መለኪያ ውስጥ ከወር ወደ ወር ለውጥ። ሁለት ገበያዎችን ማዛምደር ሁለት ክትትሎችን እንግዳ አንድን ዋጋ አለማዛመድ ማለት ነው።',
+    'አንድ እቃ፣ አንድ መለኪያ፣ አንድ የዋጋ ዓይነትና አንድ ወር — እነዚህ ክትትሎች የሚደግፉት አንዱ ማወዳደሪያ ነው። ልዩነቱና ከዝቅተኛው ላይ የሚመዘነው በመቶኛ እዚህ በተመዘገቡ የገበያ አማካዮች ላይ ያደርገነው ስሌት ነው።',
   'markets.region': 'ክፍለ ሀገር',
   'markets.allRegions': 'ሁሉም ክፍለ ሀገሮች',
   'markets.loadingLatest': 'አዲሱን የክትትል ወር በመጫን ላይ',
@@ -649,8 +640,6 @@ export const am: Dictionary = {
   'markets.thLatest': 'አዲሱ',
   'markets.thChange': 'ለውጥ',
   'markets.vs': 'ከ',
-  'markets.surveyCoverage':
-    'የ{month} ክትትል {markets} ገበያዎችንና {commodities} ዓይነት እቃዎችን ሸፍኗል። ከላይ ያሉ ረድፎች የሚገኙት አቅራቢው ለተመሳሳይ ገበያ፣ እቃና መለኪያ ይህንና ባለፈውን ወር ሲኖረው ብቻ ነው።',
   'markets.fxTitle': 'የኢትዮጵያ ውጭ ምንዛሪ — ሦስት የተለያዩ ምድቦች',
   'markets.fxHint':
     'መንግሥታዊው ልወጣ የNBE ዕለታዊ መመሪያ ማሳያ ነው፣ የከፋፈለ ገበያው ደግሞ የዓለም ባንክ ወርሃዊ ብሔራዊ አማካይ ሲሆን መነሻ ደረጃው ዓመታዊ ቁጥር ነው። እነዚህ የተለያዩ ዓይነት ቁጥሮች ስለሆኑ ለየብቻ ይታያሉ።',
@@ -669,11 +658,282 @@ export const am: Dictionary = {
   'markets.annualBody': 'ለአውድ ብቻ — እነዚህ የአሁኑ ወር ዋጋዎች አይደሉም።',
   'markets.noRowsTitle': 'ምንም ረድፎች አልተመለሱም',
   'markets.noRowsBody': '{label}፦ ይህ ምላሽ ምንም ረድፍ ሳይዞ ሄደዋል — ለእነሱም ምንም አልተተካም።',
-  'commodity.teff': 'ጤፍ',
-  'commodity.maize': 'ምስሪ',
-  'commodity.wheat': 'በቆልዓ',
-  'commodity.sorghum': 'ማሽላ',
-  'commodity.coffee': 'ቡን',
+
+  // --- Markets module · shared registries ---
+  'markets.sectionPicker': 'የክፍል እይታ',
+  'markets.publishers': 'የኢትዮጵያ ገበያ ክትትሎች',
+  'markets.unavailableTitle': 'ምንም የገበያ አቅራቢ መላክቶ አልተመለሰም',
+  'markets.unavailableBody':
+    'በዚህ ገጽ ላይ ያለው እያንዳንዱ ቁጥር በመጠየቅ ሰዓት ከክትትል የተነበበ ስለሆነ አቅራቢዎች ሲያመልጡ ምንም ማሳየት የለም። ምንም አልተተካም፤ ከታች ያለው ሪፖርት እያንዳንዱን አቅራቢና የራሱ ጥያቄ ምን እንደመለሰ ይላል።',
+  'markets.contributing': 'በዚህ ምላሽ ውስጥ',
+  'markets.coverageClean': '{rows} ረድፎች ተዛምደዋል፤ እያንዳንዳቸው የተታተመ ቁጥር አላቸው።',
+  'markets.coverageWithGaps':
+    '{rows} ረድፎች ተዛምደዋል፣ ከነሱ {gaps} የተታተመ ቁጥር የላቸውም — ባዶ ሳጥኖች የክትትል ክፍተቶች ናቸው እንግዳ ዜሮ ዋጋ አይደሉም።',
+  'markets.ofCount': 'ከ{total}',
+  'markets.noSpan': 'አንድ የክትትል ቀን ብቻ።',
+  'markets.months': 'ወራት',
+  'markets.weeks': 'ሳምንታት',
+  'markets.lastWindow': 'የመጨረሻዎቹ {count} {unit}',
+  'markets.col.markets': 'ገበያዎች',
+  'markets.col.months': 'ወራት',
+  'markets.col.periods': 'ጊዜያት',
+  'markets.col.rows': 'ረድፎች',
+  'common.unit': 'መለኪያ',
+  'dataType.market-survey': 'የገበያ ክትትል',
+  'dataType.reference-price': 'የማጣቀሻ ዋጋ',
+  'dataType.projection': 'ትንቢያ',
+  'dataType.administrative': 'አስተዳደራዊ ድንበር',
+  'freshness.current': 'ወቅታዊ',
+  'freshness.recent': 'ቅርብ ጊዜ',
+  'freshness.stale': 'ከግዢ ሰዓት በኋላ',
+  'freshness.historical': 'የታሪክ መዝገብ',
+  'freshness.unknown': 'የማይጠቅም ቀን የለም',
+  'statusLabel.historical': 'የታሪክ መዝገብ',
+  'markets.state.access_challenged': 'መዳረሻ ተጠይቋል',
+  'markets.granularity.weekly': 'ሳምንታዊ',
+  'markets.granularity.monthly': 'ወርሃዊ',
+  'markets.flag.actual': 'የተመለከተ',
+  'markets.flag.aggregate': 'የተሰበሰበ',
+  'markets.flag.replaced': 'የተተካ ቁጥር',
+  'markets.flag.unknown': 'ደረጃ የለሽ',
+
+  // --- Markets module · tabs ---
+  'markets.tab.overview': 'አጠቃላይ እይታ',
+  'markets.tab.prices': 'የዋጋ መመርመሪያ',
+  'markets.tab.history': 'የዋጋ ታሪክ',
+  'markets.tab.regions': 'ክፍለ ሀገሮችና ገበያዎች',
+  'markets.tab.insights': 'መረጃው የሚያሳየው',
+  'markets.tab.exchange': 'ውጭ ምንዛሪ',
+  'markets.tab.sources': 'ምንጮች',
+
+  // --- Markets module · overview ---
+  'markets.ov.observations': 'የተታተሙ ዋጋዎች',
+  'markets.ov.observationsNote': '{rows} የተጠኑ ረድፎች ቁጥር የላቸውም፤ እንደ ክፍተት ተዘርዝረዋል።',
+  'markets.ov.commodities': 'የተሸፈኑ እቃዎች',
+  'markets.ov.commoditiesNote': 'በ{units} የአቅራቢ መለኪያዎች — ለዘላቸው በአንድ አይዋሃዱም።',
+  'markets.ov.markets': 'የተጠኑ ገበያዎች',
+  'markets.ov.marketsNote': 'በ{regions} ክፍለ ሀገሮች ውስጥ፤ {mapped} የአቅራቢ መጋጠሚያ አላቸው።',
+  'markets.ov.periods': 'የክትትል ጊዜያት',
+  'markets.ov.periodsNote': 'የተለያዩ የመረጃ ቀናት — በ{months} ወራት ላይ የተሰራጩ።',
+  'markets.ov.coverageTitle': 'እነዚህ ክትትሎች በእውነት የሚሸፍኑት',
+  'markets.ov.coverageHint':
+    'የተታተሙ ረድፎች ብዛት ብቻ — አማካይ የለም፣ ማውጫ የለም፣ ክትትል ያልመዘገበውም እቃ የለም።',
+  'markets.ov.newest': 'አዲሱ መረጃ',
+  'markets.ov.newestNote': 'የራሱን አቅራቢ ጊዜ ሰዓት መሠረት በማድረግ {tier} ተብሎ ተመድቧል።',
+  'markets.ov.oldest': 'የጤ ለጤው መረጃ',
+  'markets.ov.span': 'የክትትል ወራት ከ{from} እስከ {to} ይሄዳሉ።',
+  'markets.ov.publishers': 'መላክቶ የተመለሱ አቅራቢዎች',
+  'markets.ov.publishersNote': 'እያንዳንዱ ለየብቻ ስለሚጫን አንድ ስህተት ይህን ገጽ ማንሳት አይችልም።',
+  'markets.ov.currencies': 'እንደተታተሙ ምንዛሪዎች',
+  'markets.ov.units': 'እንደተታተሙ መለኪያዎች',
+  'markets.ov.unitsNote': 'የ100 KG ዋጋና የKG ዋጋ ሁለት ተከታታይ ናቸው — አንድ አማካይ አይደሉም።',
+  'markets.ov.priceTypes': 'የዋጋ ዓይነቶች',
+  'markets.ov.granularities': 'አቅራቢዎች የሚደግፉት የሰውጥ ልኬት፦ {list}።',
+  'markets.ov.catalogTitle': 'የተታተሙ ዋጋ ያላቸው እቃዎች',
+  'markets.ov.catalogHint':
+    'ምን ያህል ገበያዎች ቁጥር እንደሰጡ መሠረት ተደርድረዋል። ዝርዝሩ የሚነበበው ከክትትል ረድፎቹ ራሳቸው ስለሆነ አቅራቢ ያልጠየው እቃ ባዶ ሳይሆን ጠፍቶ ይታያል።',
+  'markets.ov.catalogTruncated': 'ከ{total} የእቃና መለኪያ ተከታታዮች ውስጥ ጥልቅ የሆኑት {shown} ብቻ ታይተዋል፤ መመርመሪያው ሁሉንም ይዘረዝራል።',
+  'markets.ov.qualityTitle': 'ክፍሉ የሚያየው የመረጃ ጥራት',
+  'markets.ov.qualityHint': 'እነዚህ ሁሉ የተታተሙ ረድፎች ብዛት ናቸው — የመሸፈኛ እውነታ እንግዳ ማስተካከያ አይደሉም።',
+  'markets.ov.gaps': 'ቁጥር የሌላቸው ረድፎች',
+  'markets.ov.gapsNote': 'እንደ ባዶ ሳጥን ቀርተዋል። ዜሮ ሌላ ዓይነት ድምዳሜ ነው።',
+  'markets.ov.duplicates': 'የተወገዱ ደጋጋሚ ረድፎች',
+  'markets.ov.duplicatesNote':
+    'አንድ አቅራቢ፣ ገበያ፣ እቃ፣ መለኪያ፣ የዋጋ ዓይነትና ቀን፤ ቁጥር ያለው ረድፍ ብቻ ቀርቷል።',
+  'markets.ov.unmapped': 'መጋጠሚያ የሌላቸው ገበያዎች',
+  'markets.ov.unmappedNote': '{mapped} ገበያዎች በካርታ ሊቀመጡ ይችላሉ። ወደፊኞቹ በሰንጠረዥ ብቻ ይቆያሉ እንግዳ በማሰብ አይቀመጡም።',
+  'markets.ov.seasonal': 'ለወቅት ለመነጋገር በቂ ጥልቀት ያላቸው ተከታታዮች',
+  'markets.ov.seasonalNote': 'ቢያንስ አስራ ሁለት የክትትል ወራት በአንድ መለኪያና የዋጋ ዓይነት።',
+  'markets.ov.limitTitle': 'ይህ ክፍል ሊል ያልችለው',
+  'markets.ov.limitBody':
+    'እነዚህ በየተሰየሙ ገበያዎች የተጠኑ የቸኮላና ማከላከያ ዋጋዎች ናቸው — ብሔራዊ የዋጋ ማውጫ አይደሉም፣ የእርሻ በር ዋጋ አይደሉም፣ ትንቢያም አይደሉም። ምንም ምርት፣ ገቢ ወይም ቁጠባ አልተገለጸም፤ ቁጥር የሌለው የክትትል ወር እንደ ክፍተት ይቆያል።',
+
+  // --- Markets module · explorer ---
+  'markets.ex.title': 'የዋጋ መመርመሪያ',
+  'markets.ex.hint':
+    'በአንድ ጊዜ አንድ ገጽ የተታተሙ ረድፎች። ማጣሪያዎች በክትትሎች ውስጥ ባሉ እሴቶች ብቻ ይሰይሙናል፤ ቁጥር የሌለው ረድፍ ባዶ ሳጥን ሆኖ ይቆያል።',
+  'markets.ex.search': 'ገበያ ወይም እቃ ፈልግ',
+  'markets.ex.searchPlaceholder': 'ለምሳሌ መቀለ ወይም ጤፍ',
+  'markets.ex.allCommodities': 'ሁሉም የተታተሙ እቃዎች',
+  'markets.ex.allMarkets': 'ሁሉም ገበያዎች',
+  'markets.ex.allSources': 'ሁሉም አቅራቢዎች',
+  'markets.ex.anyUnit': 'ማንኛውም መለኪያ',
+  'markets.ex.anyPriceType': 'ማንኛውም የዋጋ ዓይነት',
+  'markets.ex.priceType': 'የዋጋ ዓይነት',
+  'markets.ex.surveyRange': 'የክትትል መስኮት',
+  'markets.ex.surveyRangeHint': 'በአቅራቢዎች ራሳቸው የመረጃ ቀናት ላይ የተጣራ።',
+  'markets.ex.fromDate': 'ከዚህ ቀን ጀምሮ',
+  'markets.ex.toDate': 'እስከዚህ ቀን',
+  'markets.ex.pricedOnly': 'ቁጥር ያላቸው ረድፎች ብቻ',
+  'markets.ex.clear': '{count} ማጣሪያ አጽዳ',
+  'markets.ex.clearAll': 'ሁሉንም ማጣሪያ አጽዳ',
+  'markets.ex.loading': 'የተታተሙ የዋጋ ረድፎች በመጫን ላይ',
+  'markets.ex.sourceLabel': 'የኢትዮጵያ ገበያ ክትትሎች',
+  'markets.ex.emptyTitle': 'ከእነዚህ ማጣሪያዎች ጋር የሚዛመድ የተታተመ ረድፍ የለም',
+  'markets.ex.emptyHint':
+    'ማጣሪያዎች የአቅራቢውን ራሱ ጽሕፈት በትክክል ስለሚከተሉ ምንም ክትትል ያልናገረው ጥምረት ባዶ ይመልሳል። ሰንጠረዡን ለሙላት ምንም አይፈጠርም።',
+  'markets.ex.tableCaption': 'የተታተሙ የኢትዮጵያ ገበያ ዋጋ መረጃዎች',
+  'markets.ex.sortAria': 'በ{label} ደርድር',
+  'markets.ex.price': 'ዋጋ',
+  'markets.ex.quality': 'ዓይነትና ጥራት',
+  'markets.ex.freshness': 'አዲስነት',
+  'markets.ex.noFigure': 'ይህ የክትትል ሳጥን የተታተመ ቁጥር የለውም',
+  'markets.ex.perUnit': 'ለ{unit}',
+  'markets.ex.prev': 'ቀዳሚ',
+  'markets.ex.next': 'ቀጣይ',
+  'markets.ex.pageOf': 'ገጽ {page} ከ{pages}',
+  'markets.ex.perPage': 'በገጽ ረድፎች',
+  'markets.ex.matched': '{total} ረድፎች ከእነዚህ ማጣሪያዎች ጋር ተዛምደዋል',
+  'markets.ex.window': 'በዚህ ውጤት ውስጥ አዲሱ {newest}፤ የጤ ለጤው {oldest}።',
+  'markets.ex.staleTitle': 'አንዳንድ ረድፎች ከአቅራቢያቸው ጊዜ ሰዓት በስጋት ላይ ናቸው',
+  'markets.ex.staleBody':
+    'አዲስነት የሚመዘኑት በእያንዳንዱ አቅራቢ ራሱ በሚገልጸው ጊዜ ሰዓት ስለሆነ ሳምንታዊና ወርሃዊ ክትትል በአንድ ሰዓት አይዳነም።',
+  'markets.ex.export': 'CSV ላክ',
+  'markets.ex.exportHint':
+    'ከገጽ {page} ከ{pages} የሆኑትን {rows} ረድፎች ሁሉም የአቅራቢ መለኪያ፣ ምንዛሪ፣ የክትትል ቀን፣ የተገኘበት ሰዓትና የምንጅ አድራሻ አድርጎ ይላካል። መረጃው በፎርሙላ እንዳይሄድ የፊት ቁምፊዎች ተከልክለዋል።',
+
+  // --- Markets module · history ---
+  'markets.hist.granularity': 'የስብስብ ልኬት',
+  'markets.hist.windowLabel': 'የታዩ ጊዜያት',
+  'markets.hist.unitHint': 'የአቅራቢው መለኪያ — መቀየሩ ተከታታዩን ይቀይረዋል።',
+  'markets.hist.average': 'የጊዜ አማካይ',
+  'markets.hist.lowest': 'ዝቅተኛው ቁጥር',
+  'markets.hist.highest': 'ከፍተኛው ቁጥር',
+  'markets.hist.derivedNote': 'ከተታተሙ ረድፎች እዚህ የተሰላ።',
+  'markets.hist.latestNote': '{when} የተጠነ — በ{markets} ገበያዎች።',
+  'markets.hist.lowestNote': '{when} ተመዝግቧል።',
+  'markets.hist.highestNote': '{when} ተመዝግቧል።',
+  'markets.hist.change': 'በክትትል ጊዜያት መካከል {direction} {pct}%',
+  'markets.hist.up': 'ጨምሯል',
+  'markets.hist.down': 'ቀንሟል',
+  'markets.hist.seriesNote':
+    '{commodity} · {unit} · {retail}፦ ቁጥር ባላቸው {periods} ጊዜያት — እነሱን በሰጡ {markets} ገበያዎች።',
+  'markets.hist.fallbackTitle': 'ወርሃዊ ተሳልቷል',
+  'markets.hist.fallbackBody':
+    '{commodity}ን የሚያቀርብ ማንም አቅራቢ በሳምንት ክትትል አያደርግም፤ ስለዚህ ይህ ተከታታይ በየክትትል ወሩ ተከፋፍሏል። ሳምንታዊ መስመር ማንም ያላየባቸውን ቀናት ይሳላል።',
+  'markets.hist.gapTitle': 'የተታተመ ቁጥር የሌለባቸው ጊዜያት',
+  'markets.hist.gapBody':
+    'በዚህ መስኮት ውስጥ ያሉ {count} ጊዜያት ምንም ዋጋ አላመጡም። መስመሩ በእያንዳንዱ ክፍተት ይቋረጣል፤ ምንም አይሞላም።',
+  'markets.hist.onePoint':
+    'በዚህ መስኮት ውስጥ {count} ጊዜ ብቻ ቁጥር ስላለው የአዝማሚያ መስመር አይሳልም — አንድ ነጥብ አዝማሚያ አይደለም።',
+  'markets.hist.byMarketTitle': 'ተመሳሳሊ ስታቲስቲክስ በየገበያው',
+  'markets.hist.byMarketHint':
+    'እያንዳንዱ ረድፍ በአንድ እቃ፣ መለኪያና የዋጋ ዓይነት ውስጥ ያለ አንድ ገበያ ነው። የመቶኛ ለውጥ ቁጥር ባላቸው ሁለት የቅርብ ጊዜ ጊዜያት ላይ የረሳ ስሌት ነው።',
+  'markets.hist.publishersInSeries': 'በዚህ ተከታታይ ውስጥ ያሉ ረድፎች የመጡት፦ {list}።',
+  'markets.hist.recheck': 'ይህን ተከታታይ ከአቅራቢው እንደገና አንብብ',
+
+  // --- Markets module · regions ---
+  'markets.reg.monthHint': 'ለዚህ እቃ የተታተመ ቁጥር ባላቸው ወራት ብቻ ይቀርባሉ።',
+  'markets.reg.marketsShown': '{count} ገበያዎች ዘግበዋል',
+  'markets.reg.cheapest': 'አነስተኛ ዋጋ ያለው ገበያ',
+  'markets.reg.dearest': 'ከፍተኛ ዋጋ ያለው ገበያ',
+  'markets.reg.atMarket': 'በ{market}።',
+  'markets.reg.spread': 'ከፍተኛው ከዝቅተኛው በላይ',
+  'markets.reg.spreadNote': 'በዚህ ወር ባሉ ሁለት የገበያ አማካዮች መካከል እዚህ የተሰላ — በአንድ መለኪያና የዋጋ ዓይነት።',
+  'markets.reg.singleMarket':
+    'በዚህ ወር ለዚህ እቃ፣ መለኪያና የዋጋ ዓይነት አንድ ገበያ ብቻ ስለተታተመ ሊነገር የሚችል ልዩነት የለም።',
+  'markets.reg.noneTitle': 'በዚህ ወር የተታተመ ቁጥር የለም',
+  'markets.reg.noneBody':
+    'በ{month} ክትትሎች ለ{commodity} በ{unit} በተመረጠው የዋጋ ዓይነት ምንም ዋጋ አልሰጡም። ሌላ ወር ይምረጡ እንግዳ ባዶ ንጽጽርን ዋጋው ያነሰ ብሎ አያንብቡት።',
+  'markets.reg.mapTitle': 'አቅራቢው እነዚህን ገበያዎች የየት ይገድፋል',
+  'markets.reg.mapHint':
+    'እያንዳንዱ ነጥብ አቅራቢው ለዚያ ገበያ ያተተመው መጋጠሚያ ላይ ሲቀመጥ የgeoBoundaries አስተዳደራዊ ድንበሮች ላይ ይገኛሉ። መጋጠሚያ የሌለው ገበያ ከካርታው ይቀራልና በሰንጠረዡ ውስጥ ይቆያል።',
+  'markets.reg.mapAria': 'በየተታተሙ መጋጠሚያቸው የቀመጡ {count} የተጠኑ የኢትዮጵያ ገበያዎች ካርታ',
+  'markets.reg.ramp': 'ከግራ {low} ወደ ቀኝ {high} {currency} ለ{unit}',
+  'markets.reg.plotted': '{plotted} ከ{total} ገበያዎች በካርታ ቀምተዋል',
+  'markets.reg.unplottedNote': 'ወደፊኞቹ የአቅራቢ መጋጠሚያ የላቸውም።',
+  'markets.reg.loadingOutlines': 'አስተዳደራዊ ድንበሮች በመጫን ላይ…',
+  'markets.reg.outlineNote':
+    'አስተዳደራዊ ድንበሮች መጫን ስላልቻሉ የገበያ ነጥቦቹ ያለ እነሱ ታይተዋል። ምንም ድንበር በmemory አይሳልም።',
+  'markets.reg.byRegionTitle': 'ለወሩ የክፍለ ሀገር አማካዮች',
+  'markets.reg.byRegionHint': 'በአንድ ክፍለ ሀገር ውስጥ ባሉ የተጠኑ ገበያዎች አማካይ — በአቅራቢው ራሱ የክፍለ ሀገር ስሞች።',
+  'markets.reg.regionMarkets': '{count} ገበያዎች ተጥነዋል · ለ{unit}',
+  'markets.reg.tableTitle': 'ገበያ በገበያ',
+  'markets.reg.tableCaption': 'በአንድ የክትትል ወር ውስጥ በገበያዎች መካከል የተነጻጸረ አንድ እቃ፣ መለኪያና የዋጋ ዓይነት',
+  'markets.reg.tableNote': 'በ{month} ውስጥ {markets} ገበያዎች ለዚህ ተከታታይ ቁጥር አሳውመዋል።',
+  'markets.reg.price': 'ዋጋ',
+  'markets.reg.aboveCheapest': 'ከዝቅተኛው በላይ',
+  'markets.reg.hasCoords': 'የአቅራቢ መጋጠሚያ',
+  'markets.reg.noCoords': 'መጋጠሚያ አልተታተመም',
+  'markets.reg.publisherNote': 'የተቀበለው፦ {list}።',
+
+  // --- Markets module · insights ---
+  'markets.ins.title': 'መረጃው የሚደግፈው',
+  'markets.ins.hint':
+    'እያንዳንዱ ግኝት ከኋላው ያለውን ተከታታይ፣ ገበያዎች፣ የረድፍ ብዛትና ጊዜ ይላልና የራሱን ገደብ ይዞ ይመጣል። ተዛማጅነት ምክንያት ተብሎ በጭራሽ አይጠራም፤ ዋጋም ወደፊት አይተነብይም።',
+  'markets.ins.noneTitle': 'ምንም ግኝት የመረጃ መስፈርት አላሟላም',
+  'markets.ins.noneBody':
+    'ለእንቅስቃሴ ተከታታይ ሁለት የክትትል ጊዜያት በእውነተኛ ቁጥሮች ያስፈልጋሉ፤ ለልዩነት ደግሞ በአንድ ወር ተመሳሳይ እቃ፣ መለኪያና የዋጋ ዓይነት የሰጡ ቢያንስ ሁለት ገበያዎች ያስፈልጋሉ። እነዚህ ሁኔታዎች በማይሟሉበት ቦታ ምንም ድምዳሜ አይደረግም።',
+  'markets.ins.kind.price-rise': 'የዋጋ ጭማሪ',
+  'markets.ins.kind.price-fall': 'የዋጋ ቅናሽ',
+  'markets.ins.kind.market-spread': 'በገበያዎች መካከል ያለ ልዩነት',
+  'markets.ins.kind.seasonal-coverage': 'የመሸፈኛ ጥልቀት',
+  'markets.ins.kind.market-outdated': 'በቅርብ ጊዜ የላተሙ ገበያዎች',
+  'markets.ins.kind.thin-coverage': 'በአንድ ገበያ ያለ እቃ',
+  'markets.ins.price-rise':
+    'በ{market}፣ {commodity} ለ{unit} ({retail}) በ{to} ከ{from} በ{pct}% ከፍ ብሏል፣ ዋጋው {price}።',
+  'markets.ins.price-fall':
+    'በ{market}፣ {commodity} ለ{unit} ({retail}) በ{to} ከ{from} በ{pct}% ወርዷል፣ ዋጋው {price}።',
+  'markets.ins.market-spread':
+    'በ{month}፣ {commodity} ለ{unit} ({retail}) በ{dearest} ከ{cheapest} በ{pct}% ውጤ ሆኖ ተገኝቷል — በ{markets} ገበያዎች።',
+  'markets.ins.seasonal-coverage':
+    '{series} የእቃና መለኪያ ተከታታዮች ቢያንስ ዐሥራ ሁለት የክትትል ወራት አሏቸው፤ የበለጠ ጥልቀት ያለው {commodity} ለ{unit} ነው — {months} ወራት በ{markets} ገበያዎች።',
+  'markets.ins.market-outdated':
+    '{months} ገበያዎች ከ{lastMonth} በኋላ የክትትል ረድፍ የላቸውም፤ አዲሱ የክትትል ወር ግን {latestMonth} ነው — ከእነሱ መካከል {markets}።',
+  'markets.ins.thin-coverage':
+    '{commodity} ለ{unit} ({retail}) በአንድ ገበያ ብቻ ({market}) ስለተጠነ ስለእሱ የክፍለ ሀገር ድምዳሜ መስጠት አይቻልም።',
+  'markets.insightLimit.change':
+    'የአንድ ገበያ ራሱ ክትትል፣ ጊዜ በጊዜ። ይህ ብሔራዊ ማውጫ አይደለም፤ ዋጋው ለምን እንደተንቀሳቀሰም አያብራራም።',
+  'markets.insightLimit.spread':
+    'በአንድ ወር ውስጥ በሁለት የገበያ ክትትሎች መካከል ያለ ልዩነት። ማጓጓዣ፣ አካባቢያዊ አቅርቦትና የክትትል ጊዜ ሁሉ በአንድ ሰዓት ስለሚለያዩ ልዩነቱ ለአንዱ ብቻ አይመደብም።',
+  'markets.insightLimit.seasonal':
+    'የመሸፈኛ ጥልቀት ብቻ፦ ስንት ወራት እንደተታተሙ ይላል እንግዳ የወቅት ንድፍ አለ ወደማለት አይደለም።',
+  'markets.insightLimit.coverage': 'ስለ ክትትሎቹ ራሳቸው የተሰጠ ድምዳሜ እንግዳ ስለ ገበያው አይደለም።',
+  'markets.ins.seasonalTitle': 'አመት ወይም ከዚያ በላይ መሸፈኛ ያላቸው ተከታታዮች',
+  'markets.ins.seasonalHint':
+    'ቁጥር ባላቸው ወራች — በእቃ፣ በመለኪያና በየዋጋ ዓይነት። የወቅት ጥያቄ ሊነሳበት በሚችልበት ቦታ ማሳየት ዐላም ተዘርዝረዋል።',
+  'markets.ins.wetVsDry': 'የደጋ ወራት ከሌሎች ጋር',
+  'markets.ins.seasonalLimitation':
+    'ይህ ቁጥር ሰኔ እስከ መስከረም ያሉትን ወራት ከሌሎች ወራች ጋር በተታተሙ ዓመታት ሁሉ ይነጻጽራል። የአንድ ዓመት ረድፍ ካለ ማንነቱን እንግዳ ንድፍን አይገልጽም፤ ትንቢያም በጭራሽ አይደለም።',
+  'markets.ins.evidenceSeries': 'ተከታታይ',
+  'markets.ins.evidenceRows': 'ረድፎች',
+  'markets.ins.limitLabel': 'ገደብ',
+
+  // --- Markets module · source report ---
+  'markets.src.title': 'በአቅራቢ ደረጃ ሁኔታ',
+  'markets.src.hint':
+    'የዚህ ተሰማሪ ራሱ ጥያቄዎች ምን እንዳመለሱ በየአቅራቢው፦ ሁኔታ፣ አዲሱ መረጃ፣ የተገኘበት ሰዓት፣ መሸፈኛና የአቅራቢው ራሱ ካታሎግ።',
+  'markets.src.none': 'ከዚህ ምላሽ ጋር ምንም የአቅራቢ ሪፖርት አልመለሰም።',
+  'markets.src.answering': '{count} መልስተዋል',
+  'markets.src.refusing': '{refused} አልቀበሉም · {silent} ጸጥ ብለዋል',
+  'markets.src.chip': 'የቦት መከላከያ',
+  'markets.src.publisherSite': 'የአቅራቢ ገጽ',
+  'markets.src.challengeTitle': 'ይገኛልና የራራክ ማውረድ ይከልክላል',
+  'markets.src.challengeBody':
+    'የአቅራቢው የቦት መከላከያ ፋይሉን ከመስጥ ጥያቄአችንን መልስላል። ይህን ጠያቂ ስላልመልስን ወይም አሳሽን በማሳየት ስላልተጠቀምን ምንም ረድፍ አልተገኘም፤ ምንም አልተተካም። ከታች ያለው ካታሎግ የአቅራቢው ራሱ መረጃው እንዳለና መቼ እንደተቀየረ መግለጫ ነው።',
+  'markets.src.outageTitle': 'ከዚህ አቅራቢ ምንም መልስ የለም',
+  'markets.src.outageBody':
+    'ጥያቄው የሚጠቅም ረድፍ አላመጣም፤ ስለዚህ ይህ አቅራቢ ከላይ ባሉ ቁጥሮች ላይ ምንም አበረክታ የለውም። የተቀመጣ ቅዳሜ ለወቅታዊ ንባብ ተተኪ ሆኖ በጭራሽ አይደረግም።',
+  'markets.src.rows': 'የያዝኑ ረድፎች',
+  'markets.src.publishedCount': 'አቅራቢው የሚቆጥረው',
+  'markets.src.truncated': 'ከተታተመው ያነሰ',
+  'markets.src.excluded': 'የተያዙ ረድፎች',
+  'markets.src.excludedNote': 'ዋጋ የሆኑ አይደሉም — የደመወዝ ረድፎች ወይም እንደ ቁጥር የማንበብ ዕድል ያላገኙ ሳጥኖች።',
+  'markets.src.coverage': 'መሸፈኛ',
+  'markets.src.oldestObservation': 'የጤ ለጤው መረጃ',
+  'markets.src.ageDays': 'ዕድሜ {days} ቀናት',
+  'markets.src.retrieved': 'የተገኘበት',
+  'markets.src.retrievalAge': 'በእኛ ማከማቻ {days} ቀናት',
+  'markets.src.dataType': 'የቁጥር ዓይነት',
+  'markets.src.catalogue': 'የአቅራቢው ራሱ ካታሎግ',
+  'markets.src.catalogueReachable': 'ይገኛል — መረጃው የተቀየረው በመጨረሻው {modified}።',
+  'markets.src.catalogueUnreachable': 'የካታሎግ መጨረሻ ነጥብም ምላሽ አልሰጠም።',
+  'markets.src.notStated': 'ቀን አልተገለጸም',
+  'markets.src.rowPaging': 'ረድፎች እንደ JSON በገጽ',
+  'markets.src.fileOnly': 'ፋይሉን በሙሉ ማውረድ',
+  'markets.src.httpTitle': 'ተሳኪ ጥያቄ ከወቅታዊ መረጃ ጋር አንድ ዓይነት ድምዳሜ አይደለም',
+  'markets.src.httpBody':
+    'ሁኔታ የሚነሳው ከHTTP ሁኔታ ሳይሆን አዲሱ የመረጃ ቀን አቅራቢው በሚገልጸው ጊዜ ሰዓት ሲመዘን ነው። አቅራቢ በሚሊሰከንድ ሊመልስና በራሱ ግዢ ሰዓት ሳምንታት ከኋላ ሆኖ ሊቆይ ይችላል፤ ይህ እንደ መንገድ መክፈት ሳይሆን እንደ ማዘጋየት ይዘገባል።',
 
   // --- Soil module ---
   'soil.pageDescription':

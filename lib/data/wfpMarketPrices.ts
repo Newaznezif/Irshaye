@@ -2,6 +2,7 @@ import Papa from 'papaparse';
 
 import { cachedFetch } from './cache';
 import { httpText } from './http';
+import { observationIdOf, type SourceAttribution } from './marketModel';
 import { provenanceFor, SOURCES } from './sources';
 import type { ConnectorResult, MarketPriceObservation, MarketSnapshot, PriceChange, SourceError } from './types';
 
@@ -18,19 +19,26 @@ import type { ConnectorResult, MarketPriceObservation, MarketSnapshot, PriceChan
 const HDX_PRICES_URL =
   'https://data.humdata.org/dataset/2e4f1922-e446-4b57-a98a-d0e2d5e34afa/resource/87bac18e-f3aa-4b29-8cf8-76763e823dc5/download/wfp_food_prices_eth.csv';
 
+/** The dataset's own slug, used only to ask the publisher's catalogue about itself. */
+export const HDX_PRICES_DATASET = 'wfp-food-prices-for-ethiopia';
+
 /**
  * Whole-file download, once per 12 hours per process (see `getRowStore`).
  *
- * The file is 7.6 MB and measured 71 s from this machine on an ordinary link, so the 45 s used
- * elsewhere would fail every cold-cache request for the source that carries the market prices —
- * from a slow connection, which is exactly where an Ethiopian agro dealer is. It gets its own
- * budget instead of slowing every other connector down.
+ * The file is 7.6 MB and measured 71 s from this machine on an ordinary link when it is served
+ * at all, so the 45 s used elsewhere would fail every cold-cache request for the source that
+ * carries the market prices — from a slow connection, which is exactly where an Ethiopian agro
+ * dealer is. It gets its own budget instead of slowing every other connector down.
  *
- * No retry: two attempts on a stalled 7.6 MB download is four minutes of a spinner on a card.
- * The next page open retries naturally, and single-flight means the requests already in the
- * browser share the one attempt that is running.
+ * One bounded retry, shared with `lib/data/http.ts`, and `retryOnTimeout: false`: a stalled
+ * download is not cured by a second stalled download, and hanging 120 s twice would double the
+ * wait for the person watching the page.
+ *
+ * As measured on 2026-11-04, this endpoint refuses unattended requests outright (empty `202`
+ * challenge or `406`), so the realistic outcome of this call is a reported failure and the module
+ * degrades to its other publisher. The timeout budget is for the days the file does arrive.
  */
-const FETCH_OPTIONS = { timeoutMs: 120_000, retries: 0, maxBytes: 24 * 1024 * 1024 };
+const FETCH_OPTIONS = { timeoutMs: 120_000, retries: 1, retryOnTimeout: false, maxBytes: 24 * 1024 * 1024 };
 
 interface RawRow {
   date?: string;
@@ -50,9 +58,18 @@ interface RawRow {
   usdprice?: string;
 }
 
+/**
+ * A published cell, read as a number.
+ *
+ * An empty cell is a gap and stays `null`: `Number('')` is 0, which would turn "not
+ * surveyed" into "cost nothing" and, in the latitude and longitude columns, would place a
+ * market in the Gulf of Guinea at (0, 0) — a coordinate nobody published.
+ */
 function toNumber(v: string | undefined): number | null {
   if (typeof v !== 'string') return null;
-  const n = Number(v.trim());
+  const s = v.trim();
+  if (s === '') return null;
+  const n = Number(s);
   return Number.isFinite(n) ? n : null;
 }
 
@@ -72,17 +89,38 @@ function normaliseFlag(v: string | undefined): MarketPriceObservation['priceFlag
   return 'unknown';
 }
 
+export interface ParsedPriceFile {
+  rows: MarketPriceObservation[];
+  /** Rows the file carried that had no market, no commodity or no readable survey date. */
+  unreadableRows: number;
+}
+
 /** Exported for tests: parsing is pure, so a fixture proves it. */
-export function parsePriceCsv(text: string): MarketPriceObservation[] {
+export function parsePriceCsv(text: string, at: SourceAttribution): ParsedPriceFile {
   const parsed = Papa.parse<RawRow>(text.trim(), { header: true, skipEmptyLines: true });
   const out: MarketPriceObservation[] = [];
+  let unreadableRows = 0;
   for (const r of parsed.data) {
     const date = (r.date ?? '').trim();
     const market = (r.market ?? '').trim();
     const commodity = (r.commodity ?? '').trim();
     const price = toNumber(r.price);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !market || !commodity || price === null) continue;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !market || !commodity) {
+      // Counted rather than dropped quietly: "the file has 15,000 rows" and "the file
+      // has 15,000 rows, 3 of which we could not read" are different claims.
+      unreadableRows += 1;
+      continue;
+    }
+    const retail = normalisePriceType(r.pricetype);
+    const unit = (r.unit ?? '').trim() || 'unknown';
     out.push({
+      id: observationIdOf(at.sourceId, { market, commodity, unit, retail, observedOn: date }),
+      sourceId: at.sourceId,
+      sourceName: at.sourceName,
+      sourceUrl: at.sourceUrl,
+      // A surveyed retail/wholesale shelf price, not a benchmark: this is the one
+      // source in the app that reports what a named Ethiopian market charged.
+      dataType: 'market-survey',
       observedOn: date,
       market,
       marketId: (r.market_id ?? '').trim() || null,
@@ -92,48 +130,71 @@ export function parsePriceCsv(text: string): MarketPriceObservation[] {
       longitude: toNumber(r.longitude),
       commodity,
       category: (r.category ?? '').trim() || null,
-      unit: (r.unit ?? '').trim() || 'unknown',
+      unit,
       currency: (r.currency ?? '').trim() || 'ETB',
       price,
       usdPrice: toNumber(r.usdprice),
-      retail: normalisePriceType(r.pricetype),
+      retail,
       priceFlag: normaliseFlag(r.priceflag),
+      retrievedAt: at.retrievedAt,
+      // The published cells behind the parsed figures, kept as strings. Only fields this
+      // parser actually reads appear here: the column set is the file's, not a guess.
+      sourceFields: {
+        marketId: (r.market_id ?? '').trim() || null,
+        priceFlag: (r.priceflag ?? '').trim() || null,
+        priceType: (r.pricetype ?? '').trim() || null,
+        rawPrice: (r.price ?? '').trim() || null,
+        rawUsdPrice: (r.usdprice ?? '').trim() || null,
+      },
     });
   }
-  return out;
+  return { rows: out, unreadableRows };
 }
 
-type Loaded = { ok: true; rows: MarketPriceObservation[] } | { ok: false; error: SourceError };
+type Loaded = { ok: true; rows: MarketPriceObservation[]; unreadableRows: number } | { ok: false; error: SourceError };
 
 async function loadAllRows(): Promise<Loaded> {
   const res = await httpText(HDX_PRICES_URL, FETCH_OPTIONS);
   if (!res.ok) return { ok: false, error: res.error };
-  const rows = parsePriceCsv(res.text);
-  if (rows.length === 0) return { ok: false, error: { code: 'parse_failed', message: 'Price file parsed to zero usable rows' } };
-  return { ok: true, rows };
+  const parsed = parsePriceCsv(res.text, {
+    sourceId: SOURCES.wfpPrices.id,
+    sourceName: SOURCES.wfpPrices.name,
+    sourceUrl: SOURCES.wfpPrices.homeUrl,
+    dataType: 'market-survey',
+    retrievedAt: new Date().toISOString(),
+  });
+  if (parsed.rows.length === 0) return { ok: false, error: { code: 'parse_failed', message: 'Price file parsed to zero usable rows' } };
+  return { ok: true, rows: parsed.rows, unreadableRows: parsed.unreadableRows };
 }
 
 interface RowStore {
   rows: MarketPriceObservation[];
   latestDate: string;
+  /** File rows this parser could not read: a coverage fact, not a dropped row. */
+  unreadableRows: number;
   servedFromCache: boolean;
   retrievedAt: string;
 }
 
 /** Whole-file snapshot, shared by every market query and cached per process. */
 async function getRowStore(): Promise<RowStore | { error: SourceError }> {
-  const outcome = await cachedFetch<{ rows: MarketPriceObservation[]; latestDate: string }>('wfp:prices:all', 12 * 3600, async () => {
-    const loaded = await loadAllRows();
-    if (!loaded.ok) return { ok: false, error: loaded.error };
-    const latestDate = loaded.rows.reduce((max, r) => (r.observedOn > max ? r.observedOn : max), '');
-    return { ok: true, value: { rows: loaded.rows, latestDate } };
-  });
+  const outcome = await cachedFetch<{ rows: MarketPriceObservation[]; latestDate: string; unreadableRows: number }>(
+    'wfp:prices:all',
+    12 * 3600,
+    async () => {
+      const loaded = await loadAllRows();
+      if (!loaded.ok) return { ok: false, error: loaded.error };
+      const latestDate = loaded.rows.reduce((max, r) => (r.observedOn > max ? r.observedOn : max), '');
+      return { ok: true, value: { rows: loaded.rows, latestDate, unreadableRows: loaded.unreadableRows } };
+    },
+  );
 
   const value = outcome.value;
   if (!value.ok) return { error: value.error };
   return {
     rows: value.value.rows,
     latestDate: value.value.latestDate,
+    unreadableRows: value.value.unreadableRows,
     servedFromCache: outcome.servedFromCache,
     retrievedAt: new Date(outcome.storedAt).toISOString(),
   };
@@ -263,14 +324,20 @@ export function computeChanges(rows: MarketPriceObservation[]): PriceChange[] {
 }
 
 /**
- * The whole publisher window as rows, for persistence.
+ * The whole publisher window as rows, for persistence and for the market module.
  *
  * Deliberately NOT `getMarketSnapshot`: that returns a page of the newest month, which is
  * right for a table and wrong for a store — a sync that saved 500 of ~15,000 observations
  * would look like a price history and would not be one. Unit, currency, market and survey
  * date are preserved per row so nothing has to be inferred later.
+ *
+ * `unreadableFileRows` travels with it because the transparency report has to be able to say
+ * how many rows the file carried that this parser could not read, rather than implying that
+ * every published row became a price.
  */
-export async function getObservationWindow(months = 24): Promise<ConnectorResult<MarketPriceObservation[]>> {
+export async function getObservationWindow(
+  months = 24,
+): Promise<ConnectorResult<{ rows: MarketPriceObservation[]; unreadableFileRows: number }>> {
   const store = await getRowStore();
   if ('error' in store) {
     return { ok: false, error: store.error, provenance: marketProvenance({ observedAt: null, servedFromCache: false, coverage: 'Ethiopia' }) };
@@ -283,7 +350,7 @@ export async function getObservationWindow(months = 24): Promise<ConnectorResult
 
   return {
     ok: true,
-    data: rows,
+    data: { rows, unreadableFileRows: store.unreadableRows },
     provenance: marketProvenance({
       observedAt: store.latestDate,
       servedFromCache: store.servedFromCache,
@@ -332,45 +399,6 @@ export async function getGrainOverview(): Promise<
       observedAt: latest,
       servedFromCache: store.servedFromCache,
       coverage: `Ethiopian retail survey, grain and cereal commodities at ${commodities.length} commodity/unit groups`,
-      retrievedAt: store.retrievedAt,
-    }),
-  };
-}
-
-/** Monthly series for one commodity in one market — the chart data. */
-export async function getCommodityHistory(q: {
-  commodity: string;
-  market?: string | null;
-  months?: number;
-}): Promise<ConnectorResult<{ series: MarketPriceObservation[] }>> {
-  const store = await getRowStore();
-  if ('error' in store) {
-    return { ok: false, error: store.error, provenance: marketProvenance({ observedAt: null, servedFromCache: false, coverage: 'Ethiopia' }) };
-  }
-
-  const wantMonths = Math.max(2, Math.min(120, q.months ?? 36));
-  const term = q.commodity.toLowerCase();
-  const rows = store.rows
-    .filter((r) => r.commodity.toLowerCase().includes(term) && (!q.market || r.market.toLowerCase() === q.market.toLowerCase()))
-    .sort((a, b) => a.observedOn.localeCompare(b.observedOn))
-    .slice(-wantMonths * 40);
-
-  if (rows.length === 0) {
-    return {
-      ok: false,
-      error: { code: 'no_data', message: `No WFP observations for “${q.commodity}” in this dataset` },
-      provenance: marketProvenance({ observedAt: store.latestDate, servedFromCache: false, coverage: 'Ethiopia' }),
-    };
-  }
-
-  const latest = rows[rows.length - 1].observedOn;
-  return {
-    ok: true,
-    data: { series: rows },
-    provenance: marketProvenance({
-      observedAt: latest,
-      servedFromCache: store.servedFromCache,
-      coverage: `${q.commodity}${q.market ? ` at ${q.market}` : ' across Ethiopian markets'}`,
       retrievedAt: store.retrievedAt,
     }),
   };

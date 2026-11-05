@@ -101,10 +101,12 @@ export async function getUnofficialRateSeries(months = 12): Promise<
   const wanted = Math.max(2, Math.min(60, months));
   const outcome = await cachedFetch<{ series: { observedOn: string; unofficialUsdToEtb: number }[] }>('wb:currency', 24 * 3600, async () => {
     // 5.7 MB, and at the throughput this file has been measured at that is ~55 s — over the
-    // 45 s used for the small JSON endpoints. Cached 24 h, so it is paid once, and not retried
-    // for the same reason as the WFP survey file: a stalled bulk download should fail fast and
-    // honestly rather than double the wait on a card.
-    const res = await httpText(WB_CURRENCY_CSV, { timeoutMs: 120_000, retries: 0, maxBytes: 24 * 1024 * 1024 });
+    // 45 s used for the small JSON endpoints. Cached 24 h, so it is paid once. One bounded retry
+    // exists for the transient shapes (429/503), and `retryOnTimeout: false` stops a stalled bulk
+    // download from doubling the wait on a card. Measured 2026-11-04, this HDX-hosted file answers
+    // unattended requests with the front door's bot challenge, so the honest outcome is a reported
+    // failure and the UI renders the gap — see lib/data/http.ts.
+    const res = await httpText(WB_CURRENCY_CSV, { timeoutMs: 120_000, retries: 1, retryOnTimeout: false, maxBytes: 24 * 1024 * 1024 });
     if (!res.ok) return { ok: false, error: res.error };
     const series = parseWbCurrencyCsv(res.text);
     if (series.length === 0) return { ok: false, error: { code: 'parse_failed', message: 'No national average exchange observations found' } };

@@ -58,11 +58,30 @@ export interface SourceError {
   status?: number;
   /** Seconds to wait before retrying, when the source told us. */
   retryAfterSeconds?: number;
+  /**
+   * True when the refusal carried the publisher's own bot-protection marker (`x-amzn-waf-action`)
+   * rather than an error of ours. It is the difference between "this publisher does not serve
+   * unattended requests" and "we asked badly", and a reader is entitled to know which one they
+   * are looking at — we do not answer the challenge, so the first case is reported, not solved.
+   */
+  botChallenge?: boolean;
 }
 
 export type ConnectorResult<T> =
   | { ok: true; data: T; provenance: Provenance }
   | { ok: false; error: SourceError; provenance: Provenance };
+
+/**
+ * A connector result that also carries a per-publisher status report.
+ *
+ * `provenance` and `error` describe the payload as a whole; `sources` describes each
+ * publisher behind it, including the ones that did not answer. A module reading more
+ * than one source needs both, because "this request succeeded" and "every publisher
+ * is current" are different claims.
+ */
+export type SourcedResult<T, Report = unknown> =
+  | { ok: true; data: T; provenance: Provenance; sources: Report[] }
+  | { ok: false; error: SourceError; provenance: Provenance; sources: Report[] };
 
 export interface SourceDescriptor {
   id: string;
@@ -71,7 +90,7 @@ export interface SourceDescriptor {
   homeUrl: string;
   license: string;
   /** Cadence the publisher actually uses — decides the staleness threshold. */
-  cadence: 'realtime' | 'hourly' | 'daily' | '8daily' | 'monthly' | 'quarterly' | 'annual' | 'irregular';
+  cadence: 'realtime' | 'hourly' | 'daily' | '8daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'irregular';
   /**
    * How long after the observation the publisher normally takes to release it.
    * Without this, NASA POWER's 2-3 day reanalysis latency would be reported as
@@ -166,7 +185,32 @@ export interface LocationRef {
  * Market prices
  * ------------------------------------------------------------------ */
 
+/**
+ * What kind of figure a row is, stated rather than inferred by the reader.
+ *
+ * `market-survey` is a monitored price in a named Ethiopian market.
+ * `reference-price` is a published benchmark or import-parity figure — real data,
+ * but not what a farmer would be paid locally, so it is never merged into a
+ * market series.
+ * `projection` and `administrative` are the other two shapes this platform has to
+ * keep apart from observations.
+ */
+export type MarketDataType = 'market-survey' | 'reference-price' | 'projection' | 'administrative';
+
 export interface MarketPriceObservation {
+  /**
+   * Stable identity for one published figure: same source, market, commodity,
+   * unit, price type and survey month ⇒ same id, which is what lets two
+   * publishers' rows be merged and de-duplicated without guessing.
+   */
+  id: string;
+  /** Registry id of the publisher that produced this row (`SOURCES[*].id`). */
+  sourceId: string;
+  /** Publisher name, carried per row so an exported record stays attributable on its own. */
+  sourceName: string;
+  sourceUrl: string;
+  /** How the figure came to exist. Decides whether it may be read as a market observation. */
+  dataType: MarketDataType;
   /** ISO date of the price survey. */
   observedOn: string;
   market: string;
@@ -185,6 +229,14 @@ export interface MarketPriceObservation {
   usdPrice: number | null;
   retail: 'Retail' | 'Wholesale' | 'aggregate' | 'unknown';
   priceFlag: 'actual' | 'aggregate' | 'replaced' | 'unknown';
+  /** When our server fetched this row, so a CSV row answers "as of when?" without a legend. */
+  retrievedAt: string;
+  /**
+   * The publisher's own remaining fields, verbatim and unused by any arithmetic: a series
+   * name, a market code, a commodity code, the document the figure came from. A reader
+   * disputing a number can be shown exactly which published cell it came from.
+   */
+  sourceFields: Record<string, string | number | boolean | null>;
 }
 
 export interface PriceChange {

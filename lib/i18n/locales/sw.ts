@@ -99,6 +99,7 @@ export const sw: Dictionary = {
   'cadence.hourly': 'kila saa',
   'cadence.daily': 'kila siku',
   'cadence.8daily': 'mchanganyiko wa siku 8',
+  'cadence.weekly': 'kila wiki',
   'cadence.monthly': 'kila mwezi',
   'cadence.quarterly': 'kila robo ya mwaka',
   'cadence.annual': 'kila mwaka',
@@ -617,31 +618,22 @@ export const sw: Dictionary = {
 
   // --- Markets module ---
   'markets.description':
-    'Bei zilizochunguzwa katika masoko ya Uhabeshi na mpango wa ufuatiliaji wa WFP rEMS, kwa ETB kama ilivyorekodiwa na mchapishaji. Marejeo ya bidhaa za kimataifa havionyeshwi kamwe kama bei za masoko ya Uhabeshi hapa.',
+    'Bei zilizochunguzwa katika masoko ya Uhabeshi na mpango wa ufuatiliaji wa WFP rEMS na utafiti wa kila wiki wa masoko wa FEWS NET, kwa saransi na kipimo kila mchapishaji alivyorekodi. Hapa hakuna kitu kilichokokotolewa kwa modeli, kutabiriwa au kujazwa: chanzo kisichojibu huonyeshwa kama hakipatikani.',
   'markets.badgeLiveSurvey': 'Uchunguzi wa moja kwa moja',
-  'markets.grainPricesTitle': 'Bei za kuu za kitaifa · mwezi mpya zaidi wa uchunguzi',
-  'markets.grainPricesHint':
-    'Wastani wa bei za rejareji zilizochunguzwa kweli katika mwezi huo, zikiwa zimepangwa kwa bidhaa na kipimo peke yake.',
-  'markets.loadingWfp': 'Inapakia bei za WFP',
-  'markets.meanAcrossMarkets': 'Wastani wa masoko {count} yaliyochunguzwa.',
   'markets.surveyMonth': 'Mwezi wa uchunguzi',
-  'markets.grainNote':
-    '; kila namba ni wastani wa masoko yanayoonekana kwenye kadi yake. Kahawa ni zao la kinywaji na halipo katika jedwali hili la kuu — tumia sehemu ya historia iliyo hapa chini.',
   'markets.historyTitle': 'Historia ya bei katika masoko ya Uhabeshi',
   'markets.historyHint':
-    'Mstari mmoja kwa bidhaa · kipimo · aina ya bei, wastani wa masoko yaliyochunguzwa mwezi huo. Mchapishaji alipokuwa ameacha uchunguzi, mstari una pengo halisi — hakuna kitu kilichohesabiwa kwa kati.',
-  'markets.last36Months': 'miezi 36 ya uchunguzi iliyopita',
+    'Mfululizo mmoja kwa wakati — bidhaa, kipimo cha mchapishaji na aina moja ya bei. Wastani, ya chini na ya juu huhesabiwa hapa kutoka safu zenye thamani; kipindi kisicho na thamani iliyochapishwa mstari hukatika badala ya kuungana kupitia.',
   'markets.commodity': 'Bidhaa',
   'markets.loadingHistory': 'Inapakia historia ya {commodity}',
   'markets.noSeriesTitle': 'Hakuna mfululizo uliochorwa',
   'markets.noSeriesBody':
-    'Mchapishaji hana mfululizo wa {commodity} wenye angalau miezi miwili chini ya kipimo kimoja na aina moja ya bei. Hakuna bei iliyobuniwa.',
-  'markets.seriesLegend': '{series} · miezi {months} · hadi masoko {markets}',
+    'Hakuna utafiti uliochapisha thamani ya {commodity} kwa kipimo, aina ya bei na dirisha hili, kwa hivyo hakuna mstari unaochorwa na hakuna bei inayobuniwa.',
   'markets.unitsNote':
-    'Thamani ni ETB kwa kipimo kilichotajwa, rejareji au rejoni kama ilivyorekodiwa na mwchunguzi — hizi mbili huchanganywi wastani pamoja kamwe.',
-  'markets.crossMarketTitle': 'Mabadiliko ya masoko mbalimbali',
+    'Bei ziko kwa saransi na kipimo kilichorekodiwa na mwchunguzi — reja na za jumla haziunganishwi wastani pamoja kamwe, na vipimo viwili vya bidhaa moja hubaki mifululizo miwili tofauti.',
+  'markets.crossMarketTitle': 'Mikoa na masoko · mwezi mmoja wa utafiti',
   'markets.crossMarketHint':
-    'Mabadiliko kutoka mwezi hadi mwingine ndani ya soko, bidhaa na kipimo kimoja. Kulinganisha masoko mawili ni kulinganisha michunguzi miwili, sio bei moja.',
+    'Bidhaa moja, kipimo kimoja, aina moja ya bei, mwezi mmoja — ndilo ulinganisho pekee ambalo tafiti hizi zinaunga mkono. Pengo na asilimia juu ya nafuu ni hisabati yetu kwa wastani za masoko zilizochapishwa.',
   'markets.region': 'Mkoa',
   'markets.allRegions': 'Mikoa yote',
   'markets.loadingLatest': 'Inapakia mwezi mpya zaidi wa uchunguzi',
@@ -649,8 +641,6 @@ export const sw: Dictionary = {
   'markets.thLatest': 'Ya hivi karibuni',
   'markets.thChange': 'Mabadiliko',
   'markets.vs': 'dhidi ya',
-  'markets.surveyCoverage':
-    'Uchunguzi wa {month} ulishughulikia masoko {markets} na bidhaa {commodities}. Safu hapo juu zipo pekee ambapo mchapishaji ana mwezi huu na mwezi uliotangulia kwa soko, bidhaa na kipimo kilekile.',
   'markets.fxTitle': 'Ubadilishanaji wa fedha za kigeni za Uhabeshi — kategoria tatu tofauti',
   'markets.fxHint':
     'Kiwango rasmi ni chapisho la kila siku la NBE, kiwango cha soko la usawa ni wastani wa kitaifa wa kila mwezi wa Benki ya Dunia, na kiwango cha kulinganishia ni namba ya kila mwaka. Hizi ni aina tofauti za namba na huonyeshwa kando.',
@@ -669,11 +659,282 @@ export const sw: Dictionary = {
   'markets.annualBody': 'Muktadha pekee — hizi si namba za mwezi huu.',
   'markets.noRowsTitle': 'Hakuna safu zilizorudi',
   'markets.noRowsBody': '{label}: majibu haya hakuwa na safu, na hakuna kitu cha mbadala kilichowekwa.',
-  'commodity.teff': 'Tef',
-  'commodity.maize': 'Mahindi',
-  'commodity.wheat': 'Ngano',
-  'commodity.sorghum': 'Mtama',
-  'commodity.coffee': 'Kahawa',
+
+  // --- Markets module · shared registries ---
+  'markets.sectionPicker': 'Mwonekano wa moduli',
+  'markets.publishers': 'Utafiti wa masoko ya Uhabeshi',
+  'markets.unavailableTitle': 'Hakuna tolezi wa masoko aliyevuka',
+  'markets.unavailableBody':
+    'Kila thamani kwenye ukurasa huu inasomwa kutoka kwa utafiti wakati wa ombi, kwa hivyo tolezi wasiojibu hakuna cha kuonyesha. Hakuna kilichobadilishwa, na ripoti iliyo chini inataja kila tolezi na kilichorudishwa na ombi lake lenyewe.',
+  'markets.contributing': 'Katika jibu hili',
+  'markets.coverageClean': 'safu {rows} zinalingana, kila moja ikiwa na thamani iliyochapishwa.',
+  'markets.coverageWithGaps':
+    'safu {rows} zinalingana, kati yazo {gaps} hazina thamani iliyochapishwa — nafasi tupu ni mapengo ya utafiti, si bei ya sifuri.',
+  'markets.ofCount': 'kati ya {total}',
+  'markets.noSpan': 'Tarehe moja tu ya utafiti.',
+  'markets.months': 'miezi',
+  'markets.weeks': 'wiki',
+  'markets.lastWindow': '{count} {unit} za hivi karibuni',
+  'markets.col.markets': 'Masoko',
+  'markets.col.months': 'Miezi',
+  'markets.col.periods': 'Vipindi',
+  'markets.col.rows': 'Safu',
+  'common.unit': 'Kipimo',
+  'dataType.market-survey': 'utafiti wa soko',
+  'dataType.reference-price': 'bei ya marejeo',
+  'dataType.projection': 'utabiri',
+  'dataType.administrative': 'mpaka wa kiutawala',
+  'freshness.current': 'Ya sasa',
+  'freshness.recent': 'Ya hivi karibuni',
+  'freshness.stale': 'Imechelewa ratiba',
+  'freshness.historical': 'Rekodi ya kihistoria',
+  'freshness.unknown': 'Hakuna tarehe inayotumika',
+  'statusLabel.historical': 'Rekodi ya kihistoria',
+  'markets.state.access_challenged': 'Ufikiaji umeulizwa uthibitisho',
+  'markets.granularity.weekly': 'Kila wiki',
+  'markets.granularity.monthly': 'Kila mwezi',
+  'markets.flag.actual': 'Iliyopimwa',
+  'markets.flag.aggregate': 'Iliyokusanywa',
+  'markets.flag.replaced': 'Thamani iliyobadilishwa',
+  'markets.flag.unknown': 'Isiyo na alama',
+
+  // --- Markets module · tabs ---
+  'markets.tab.overview': 'Muhtasari',
+  'markets.tab.prices': 'Kichunguzi cha bei',
+  'markets.tab.history': 'Historia ya bei',
+  'markets.tab.regions': 'Mikoa na masoko',
+  'markets.tab.insights': 'Data inaonyesha nini',
+  'markets.tab.exchange': 'Uhurubani',
+  'markets.tab.sources': 'Vyanzo',
+
+  // --- Markets module · overview ---
+  'markets.ov.observations': 'Bei zilizochapishwa',
+  'markets.ov.observationsNote': 'safu {rows} za utafiti hazina thamani; zimehesabiwa kama mapengo.',
+  'markets.ov.commodities': 'Bidhaa zilizofikiwa',
+  'markets.ov.commoditiesNote': 'Kupitia vipimo {units} vya tolezi, visivyounganishwa kamwe.',
+  'markets.ov.markets': 'Masoko yaliyofanyiwa utafiti',
+  'markets.ov.marketsNote': 'Katika mikoa {regions}; {mapped} vina kuratibu ya tolezi.',
+  'markets.ov.periods': 'Vipindi vya utafiti',
+  'markets.ov.periodsNote': 'Tarehe tofauti za uchunguzi, zimesambaa miezi {months}.',
+  'markets.ov.coverageTitle': 'Utafiti hawa wanafikia nini kweli',
+  'markets.ov.coverageHint':
+    'Idadi za safu zilizochapishwa pekee — hakuna wastani, hakuna kielelezo, na hakuna bidhaa ambayo utafiti haukurekodi.',
+  'markets.ov.newest': 'Uchunguzi wa hivi karibuni zaidi',
+  'markets.ov.newestNote': 'Imepangwa {tier} ikilinganishwa na mdundo wa tolezi yake mwenyewe.',
+  'markets.ov.oldest': 'Uchunguzi wa zamani zaidi',
+  'markets.ov.span': 'Miezi ya utafiti inatoka {from} hadi {to}.',
+  'markets.ov.publishers': 'Tolezi wanaojibu',
+  'markets.ov.publishersNote': 'Kila moja inapakiwa peke yake, kwa hivyo kushindwa kwa moja hakuwezi kuufanya ukurasa huu uwe tupu.',
+  'markets.ov.currencies': 'Saransi kama zilivyo chapishwa',
+  'markets.ov.units': 'Vipimo kama vilivyo chapishwa',
+  'markets.ov.unitsNote': 'Bei kwa 100 KG na bei kwa KG ni mifululizo miwili, si wastani mmoja kamwe.',
+  'markets.ov.priceTypes': 'Aina za bei',
+  'markets.ov.granularities': 'Ugawaji wa chati unaotungwa mkono na tolezi: {list}.',
+  'markets.ov.catalogTitle': 'Bidhaa zenye bei zilizochapishwa',
+  'markets.ov.catalogHint':
+    'Zimepangwa kwa idadi ya masoko yaliyoripoti thamani. Orodha inasomwa kutoka kwa safu za utafiti wenyewe, kwa hivyo bidhaa ambayo hakuna tolezi aliyeifanyia utafiti haipo hapo, badala ya kuwa tupu.',
+  'markets.ov.catalogTruncated': 'Inaonyesha {shown} kina kirefu zaidi kati ya mifululizo {total} ya bidhaa-na-kipimo; kichunguzi kinataja kila mojad.',
+  'markets.ov.qualityTitle': 'Ubora wa data moduli inauona',
+  'markets.ov.qualityHint': 'Kila moja ya hivi ni idadi ya safu zilizochapishwa — ukweli wa ufikiaji, si marekebisho.',
+  'markets.ov.gaps': 'Safu zisizo na thamani',
+  'markets.ov.gapsNote': 'Zinaonyeshwa kama nafasi tupu. Sifuri ingekuwa dai tofauti.',
+  'markets.ov.duplicates': 'Safu za marudio ziliondolewa',
+  'markets.ov.duplicatesNote':
+    'Tolezi, soko, bidhaa, kipimo, aina ya bei na tarehe moja; safu yenye thamani ndiyo inayohifadhiwa.',
+  'markets.ov.unmapped': 'Masoko yasiyo na kuratibu',
+  'markets.ov.unmappedNote': 'Masoko {mapped} yanaweza kuwekwa ramani. Yingine yanabaki katika jedwali na hayawekwi kwa kubahatisha kamwe.',
+  'markets.ov.seasonal': 'Mifululizo yenye kina cha kutosha kwa msimu',
+  'markets.ov.seasonalNote': 'Angalau miezi kumi na miwili ya utafiti chini ya kipimo na aina moja ya bei.',
+  'markets.ov.limitTitle': 'Kinachoshindikana na moduli hii kusema',
+  'markets.ov.limitBody':
+    'Hizi ni bei za reja na za jumla zilizopimwa katika masoko yaliyotajwa — si kielelezo cha bei cha taifa, si bei ya ukutani, na si utabiri. Hakuna mavuno, mapato au akiba inayodaiwa, na mwezi wa utafiti usio na thamani unabaki ukosekane.',
+
+  // --- Markets module · explorer ---
+  'markets.ex.title': 'Kichunguzi cha bei',
+  'markets.ex.hint':
+    'Ukurasa mmoja wa safu zilizochapishwa kwa wakati. Vichujio vinataja thamani ambazo utafiti una pekee, na safu isiyo na thamani inabaki nafasi tupu.',
+  'markets.ex.search': 'Tafuta soko au bidhaa',
+  'markets.ex.searchPlaceholder': 'kwa mfano Mekele, au Teff',
+  'markets.ex.allCommodities': 'Bidhaa zote zilizochapishwa',
+  'markets.ex.allMarkets': 'Masoko yote',
+  'markets.ex.allSources': 'Tolezi wote',
+  'markets.ex.anyUnit': 'Kipimo chochote',
+  'markets.ex.anyPriceType': 'Aina yoyote ya bei',
+  'markets.ex.priceType': 'Aina ya bei',
+  'markets.ex.surveyRange': 'Dirisha la utafiti',
+  'markets.ex.surveyRangeHint': 'Imechujwa kwa tarehe za uchunguzi za tolezi wenyewe.',
+  'markets.ex.fromDate': 'Uchunguzi kuanzia',
+  'markets.ex.toDate': 'Uchunguzi hadi',
+  'markets.ex.pricedOnly': 'Safu zenye thamani pekee',
+  'markets.ex.clear': 'Futa vichujio {count}',
+  'markets.ex.clearAll': 'Futa vichujio vyote',
+  'markets.ex.loading': 'Inapaki safu za bei zilizochapishwa',
+  'markets.ex.sourceLabel': 'Utafiti wa masoko ya Uhabeshi',
+  'markets.ex.emptyTitle': 'Hakuna safu zilizochapishwa zinazolingana na vichujio hivi',
+  'markets.ex.emptyHint':
+    'Vichujio vinalingana na matumizi ya tolezi wenyewe kwa usahihi, kwa hivyo mchanganyiko ambao hakuna utafiti ulioripoti hurudi kitu. Hakuna kilichoundwa ili kujaza jedwali.',
+  'markets.ex.tableCaption': 'Uchunguzi wa bei za masoko ya Uhabeshi zilizochapishwa',
+  'markets.ex.sortAria': 'Panga kwa {label}',
+  'markets.ex.price': 'Bei',
+  'markets.ex.quality': 'Aina na ubora',
+  'markets.ex.freshness': 'Upya',
+  'markets.ex.noFigure': 'Nafasi hii ya utafiti haina thamani iliyochapishwa',
+  'markets.ex.perUnit': 'kwa {unit}',
+  'markets.ex.prev': 'Iliyotangulia',
+  'markets.ex.next': 'Ifuatayo',
+  'markets.ex.pageOf': 'Ukurasa {page} kati ya {pages}',
+  'markets.ex.perPage': 'Safu kwa ukurasa',
+  'markets.ex.matched': 'safu {total} zinalingana na vichujio hivi',
+  'markets.ex.window': 'Ya hivi karibuni katika jibu hili ni {newest}; ya zamani ni {oldest}.',
+  'markets.ex.staleTitle': 'Safu zingine zimechelewa na ratiba ya tolezi zao',
+  'markets.ex.staleBody':
+    'Upya unapimwa kwa kila tolezi ikilinganishwa na mdundo ambao tolezi huyo anatangaza, kwa hivyo utafiti wa wiki na u wa mwezi hawahukumiwa kwa saa moja.',
+  'markets.ex.export': 'Hamisha CSV',
+  'markets.ex.exportHint':
+    'Inahamisha safu {rows} za ukurasa {page} kati ya {pages}, kila moja ikiwa na kipimo, saransi, tarehe ya utafiti, wakati wa kupata na kiungo cha chanzo cha tolezi. Herufi za mwanzo zinapunguzwa nguvu kwa hivyo jalidi haliwezi kutekeleza jina kama fomula.',
+
+  // --- Markets module · history ---
+  'markets.hist.granularity': 'Ukubwa wa kikapu',
+  'markets.hist.windowLabel': 'Vipindi vinavyoonyeshwa',
+  'markets.hist.unitHint': 'Kipimo cha tolezi; kubadilisha kunabadilisha mfululizo.',
+  'markets.hist.average': 'Wastani wa kipindi',
+  'markets.hist.lowest': 'Thamani ya chini zaidi',
+  'markets.hist.highest': 'Thamani ya juu zaidi',
+  'markets.hist.derivedNote': 'Imehesabiwa hapa kutoka safu zilizochapishwa.',
+  'markets.hist.latestNote': 'Utafiti ulifanywa {when}, katika masoko {markets}.',
+  'markets.hist.lowestNote': 'Imerekodiwa {when}.',
+  'markets.hist.highestNote': 'Imerekodiwa {when}.',
+  'markets.hist.change': '{direction} {pct}% kati ya vipindi vya utafiti',
+  'markets.hist.up': 'Kupanda',
+  'markets.hist.down': 'Kushuka',
+  'markets.hist.seriesNote':
+    '{commodity} · {unit} · {retail}: vipindi {periods} vyenye thamani, katika masoko {markets} yaliyoripoti.',
+  'markets.hist.fallbackTitle': 'Imechorwa kwa mwezi',
+  'markets.hist.fallbackBody':
+    'Hakuna tolezi anayechangia utafiti wa {commodity} kila wiki, kwa hivyo mfululizo huu umegawanywa kwa mwezi wa utafiti. Mstari wa kila wiki ungechora siku ambazo hakuna aliyetazama.',
+  'markets.hist.gapTitle': 'Vipindi visivyo na thamani iliyochapishwa',
+  'markets.hist.gapBody':
+    'Vipindi {count} ndani ya dirisha hili havilii bei. Mstari unakatika kwa kila kimoja; hakuna kinachojazwa kwa makadirio.',
+  'markets.hist.onePoint':
+    'Kipindi {count} tu katika dirisha hili ndicho kina thamani, kwa hivyo mstari wa mwelekeo hauchorwa — nukta moja si mwelekeo.',
+  'markets.hist.byMarketTitle': 'Takwimu ileile, soko kwa soko',
+  'markets.hist.byMarketHint':
+    'Kila safu ni soko moja ndani ya bidhaa, kipimo na aina ya bei ileile. Mabadiliko ya asilimia ni hisabati yetu kwa vipindi viwili vya hivi karibuni vyenye thamani.',
+  'markets.hist.publishersInSeries': 'Safu za mfululizo huu zinatoka kwa: {list}.',
+  'markets.hist.recheck': 'Soma upya mfululizo huu kwa tolezi',
+
+  // --- Markets module · regions ---
+  'markets.reg.monthHint': 'Miezi yenye thamani zilizochapishwa kwa bidhaa hii tu ndiyo inayotolewa.',
+  'markets.reg.marketsShown': 'masoko {count} yameripoti',
+  'markets.reg.cheapest': 'Soko la nafuu zaidi',
+  'markets.reg.dearest': 'Soko la ghali zaidi',
+  'markets.reg.atMarket': 'Katika {market}.',
+  'markets.reg.spread': 'Ghai kuliko nafuu',
+  'markets.reg.spreadNote': 'Imehesabiwa hapa kati ya wastani wa masoko mawili ya mwezi huu, kipimo na aina ya bei moja.',
+  'markets.reg.singleMarket':
+    'Soko moja tu ndilo lilochapisha mwezi huu kwa bidhaa, kipimo na aina ya bei hii, kwa hivyo hakuna pengo la kuripoti.',
+  'markets.reg.noneTitle': 'Hakuna thamani zilizochapishwa mwezi huu',
+  'markets.reg.noneBody':
+    'Katika {month} utafiti haurudishi bei ya {commodity} kwa {unit} katika aina ya bei iliyochaguliwa. Chagua mwezi mwingine badala ya kusoma ulinganisho mtupu kama uwa wa nafuu.',
+  'markets.reg.mapTitle': 'Pale tolezi anapoweka masoko haya',
+  'markets.reg.mapHint':
+    'Kila nukta iko kwenye kuratibu ambayo tolezi aliochapisha kwa soko hilo, juu ya mipaka ya kiutawala ya geoBoundaries. Soko lisilo na kuratibu huachwa kwenye ramani na hubaki kwenye jedwali.',
+  'markets.reg.mapAria': 'Ramani ya masoko {count} ya Uhabeshi yaliyofanyiwa utafiti, yakiwekwa kwenye kuratibu zake zilizochapishwa',
+  'markets.reg.ramp': 'nafuu {low} hadi ghali {high} {currency} kwa {unit}',
+  'markets.reg.plotted': 'masoko {plotted} kati ya {total} yawekwa ramani',
+  'markets.reg.unplottedNote': 'Yingine haya na kuratibu ya tolezi.',
+  'markets.reg.loadingOutlines': 'Inapaki mipaka ya kiutawala…',
+  'markets.reg.outlineNote':
+    'Mipaka ya kiutawala haikuweza kupakiwa, kwa hivyo nukta za masoko zinaonyeshwa bila yao. Hakuna mpaka unachorwa kutoka kumbukumbu.',
+  'markets.reg.byRegionTitle': 'Wastani wa mikoa kwa mwezi',
+  'markets.reg.byRegionHint': 'Wastani wa masoko yaliyofanyiwa utafiti katika mkoa mmoja, kwa majina ya mikoa ya tolezi mwenyewe.',
+  'markets.reg.regionMarkets': 'masoko {count} yamefanyiwa utafiti · kwa {unit}',
+  'markets.reg.tableTitle': 'Soko kwa soko',
+  'markets.reg.tableCaption': 'Bidhaa, kipimo na aina moja ya bei zilizolinganishwa katika masoko kwa mwezi mmoja wa utafiti',
+  'markets.reg.tableNote': 'Katika {month}, masoko {markets} ylichapisha thamani ya mfululizo huu.',
+  'markets.reg.price': 'Bei',
+  'markets.reg.aboveCheapest': 'Juu ya nafuu',
+  'markets.reg.hasCoords': 'Kurafu ya tolezi',
+  'markets.reg.noCoords': 'Hakuna kuratibu iliyochapishwa',
+  'markets.reg.publisherNote': 'Imetolewa na: {list}.',
+
+  // --- Markets module · insights ---
+  'markets.ins.title': 'Kinachotungwa mkono na uchunguzi',
+  'markets.ins.hint':
+    'Kila ugunduzi unataja mfululizo, masoko, idadi ya safu na kipindi vilivyo nyuma yake, na lubeba ukomo wake lenyewe. Uhusiano hauitwi sababu kamwe, na hakuna bei inayotabiriwa mbele.',
+  'markets.ins.noneTitle': 'Hakuna ugunduzi unaofikia kiwango cha ushahidi',
+  'markets.ins.noneBody':
+    'Mabadiliko yanahitaji vipindi viwili vya utafiti vilivyo mfululizo vyenye thamani halisi, na pengo linahitaji angalau masoko mawili yaliyoripoti bidhaa, kipimo na aina ya bei ileile katika mwezi uleule. Masharti hayo yakatoshindikana, hakuna taarifa inayotolewa.',
+  'markets.ins.kind.price-rise': 'Kupanda kwa bei',
+  'markets.ins.kind.price-fall': 'Kushuka kwa bei',
+  'markets.ins.kind.market-spread': 'Pengo kati ya masoko',
+  'markets.ins.kind.seasonal-coverage': 'Kina cha ufikiaji',
+  'markets.ins.kind.market-outdated': 'Masoko yasiyofanyiwa utafiti hivi karibuni',
+  'markets.ins.kind.thin-coverage': 'Bidhaa ya soko moja',
+  'markets.ins.price-rise':
+    'Katika {market}, {commodity} kwa {unit} ({retail}) ilikuwa {pct}% ghali zaidi katika {to} kuliko katika {from}, kwa {price}.',
+  'markets.ins.price-fall':
+    'Katika {market}, {commodity} kwa {unit} ({retail}) ilikuwa {pct}% nafuu zaidi katika {to} kuliko katika {from}, kwa {price}.',
+  'markets.ins.market-spread':
+    'Katika {month}, {commodity} kwa {unit} ({retail}) iligharimu {pct}% zaidi katika {dearest} kuliko katika {cheapest}, katika masoko {markets}.',
+  'markets.ins.seasonal-coverage':
+    'mifululizo {series} ya bidhaa-na-kipimo una angalau miezi kumi na miwili ya utafiti; mrefu zaidi ni {commodity} kwa {unit}, ukifanya {months} katika masoko {markets}.',
+  'markets.ins.market-outdated':
+    'masoko {months} haya na safu ya utafiti mpya kuliko {lastMonth}, huku mwezi wa utafiti wa hivi karibuni ukiwa {latestMonth} — kati yao {markets}.',
+  'markets.ins.thin-coverage':
+    '{commodity} kwa {unit} ({retail}) inafanyiwa utafiti katika soko moja tu ({market}), kwa hivyo hakuna taarifa ya kikanda inayowezekana kuhusu y.',
+  'markets.insightLimit.change':
+    'Utafiti wa soko moja lenyewe, kipindi kwa kipindi. Si kielelezo cha taifa, na haielezi kwa nini bei ilisogea.',
+  'markets.insightLimit.spread':
+    'Pengo kati ya tafiti mbili za masoko katika mwezi mmoja. Usafiri, ugavi wa ndani na wakati wa utafiti vyote ni tofauti kwa mpigo, kwa hivyo pengo haliwezi kuhusishwa na chochote kimoja chao.',
+  'markets.insightLimit.seasonal':
+    'Kina cha ufikiaji pekee: kinasema miezi mingapi ilichapishwa, si kwamba mpangilio wa msimu upo.',
+  'markets.insightLimit.coverage': 'Taarifa kuhusu tafiti wenyewe, si kuhusu soko.',
+  'markets.ins.seasonalTitle': 'Mifululizo yenye mwaka mmoja au zaidi ya ufikiaji',
+  'markets.ins.seasonalHint':
+    'Miezi yenye thamani, kwa bidhaa, kipimo na aina ya bei. Orodha hii inaonyesha pale swali la msimu lingaweza kuulizwa.',
+  'markets.ins.wetVsDry': 'Miezi ya mvua na mingine',
+  'markets.ins.seasonalLimitation':
+    'Takwimu hiyo inalinganisha Juni na Septemba na miezi mingine katika miaka yote iliyochapishwa. Kwa mwaka mmoja wa safu inaeleza mwaka huo, si mpangilio, na si utabiri kamwe.',
+  'markets.ins.evidenceSeries': 'Mfululizo',
+  'markets.ins.evidenceRows': 'Safu',
+  'markets.ins.limitLabel': 'Ukomo',
+
+  // --- Markets module · source report ---
+  'markets.src.title': 'Hali ya tolezi kwa tolezi',
+  'markets.src.hint':
+    'Kinachorudishwa na maombi ya mfumo huu mwenyewe, kwa kila tolezi: hali, uchunguzi wa hivi karibuni zaidi, wakati wa kupata, ufikiaji na katalojii ya tolezi mwenyewe.',
+  'markets.src.none': 'Hakuna ripoti ya tolezi iliyorudi na jibu hili.',
+  'markets.src.answering': '{count} wanajibu',
+  'markets.src.refusing': '{refused} wanakataa · {silent} wanyamaza',
+  'markets.src.chip': 'kinga ya roboti',
+  'markets.src.publisherSite': 'Ukurasa wa tolezi',
+  'markets.src.challengeTitle': 'Inayofikika, na ikakataa upakuaji wa kiotomatiki',
+  'markets.src.challengeBody':
+    'Kinga ya roboti ya tolezi ilijibu ombi letu badala ya kutoa faili. Haitoi jibu la uthibisho huo wala kuiga kivinjari, kwa hivyo hakuna safu zilizopatikana na hakuna iliyobadilishwa. Katalojii iliyo chini ni taarifa ya tolezi lenyewe kwamba seti ya data ipo na ilibadilika lini mara ya mwisho.',
+  'markets.src.outageTitle': 'Hakuna jibu kutoka kwa tolezi huyu',
+  'markets.src.outageBody':
+    'Ombi hiliarudishi safu zinazotumika, kwa hivyo tolezi huyu hachangii kitu katika takwimu za juu. Nakala ya hifadhi haashikwi kama mbadala wa somo la sasa.',
+  'markets.src.rows': 'Safu zilizohifadhiwa',
+  'markets.src.publishedCount': 'tolezi anahesabu',
+  'markets.src.truncated': 'chache kuliko zilizochapishwa',
+  'markets.src.excluded': 'Safu zilizozuiwa',
+  'markets.src.excludedNote': 'Si bei — safu za mshahara, au nafasi zisizoweza kusomwa kama thamani.',
+  'markets.src.coverage': 'Ufikiaji',
+  'markets.src.oldestObservation': 'Uchunguzi wa zamani zaidi',
+  'markets.src.ageDays': 'siku {days} tangu',
+  'markets.src.retrieved': 'Ilipatikana',
+  'markets.src.retrievalAge': 'siku {days} katika hifadhi yetu',
+  'markets.src.dataType': 'Aina ya takwimu',
+  'markets.src.catalogue': 'Katalojii ya tolezi mwenyewe',
+  'markets.src.catalogueReachable': 'Inayofikika — seti ya data ilibadilika mara ya mwisho {modified}.',
+  'markets.src.catalogueUnreachable': 'Anwani ya katalojii nayo haikurudi.',
+  'markets.src.notStated': 'tarehe haijatazwa',
+  'markets.src.rowPaging': 'safu zinazopangwa kwa JSON',
+  'markets.src.fileOnly': 'upakuaji wa faili kamili',
+  'markets.src.httpTitle': 'Ombi lililofaulu si dai ileile na seti ya data ya sasa',
+  'markets.src.httpBody':
+    'Hali inatokana na tarehe ya uchunguzi wa hivi karibuni zaidi iliyopimwa dhidi ya mdundo ambao tolezi huyo anatangaza, si kutoka kwa hali ya HTTP. Tolezi anaweza kujibu kwa milisekunda na bado awe wiki kadhaa nyuma ya ratiba yake mwenyewe; hilo linaripotiwa kama limechelewa ratiba, si kama limeunganishwa.',
 
   // --- Soil module ---
   'soil.pageDescription':

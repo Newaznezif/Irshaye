@@ -99,6 +99,7 @@ export const om: Dictionary = {
   'cadence.hourly': 'sa\'aataaf',
   'cadence.daily': 'guyyaaf',
   'cadence.8daily': 'walitti maxxansa guyyaa 8',
+  'cadence.weekly': 'torbanaaf',
   'cadence.monthly': 'ji\'aaf',
   'cadence.quarterly': 'kurtii ji\'aa afuriif (sadi\'an)',
   'cadence.annual': 'baraan',
@@ -617,31 +618,22 @@ export const om: Dictionary = {
 
   // --- Markets module ---
   'markets.description':
-    'Gatama WFP rEMS Itoophiyaatti gabaa irratti to\'atame, ETB gosa gatii (unit) dhiheessi galmeesseetti. Meeshaaleen sadarkaa alaa gatii gabaa Itoophiyaa miti — kanaaf akkasitti hin dhiyaatan.',
+    'Gatama sagantaan to\'annoo WFP rEMS fi qorannoon gabaa torbeendi FEWS NET gabaa Itoophiyaa keessatti to\'atan, dhiheessi tokkoon tokkoon isaa akka galmeeffateetti huujii fi safartuudhaan. Asitti wanti moodelaan hojjetame, karoorfame yookiin guutame hin jiru: maddi deebisaa hin qabne akka hin argamne agarsiifama.',
   'markets.badgeLiveSurvey': 'To\'annoo callii',
-  'markets.grainPricesTitle': 'Gatama midhaanii biyyoolessaa · ji\'a to\'annoo haaraa',
-  'markets.grainPricesHint':
-    'Giddugaleessa gatii gurgurtaa hawaasummaa (retail) ji\'a sanatti to\'atame, meeshaafi (unit) jechaa sirriitti ramadame.',
-  'markets.loadingWfp': 'Gatama WFP fe\'amaa jira',
-  'markets.meanAcrossMarkets': 'Giddugaleessa gabaa to\'atame {count} gidduu.',
   'markets.surveyMonth': 'Ji\'a to\'annoo',
-  'markets.grainNote':
-    '; gatiin hundeen giddugaleessa gabbee kaardi isaanitti agarsiifamaniiti. Buniin meeshaa dhukaatii waa\'qabati — gabaa midhaanii kanaatti hin galu — waa\'ee isaatiif galmee seenaa armaan gadii fayyadamaa.',
   'markets.historyTitle': 'Seenaa gatii gabaa Itoophiyaa keessatti',
   'markets.historyHint':
-    'Sarara meeshaa tokkoon meeshaa · gatii · gosa gurgurtaa — gaba ji\'a sanatti to\'atame gidduutti giddugalaan. Dhiheessi yoo gaba to\'achuu dhaabe, sararri bakka dhuge — wanti madaallamaan (interpolation) uumame hin jiru.',
-  'markets.last36Months': 'ji\'oota to\'annoo 36 darbe',
+    'Yeroo tokkotti sarara tokko — meeshaa, safartuu dhiheessaa fi gosa gatii tokko. Giddugalaan, gadhee fi ol\'aannu isaa safarkoota lakkoofsa qaban irraa asitti herregarama — yeroon gatii hin qabne sararri isa qaxxamuraan walitti hin hidhamne kutama.',
   'markets.commodity': 'Meeshaa',
   'markets.loadingHistory': 'Seenaa {commodity} fe\'amaa jira',
   'markets.noSeriesTitle': 'Sarari hin agarsiifamu',
   'markets.noSeriesBody':
-    'Dhiheessi sarara {commodity} ji\'a lamaa ol gosa gurgurtaafi (unit) tokkotti walfakkaatuun walitti hidhamu hin qabu. Gatii ofumaan uumame hin jiru.',
-  'markets.seriesLegend': '{series} · ji\'a {months} · gabbee {markets}tti',
+    'Qorannoon tokkoon iyyuu safartuu, gosa gatii fi yeroo kana keessatti {commodity}f gatii hin galfanne, kanaaf sararri hin saakamne; gatiin ofumaan hin uumamne.',
   'markets.unitsNote':
-    'Gatiin hundee ETB gatii (unit) ka\'ameen, gurgurtaa hawaasummaa (retail) yookiin gurgurtaa guddaa (wholesale) galmeessa to\'ataa hordofa — lamaan sunniin giddugaleessaatti hin madaalamu.',
-  'markets.crossMarketTitle': 'Jijiirama gabaa gidduu',
+    'Gatiin akkuma to\'ataan galmeeffateetti huujii fi safartuudhaan — gurgurtaan hawaasummaa fi gurgurtaan guddaa wastaniin tokkotti hin madaalamu; meeshaa tokkotti safartuuleen lamaan sararoota adda addaa lama ta\'u.',
+  'markets.crossMarketTitle': 'Naannolee fi gabaa · ji\'a qorannoo tokko',
   'markets.crossMarketHint':
-    'Ji\'a ji\'aan biratti jijjiirama gabaa, meeshaafi gatii tokkotti. Gabbee lama waliin madaalluun qorannoo lama madaalluu ti — gatii tokko miti.',
+    'Meeshaa tokko, safartuu tokko, gosa gatii tokko, ji\'a tokko — madaallii qorannooleen kun deeggaran tokko qofa. Hallagaafi dhibbeentaan gadhee irraa ol ta\'e herregaa keenya giddugala gabaa galmeeffameen hojjetamedha.',
   'markets.region': 'Godina',
   'markets.allRegions': 'Godinaalee hunda',
   'markets.loadingLatest': 'Ji\'a to\'annoo haaraa fe\'amaa jira',
@@ -649,8 +641,6 @@ export const om: Dictionary = {
   'markets.thLatest': 'Haaraa',
   'markets.thChange': 'Jijjiirama',
   'markets.vs': 'vs',
-  'markets.surveyCoverage':
-    'To\'annoon {month} gabbee {markets}fi meeshaalee {commodities} hammate. Tarfawwan armaan olii jiran bakka dhiheessi ji\'a kanaafi kan darbe gabaa, meeshaafi gatii walfakkaatuuf qabuutti malee.',
   'markets.fxTitle': 'Saffina jijjiirrama salfa alaa (forex) Itoophiyaa — gosa sadi',
   'markets.fxHint':
     'Gatiin sirna mootummaa galmee guyyaa NBE dha; gatiin gabaa qe\'ee (parallel) giddugaleessa ji\'aa biyyoolessaa Bankii Addunyaa dha; gatiin madaallii (benchmark) gatii baraati. Gatiin sunniin gosa addaati — kanaaf adda baafamanii agarsiifamu.',
@@ -669,11 +659,282 @@ export const om: Dictionary = {
   'markets.annualBody': 'Ibsa qofa — kunis gatii ji\'a ammaa miti.',
   'markets.noRowsTitle': 'Tarfaan deebise hin jiru',
   'markets.noRowsBody': '{label}: deebiin kun tarfawwan waan hin qabne, bakka bu\'ame tokko hin laanne.',
-  'commodity.teff': 'Mucucaaka',
-  'commodity.maize': 'Cekumsa',
-  'commodity.wheat': 'Boqqoqoora',
-  'commodity.sorghum': 'Fono',
-  'commodity.coffee': 'Buni',
+
+  // --- Markets module · shared registries ---
+  'markets.sectionPicker': 'Mul’ata kutaa',
+  'markets.publishers': 'Qorannoo gabaa Itoophiyaa',
+  'markets.unavailableTitle': 'Torchoftuu gabaa tokkoon deebise hin qabu',
+  'markets.unavailableBody':
+    'Lakkoofsii jalqaba irratti argamu hundi isaa yeroo iyyituu qorannoo irraa dubbatama, kanaafuu torchoftuun yeroo hin deebifne wanti mul’atu hin jiru. Homaa hin qabbaneefne; gabaan jalatti tarre torchoftuu hundaa fi wanti iyyituu isaa deebise bakka buusa.',
+  'markets.contributing': 'Deebii kana keessatti',
+  'markets.coverageClean': 'Tarrajawwan {rows} wal siman, tokko tokko isaanii gatii baafame qabu.',
+  'markets.coverageWithGaps':
+    'Tarrajawwan {rows} wal siman, keessaa {gaps} gatii baafame hin qaban — sandukuwwan duwwaa bakka qorannoo argamu miti gatii dhala.',
+  'markets.ofCount': 'keessaa {total}',
+  'markets.noSpan': 'Guyyaa qorannoo tokko qofa.',
+  'markets.months': 'jiwwan',
+  'markets.weeks': 'torbanwwan',
+  'markets.lastWindow': '{count} {unit} dhumaa',
+  'markets.col.markets': 'Gabaa',
+  'markets.col.months': 'Jiwwan',
+  'markets.col.periods': 'Yeroon',
+  'markets.col.rows': 'Tarraja',
+  'common.unit': 'Salphina',
+  'dataType.market-survey': 'qorannoo gabaa',
+  'dataType.reference-price': 'gatii fuulduraa',
+  'dataType.projection': 'duraa ba’uu',
+  'dataType.administrative': 'geessa bulchiinsa',
+  'freshness.current': 'Ammaa',
+  'freshness.recent': 'Dhihoo',
+  'freshness.stale': 'Karoorraa fagoo',
+  'freshness.historical': 'Galmee seenaa',
+  'freshness.unknown': 'Guyyaa fayyadu hin qabu',
+  'statusLabel.historical': 'Galmee seenaa',
+  'markets.state.access_challenged': 'Gargaarsi si’aqu',
+  'markets.granularity.weekly': 'Torbanan',
+  'markets.granularity.monthly': 'Ji’an',
+  'markets.flag.actual': 'Argame',
+  'markets.flag.aggregate': 'Walitti qabame',
+  'markets.flag.replaced': 'Lakkoofsa jijjiirame',
+  'markets.flag.unknown': 'Mallattoo hin qabu',
+
+  // --- Markets module · tabs ---
+  'markets.tab.overview': 'Ibsa gabaabaa',
+  'markets.tab.prices': 'Qorattoo gatii',
+  'markets.tab.history': 'Seenaa gatii',
+  'markets.tab.regions': 'Naannolee fi gabaa',
+  'markets.tab.insights': 'Ragaan waan agarsiisu',
+  'markets.tab.exchange': 'Sanyii alaa',
+  'markets.tab.sources': 'Maddiwwan',
+
+  // --- Markets module · overview ---
+  'markets.ov.observations': 'Gatii baafaman',
+  'markets.ov.observationsNote': 'Tarrajawwan qorataman {rows} gatii hin qaban; akkan bakka duwwaatti tarraa’aman.',
+  'markets.ov.commodities': 'Meeshaalee hammachaman',
+  'markets.ov.commoditiesNote': 'Salphina torchoftuu {units} gidduutti, namuu waliin hin makaman.',
+  'markets.ov.markets': 'Gabaa qorataman',
+  'markets.ov.marketsNote': 'Naannolee {regions} keessatti; {mapped} salphina torchoftuu qabu.',
+  'markets.ov.periods': 'Yeroo qorannoo',
+  'markets.ov.periodsNote': 'Guyyowwan argii adda addaa — ji’oota {months} keessa faca’an.',
+  'markets.ov.coverageTitle': 'Qorannoon kunniin dhuguma waan hammatan',
+  'markets.ov.coverageHint':
+    'Lakkoofsa tarrajawa baafaman qofa — giddugala miti, madaallii miti, meeshaa qorannoon galmeesse hin qabne miti.',
+  'markets.ov.newest': 'Argii haaraa',
+  'markets.ov.newestNote': 'Karoorra torchoftuu isaa irratti {tier} jedhamuuran ramaddame.',
+  'markets.ov.oldest': 'Argii duraa',
+  'markets.ov.span': 'Jiwwan qorannoo {from} irraa hanga {to}tti deemu.',
+  'markets.ov.publishers': 'Torchoftuulee deebisan',
+  'markets.ov.publishersNote': 'Tokkoon tokkoon isaanii ofii isaatiin ni fe’ama, kanaafuu kufaatii tokkutuu duqa kana hin balleessu.',
+  'markets.ov.currencies': 'Sanyii akkan baafame',
+  'markets.ov.units': 'Salphina akkan baafame',
+  'markets.ov.unitsNote': 'Gatii KG 100 fi gatii KG tokkootii tarraja lama, miti giddugala tokko.',
+  'markets.ov.priceTypes': 'Gosa gatii',
+  'markets.ov.granularities': 'Bal’ina saaxuu torchoftuun deeggaran: {list}.',
+  'markets.ov.catalogTitle': 'Meeshaalee gatii baafame qaban',
+  'markets.ov.catalogHint':
+    'Gabaa meeqatu gatii kenneedhaan duraa taa’an. Tarree kun tarrajawa qorannoo irraa dubbatama, kanaafuu meeshaa torchoftuun hin qoranne bahuu malee duwwaa hin ta’u.',
+  'markets.ov.catalogTruncated': 'Tarraja meeshaa fi salphina {total} keessaa gad fagoo {shown} mul’atu; qorattoon hundaa tarreeffata.',
+  'markets.ov.qualityTitle': 'Qulqullina ragaa kutaan argu danda’u',
+  'markets.ov.qualityHint': 'Kun hundi lakkoofsa tarrajawa baafaman — raga hammachaa, miti sirreeffama.',
+  'markets.ov.gaps': 'Tarrajawwan gatii hin qabne',
+  'markets.ov.gapsNote': 'Akka sandukuwwan duwwaatti mul’atu. Dhalin hiika biraati.',
+  'markets.ov.duplicates': 'Tarrajawwan irratti ba’aman haqaman',
+  'markets.ov.duplicatesNote':
+    'Torchoftuu, gabaa, meeshaa, salphina, gosa gatii fi guyyaa walfakkaatu; tarraja gatii qabatu turre.',
+  'markets.ov.unmapped': 'Gabaa salphina hin qabne',
+  'markets.ov.unmappedNote': 'Gabaa {mapped} kaartaan irratti qabamu. Kan hafe tarraja keessa hafee hiikaan hin qabamu.',
+  'markets.ov.seasonal': 'Tarraja yerosiif gad fagoo',
+  'markets.ov.seasonalNote': 'Salphina fi gosa gatii tokkuuttan ji’a qorannoo kudha lamaa ol.',
+  'markets.ov.limitTitle': 'Wanta kutiin kun hin dubbanne',
+  'markets.ov.limitBody':
+    'Kun gatii gabaa fi gurgurtaa naannoo gaaba bakka himame qoratame — madaalli gatii biyyoolessaa miti, gatii darachaa miti, duraa ba’uu miti. Oomisha, galii yookiin qusannaa hin ibsine; ji’a qorannoo gatii hin qabne bakka duwwaa hafa.',
+
+  // --- Markets module · explorer ---
+  'markets.ex.title': 'Qorattoo gatii',
+  'markets.ex.hint':
+    'Fuqa tarrajawa baafaman tokko yeroo tokkotti. Filattoon wanta qorannoo keessa jiru qofa ni maqaa bala, tarraja gatii hin qabne sanduku duwwaa hafa.',
+  'markets.ex.search': 'Gabaa yookiin meeshaa barbaadi',
+  'markets.ex.searchPlaceholder': 'fakkeenyaaf Mekeelaa yookiin Taaf',
+  'markets.ex.allCommodities': 'Meeshaalee baafaman hunda',
+  'markets.ex.allMarkets': 'Gabaa hunda',
+  'markets.ex.allSources': 'Torchoftuulee hunda',
+  'markets.ex.anyUnit': 'Salphina kamiyyuu',
+  'markets.ex.anyPriceType': 'Gosa gatii kamiyyuu',
+  'markets.ex.priceType': 'Gosa gatii',
+  'markets.ex.surveyRange': 'Yeroo qorannoo',
+  'markets.ex.surveyRangeHint': 'Guyyowwan argii torchoftuu ofii irratti filatame.',
+  'markets.ex.fromDate': 'Argii irraa',
+  'markets.ex.toDate': 'Argii hanga',
+  'markets.ex.pricedOnly': 'Tarrajawwan gatii qaban qofa',
+  'markets.ex.clear': 'Filatton {count} qulqulleessi',
+  'markets.ex.clearAll': 'Filatton hunda qulqulleessi',
+  'markets.ex.loading': 'Tarrajawwan gatii baafaman fe’ama jira',
+  'markets.ex.sourceLabel': 'Qorannoo gabaa Itoophiyaa',
+  'markets.ex.emptyTitle': 'Tarraja baafame filatton kana hin wal simu',
+  'markets.ex.emptyHint':
+    'Filattoon barreeffama torchoftuu ofiitti sirriitti wal sima, kanaafuu qindameen qorannaan hin galfanne homaa hin deebisu. Horaan guutuuf homaa hin uumamne.',
+  'markets.ex.tableCaption': 'Argii gatii gabaa Itoophiyaa baafame',
+  'markets.ex.sortAria': '{label}n tartiyyessi',
+  'markets.ex.price': 'Gatii',
+  'markets.ex.quality': 'Gosa fi qulqullina',
+  'markets.ex.freshness': 'Haaromina',
+  'markets.ex.noFigure': 'Sanduku qorannoo kun gatii baafame hin qabu',
+  'markets.ex.perUnit': '{unit}n',
+  'markets.ex.prev': 'Duraa',
+  'markets.ex.next': 'Itti aanu',
+  'markets.ex.pageOf': 'Fuqa {page} keessaa {pages}',
+  'markets.ex.perPage': 'Tarraja fuqa tokkotti',
+  'markets.ex.matched': 'Tarrajawwan {total} filatton kana waliin simatan',
+  'markets.ex.window': 'Bayaara kana keessatti haaraan {newest}; duraa {oldest}.',
+  'markets.ex.staleTitle': 'Tarrajawwan tokko tokko karoorra torchoftuu isaaniirraa fagoo',
+  'markets.ex.staleBody':
+    'Haarominni torchoftuu tokkoon tokkoon isaanii karoota isaan ibsan irratti madaalama, kanaafuu qorannoo torbananii fi ji’an waltigaan hin madaallamu.',
+  'markets.ex.export': 'CSV ergi',
+  'markets.ex.exportHint':
+    'Fuqa {page} keessaa {pages} tarrajawa {rows} salphina, sanyii, guyyaa qorannoo, yeroo argame fi geessi madda torchoftuu waliin erga. Utubawwan duraa ni hadhaman, kanaafuu taableeen maqaa akkan formulaatti hin raawwatu.',
+
+  // --- Markets module · history ---
+  'markets.hist.granularity': 'Bal’ina saaphinaa',
+  'markets.hist.windowLabel': 'Yeroon mul’atu',
+  'markets.hist.unitHint': 'Salphina torchoftuu; jijjiiruun tarraja jijjiira.',
+  'markets.hist.average': 'Giddugala yeroo',
+  'markets.hist.lowest': 'Gatii gadafamsaa',
+  'markets.hist.highest': 'Gatii ol’aanaa',
+  'markets.hist.derivedNote': 'Tarrajawa baafaman irraa asitti herregame.',
+  'markets.hist.latestNote': '{when} qoratame — gabaa {markets} gidduutti.',
+  'markets.hist.lowestNote': '{when} galmaa’ame.',
+  'markets.hist.highestNote': '{when} galmaa’ame.',
+  'markets.hist.change': 'Yeroowwan qorannoo gidduutti {direction} {pct}%',
+  'markets.hist.up': 'Ol ka’e',
+  'markets.hist.down': 'Gadi bu’e',
+  'markets.hist.seriesNote':
+    '{commodity} · {unit} · {retail}: yeroowwan {periods} gatii qaban, gabaa {markets} kan kennan gidduutti.',
+  'markets.hist.fallbackTitle': 'Ji’an saaxame',
+  'markets.hist.fallbackBody':
+    'Torchoftuun {commodity} kennu torbanan hin qorannu, kanaafuu tarree kun ji’a qorannoon adda baafame. Tarree torbanan saaxuu namni hin ilaalle guyyaawwan saaxisa.',
+  'markets.hist.gapTitle': 'Yeroowwan gatii baafame hin qabne',
+  'markets.hist.gapBody':
+    'Yeroowwan {count} daangaa kana keessatti gatii hin uumne. Tarrinni bakka tokko tokkuutti ni kutama; homaa hin guutamne.',
+  'markets.hist.onePoint':
+    'Daangaa kana keessatti yeroon {count} qofatu gatii qaba, kanaafuu tarree agimsaa hin saaxamu — tuqaan tokko agimsaa miti.',
+  'markets.hist.byMarketTitle': 'Madaallii walfakkaatu — gaaba gaabaan',
+  'markets.hist.byMarketHint':
+    'Tarraja tokkoon tokkoon isaa gaaba meeshaa, salphina fi gosa gatii tokkuutt jiru. Jijjiiramni dhibbeentaan herrega keessan yeroowwan lamatti dhumaa gatii qaban irratti.',
+  'markets.hist.publishersInSeries': 'Tarrajawwan tarree kana jalaa argaman: {list}.',
+  'markets.hist.recheck': 'Tarree kana torchoftuu irraa irra deebi’an nubisi',
+
+  // --- Markets module · regions ---
+  'markets.reg.monthHint': 'Ji’oonni meeshaa kanaaf gatii baafame qaban qofa ni dhiyaatu.',
+  'markets.reg.marketsShown': 'Gabaa {count} gabaasan',
+  'markets.reg.cheapest': 'Gaaba gatii gadafamsaa',
+  'markets.reg.dearest': 'Gaaba gatii ol’aanaa',
+  'markets.reg.atMarket': '{market} irratti.',
+  'markets.reg.spread': 'Ol’aanaa gadafamsaa irraa',
+  'markets.reg.spreadNote': 'Ji’a kana gabaa lama giddugala isaani gidduutti asitti herregame — salphina fi gosa gatii tokkotti.',
+  'markets.reg.singleMarket':
+    'Ji’a kana meeshaa, salphina fi gosa gatii kanaaf gaaba tokko qofatu baafate, kanaafuu adda baasni hin jiru.',
+  'markets.reg.noneTitle': 'Ji’a kana gatii baafame hin jiru',
+  'markets.reg.noneBody':
+    '{month} qorannoowhan {commodity} {unit}n gosa gatii filatameen gatii hin deebifne. Ji’a biraa filadhu, walfakkaatto duwwaa akka gatii gadafamsaatti hin dubbisu.',
+  'markets.reg.mapTitle': 'Torchoftuun gabaa kana eessatti qaba',
+  'markets.reg.mapHint':
+    'Tuqaan tokkoon tokkoon isaa salphina torchoftuun gabaa kanaaf baafate irratti, geessota bulchiinsa geoBoundaries irra taa’a. Gaabni salphina hin qabne kaartaa irraa hafee tarraja keessa hafa.',
+  'markets.reg.mapAria': 'Kaartaa gabaa Itoophiyaa {count} qorataman salphina isaanii baafameen irratti qabaman',
+  'markets.reg.ramp': 'gadaif {low} hanga jabisu {high} {currency} {unit}n',
+  'markets.reg.plotted': 'Gabaa {plotted} keessaa {total} kaartaan irratti qabaman',
+  'markets.reg.unplottedNote': 'Kan hafe salphina torchoftuu hin qabu.',
+  'markets.reg.loadingOutlines': 'Geessota bulchiinsa fe’ama jira…',
+  'markets.reg.outlineNote':
+    'Geessonni bulchiinsa hin fe’amne, kanaafuu tuqaawwan gabaa alamsaatiin mul’atu. Geessi yaadansaatiin hin saaxamu.',
+  'markets.reg.byRegionTitle': 'Giddugala naannoo ji’a kanaa',
+  'markets.reg.byRegionHint': 'Giddugala gabaa naannoo tokkuutt qoratame — maqaa naannoo torchoftuu ofiitti.',
+  'markets.reg.regionMarkets': 'Gabaa {count} qoratame · {unit}n',
+  'markets.reg.tableTitle': 'Gaaba gaabaan',
+  'markets.reg.tableCaption': 'Meeshaa, salphina fi gosa gatii tokko ji’a qorannoo tokkuutt gabaa gidduutti walfifame',
+  'markets.reg.tableNote': '{month} keessatti gabaa {markets} tarree kanaaf gatii baafaman.',
+  'markets.reg.price': 'Gatii',
+  'markets.reg.aboveCheapest': 'Gadafamsaa irraa ol',
+  'markets.reg.hasCoords': 'Salphina torchoftuu',
+  'markets.reg.noCoords': 'Salphinni hin baafamne',
+  'markets.reg.publisherNote': 'Kan kenname: {list}.',
+
+  // --- Markets module · insights ---
+  'markets.ins.title': 'Wanta argiwwan deeggaran',
+  'markets.ins.hint':
+    'Ragaan tokkoon tokkoon isaa tarree, gabaa, lakkoofsa tarraja fi yeroo jalatti mul’isuudhaan hiika ofii waggalu. Walitti dhufuun namuu ragaadhaan miti jennamu, gatiin duraa hin baafamu.',
+  'markets.ins.noneTitle': 'Ragaan tokkollee uf raga baha ga’uu miti',
+  'markets.ins.noneBody':
+    'Sochiin yeroowwan qorannoo itti aanan lama gatii dhuga qabu gaafata; adda baasni garuu gabaa meeshaa, salphina fi gosa gatii walfakkaatu ji’a tokkuutt kennan lamaa ol gaafata. Haalli kun yeroo hin guufne ibsi hin kennamu.',
+  'markets.ins.kind.price-rise': 'Ol ka’uu gatii',
+  'markets.ins.kind.price-fall': 'Bu’uu gatii',
+  'markets.ins.kind.market-spread': 'Adda baasni gabaa gidduu',
+  'markets.ins.kind.seasonal-coverage': 'Gad fagoo hammachaa',
+  'markets.ins.kind.market-outdated': 'Gabaa yeroo dhihootti hin qorramne',
+  'markets.ins.kind.thin-coverage': 'Meeshaa gabaa tokkotti',
+  'markets.ins.price-rise':
+    '{market} irratti, {commodity} {unit}n ({retail}) {to} keessatti {from} caalu {pct}% ol ka’ee, {price} ta’e.',
+  'markets.ins.price-fall':
+    '{market} irratti, {commodity} {unit}n ({retail}) {to} keessatti {from} caalu {pct}% gadi bu’ee, {price} ta’e.',
+  'markets.ins.market-spread':
+    '{month} keessatti, {commodity} {unit}n ({retail}) {dearest}tti {cheapest} caalu {pct}% jabisu — gabaa {markets} gidduutti.',
+  'markets.ins.seasonal-coverage':
+    'Tarraja meeshaa fi salphina {series} ji’oota qorannoo kudha lamaa ol qabu; gad fagoo {commodity} {unit}n — ji’oota {months} gabaa {markets} gidduutti.',
+  'markets.ins.market-outdated':
+    'Gabaa {months} {lastMonth} caalu tarraja qorannoo hin qaban; ji’a qorannoo haaraan garuu {latestMonth} — keessaa {markets}.',
+  'markets.ins.thin-coverage':
+    '{commodity} {unit}n ({retail}) gaaba tokkotti qofa ({market}) qoratame, kanaafuu ibsi naannoo isaa irratti kennamu hin danda’amu.',
+  'markets.insightLimit.change':
+    'Qorannoo gabaa tokkoo ofiisaa — yeroon yerootti. Kun madaalli biyyoolessaa miti, gatiin maaliif akka socho’e hin ibsu.',
+  'markets.insightLimit.spread':
+    'Adda baasni qorannoo gabaa lama gidduutti ji’a tokkuutt. Dhaqqebni, kennaa naannoo fi yeroo qorannoo walumaan adda, kanaafuu adda baasni wanta tokkotti hin qoodamu.',
+  'markets.insightLimit.seasonal':
+    'Gad fagoo hammachaa qofa: ji’oonni meeqatu baafame jedha, miti adeemsi yerosaa jira jedhu.',
+  'markets.insightLimit.coverage': 'Ibsa qorannoo ofiirratti, miti gabaa irratti.',
+  'markets.ins.seasonalTitle': 'Tarraja lochora hammachaa yookiin isaa ol qaban',
+  'markets.ins.seasonalHint':
+    'Ji’oota gatii qaban — meeshaan, salphinan fi gosa gatiiin. Gaaffii yerosaa eessatti kaafamuu akka danda’u mul’isuuf tarreeffame.',
+  'markets.ins.wetVsDry': 'Ji’oonni rooba kan hafe waliin',
+  'markets.ins.seasonalLimitation':
+    'Lakkoofsa kun ji’oota June hanga September kan hafe waliin waggoota baafaman hunda gidduutti walfakkeessa. Tarraja lochora tokkotti waggaa san ni ibsa, miti adeemsa; duraa ba’uu garuu namu miti.',
+  'markets.ins.evidenceSeries': 'Tarree',
+  'markets.ins.evidenceRows': 'Tarrajawwan',
+  'markets.ins.limitLabel': 'Hiika',
+
+  // --- Markets module · source report ---
+  'markets.src.title': 'Haala torchoftuu torchoftuun',
+  'markets.src.hint':
+    'Wanta iyyitoota babal’ina kanaa ofiisaa deebisan — torchoftuun tokkoon: haala, argii haaraa, yeroo argame, hammachaa fi kataba madda torchoftuu ofiisaa.',
+  'markets.src.none': 'Gabaan torchoftuu deebii kana waliin hin baafamne.',
+  'markets.src.answering': '{count} deebisan',
+  'markets.src.refusing': '{refused} didan · {silent} calmisan',
+  'markets.src.chip': 'eegumsa bot',
+  'markets.src.publisherSite': 'Fuqa torchoftuu',
+  'markets.src.challengeTitle': 'Argama, buufata ofumaatiin ni dhorka',
+  'markets.src.challengeBody':
+    'Eegumsni bot torchoftuu dhafilee hinfudhan iyyituu keenya deebi’u. Gaaffii kana deebisuu yookiin biraawuzii of fakkeenya miti, kanaafuu tarraja hin arganne, homaa hin qabbaneefne. Katabni jalatti jiru ibsa torchoftuu ofiisaa — daataan jira, yeroo dhumaafis kan jijjiirame.',
+  'markets.src.outageTitle': 'Torchoftuu kanaa deebii hin jiru',
+  'markets.src.outageBody':
+    'Iyyituu tarraja fayyadu hin deebifne, kanaafuu torchoftuu kun lakkoofsota ol jiru keessaa gahee hin qabu. Copiin kuufame bakka nubisa ammaaatti namuu hin ta’u.',
+  'markets.src.rows': 'Tarrajawwan qabaman',
+  'markets.src.publishedCount': 'torchoftuun lakkaa’u',
+  'markets.src.truncated': 'baafame caalu gadaf',
+  'markets.src.excluded': 'Tarrajawwan dhaamsaman',
+  'markets.src.excludedNote': 'Gatii miti — tarrajawwwan mindaa, yookiin sandukuwwan akkan lakkoofsatti hin dubbatamne.',
+  'markets.src.coverage': 'Hammachaa',
+  'markets.src.oldestObservation': 'Argii duraa',
+  'markets.src.ageDays': 'Umurii guyyaa {days}',
+  'markets.src.retrieved': 'Kan argame',
+  'markets.src.retrievalAge': 'Kuusaa keenya keessatti guyyaa {days}',
+  'markets.src.dataType': 'Gosa lakkoofsaa',
+  'markets.src.catalogue': 'Kataba madda torchoftuu ofiisaa',
+  'markets.src.catalogueReachable': 'Argama — daataan yeroo dhumaaf {modified} jijjiirame.',
+  'markets.src.catalogueUnreachable': 'Geessi kataba maddis deebii hin kennine.',
+  'markets.src.notStated': 'guyyaan hin ibsamne',
+  'markets.src.rowPaging': 'tarrajawwan JSONn fuqa qoodaman',
+  'markets.src.fileOnly': 'dhafilee guutuu buufachuu',
+  'markets.src.httpTitle': 'Iyyituun milkaa’e akkan daataan ammaa jiru hin ibsu',
+  'markets.src.httpBody':
+    'Haalli argame HTTP irraa miti, guyyaa argii haaraa karoora torchoftuu ibsameen madaalluun argama. Torchoftuun milli-sekondaatti deebisuu danda’a garuu karoorra ofiirraa torbanootaan fagoo taa’uu danda’a; kun akkan cufamaa malee akka banamaatti hin galmeeffamu.',
 
   // --- Soil module ---
   'soil.pageDescription':

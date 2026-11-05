@@ -4,6 +4,7 @@ import { booleanParam, stringParam } from '@/lib/data/api';
 import { getAdminBoundaries } from '@/lib/data/boundaries';
 import { findLatestLayerDate, GIBS_LAYERS } from '@/lib/data/gibs';
 import { DEFAULT_ETHIOPIAN_LOCATION } from '@/lib/data/ethiopianMarkets';
+import { getFewsNetWindow } from '@/lib/data/fewsNetPrices';
 import { getAgroclimateDaily } from '@/lib/data/nasaPower';
 import { getUsdRate } from '@/lib/data/nbeExchange';
 import { getWeatherForecast, getWeatherHistory } from '@/lib/data/openMeteo';
@@ -30,7 +31,8 @@ const LIGHT = ['open-meteo-forecast', 'nasa-power', 'nbe-indicative-rates', 'nas
 
 /**
  * The probes that pull a bulk file rather than one small record: the WFP survey CSV, the
- * World Bank series, the historical archive and the boundary geometries.
+ * FEWS NET price window, the World Bank series, the historical archive and the boundary
+ * geometries.
  *
  * They run in a second wave. Fired together with the light probes on a cold cache they compete
  * for the same connection and the slowest ones exceed their 45-second budget, and the honest
@@ -38,7 +40,7 @@ const LIGHT = ['open-meteo-forecast', 'nasa-power', 'nbe-indicative-rates', 'nas
  * publisher is up, our own probe schedule starved it. Sequencing costs the status panel a few
  * seconds and buys a state that actually describes the publisher.
  */
-const BULK = new Set(['wfp-ethiopia-prices', 'open-meteo-historical', 'worldbank-realtime-prices', 'worldbank-indicators', 'geo-boundaries']);
+const BULK = new Set(['wfp-ethiopia-prices', 'fews-net-ethiopia-prices', 'open-meteo-historical', 'worldbank-realtime-prices', 'worldbank-indicators', 'geo-boundaries']);
 
 const location = {
   name: DEFAULT_ETHIOPIAN_LOCATION.name,
@@ -82,6 +84,20 @@ const PROBES: Record<string, Probe> = {
   [SOURCES.worldBankPrices.id]: {
     source: SOURCES.worldBankPrices,
     run: () => getUnofficialRateSeries(3),
+  },
+  /*
+   * The status answer must be the same fact the dashboard pays for, so it reads the same cache
+   * entry (`fdw:prices:window:26`) instead of opening a second request to the publisher.
+   *
+   * A short window is not a cheap probe here — it is a wrong one. Measured on the live service,
+   * this publisher's newest Ethiopian survey week sat ~5 weeks behind today, so a two-week probe
+   * returned zero rows and the screen reported an outage of a source that was publishing normally.
+   * A publisher that is behind schedule is `stale`, which is a different statement, and the
+   * freshness classifier derives it from the cadence this source declares.
+   */
+  [SOURCES.fewsNetPrices.id]: {
+    source: SOURCES.fewsNetPrices,
+    run: () => getFewsNetWindow(),
   },
   [SOURCES.worldBankIndicators.id]: {
     source: SOURCES.worldBankIndicators,

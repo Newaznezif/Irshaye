@@ -100,6 +100,7 @@ export const en = {
   'cadence.hourly': 'hourly',
   'cadence.daily': 'daily',
   'cadence.8daily': '8-day composite',
+  'cadence.weekly': 'weekly',
   'cadence.monthly': 'monthly',
   'cadence.quarterly': 'quarterly',
   'cadence.annual': 'annual',
@@ -618,31 +619,22 @@ export const en = {
 
   // --- Markets module ---
   'markets.description':
-    'Prices surveyed in Ethiopian markets by the WFP rEMS monitoring programme, in ETB per the unit the publisher recorded. International commodity references are never presented as Ethiopian market prices here.',
+    'Prices surveyed in Ethiopian markets by the WFP rEMS monitoring programme and the FEWS NET weekly market survey, in the currency and unit each publisher recorded. Nothing is modelled, projected or filled in here: a source that does not answer is shown as unavailable.',
   'markets.badgeLiveSurvey': 'Live survey',
-  'markets.grainPricesTitle': 'National grain prices · newest survey month',
-  'markets.grainPricesHint':
-    'Average of the retail prices actually surveyed in that month, grouped strictly by commodity and unit.',
-  'markets.loadingWfp': 'Loading WFP prices',
-  'markets.meanAcrossMarkets': 'Mean across {count} surveyed markets.',
   'markets.surveyMonth': 'Survey month',
-  'markets.grainNote':
-    '; each figure is the mean across the markets shown in its card. Coffee is a beverage crop and is not in this grain table — use the history panel below for it.',
   'markets.historyTitle': 'Price history in Ethiopian markets',
   'markets.historyHint':
-    'One line per commodity · unit · price type, averaged over the markets surveyed that month. Where a publisher stopped surveying, the line has a real gap — nothing is interpolated.',
-  'markets.last36Months': 'last 36 survey months',
+    'One series at a time — a commodity, the publisher’s unit and one price type. The mean, lowest and highest lines are computed here from the rows that carry figures; where a period has no published figure the line breaks instead of joining across it.',
   'markets.commodity': 'Commodity',
   'markets.loadingHistory': 'Loading {commodity} history',
   'markets.noSeriesTitle': 'No series drawn',
   'markets.noSeriesBody':
-    'The publisher has no {commodity} series with at least two months under a single unit and price type. No price is invented.',
-  'markets.seriesLegend': '{series} · {months} months · up to {markets} markets',
+    'No survey published a figure for {commodity} in this unit, price type and window, so no line is drawn and no price is invented.',
   'markets.unitsNote':
-    'Values are ETB per the stated unit, retail or wholesale as recorded by the surveyor — the two are never averaged together.',
-  'markets.crossMarketTitle': 'Cross-market movement',
+    'Prices are in the currency and unit the surveyor recorded. Retail and wholesale are never averaged together, and two units of the same commodity stay two separate series.',
+  'markets.crossMarketTitle': 'Regions and markets · one survey month',
   'markets.crossMarketHint':
-    'Month-on-month change inside one market, commodity and unit. Comparing two markets compares two surveys, not one price.',
+    'One commodity, one unit, one price type, one month — the only comparison these surveys support. The spread and the percent above cheapest are our arithmetic on published market means.',
   'markets.region': 'Region',
   'markets.allRegions': 'All regions',
   'markets.loadingLatest': 'Loading latest survey month',
@@ -650,8 +642,6 @@ export const en = {
   'markets.thLatest': 'Latest',
   'markets.thChange': 'Change',
   'markets.vs': 'vs',
-  'markets.surveyCoverage':
-    'The {month} survey covered {markets} markets and {commodities} commodities. Rows above exist only where the publisher has both this month and the previous month for the identical market, commodity and unit.',
   'markets.fxTitle': 'Ethiopian foreign exchange — three separate categories',
   'markets.fxHint':
     'The official rate is a daily NBE publication, the parallel rate is a World Bank monthly national average and the benchmark rate is an annual figure. They are different kinds of number and are shown apart.',
@@ -670,11 +660,282 @@ export const en = {
   'markets.annualBody': 'Context only — these are not current-month figures.',
   'markets.noRowsTitle': 'No rows returned',
   'markets.noRowsBody': '{label}: this response carried no rows, and nothing was substituted for them.',
-  'commodity.teff': 'Teff',
-  'commodity.maize': 'Maize',
-  'commodity.wheat': 'Wheat',
-  'commodity.sorghum': 'Sorghum',
-  'commodity.coffee': 'Coffee',
+
+  // --- Markets module · shared registries ---
+  'markets.sectionPicker': 'Module view',
+  'markets.publishers': 'Ethiopian market surveys',
+  'markets.unavailableTitle': 'No market publisher answered',
+  'markets.unavailableBody':
+    'Every figure on this page is read from a survey at request time, so when no publisher answers there is nothing to display. Nothing has been substituted, and the report underneath names each publisher and what its own request returned.',
+  'markets.contributing': 'In this answer',
+  'markets.coverageClean': '{rows} rows matched, every one carrying a published figure.',
+  'markets.coverageWithGaps':
+    '{rows} rows matched, of which {gaps} carry no published figure — the empty cells are survey gaps, not zero prices.',
+  'markets.ofCount': 'of {total}',
+  'markets.noSpan': 'A single survey date only.',
+  'markets.months': 'months',
+  'markets.weeks': 'weeks',
+  'markets.lastWindow': 'last {count} {unit}',
+  'markets.col.markets': 'Markets',
+  'markets.col.months': 'Months',
+  'markets.col.periods': 'Periods',
+  'markets.col.rows': 'Rows',
+  'common.unit': 'Unit',
+  'dataType.market-survey': 'market survey',
+  'dataType.reference-price': 'reference price',
+  'dataType.projection': 'projection',
+  'dataType.administrative': 'administrative boundary',
+  'freshness.current': 'Current',
+  'freshness.recent': 'Recent',
+  'freshness.stale': 'Behind schedule',
+  'freshness.historical': 'Historical record',
+  'freshness.unknown': 'No usable date',
+  'statusLabel.historical': 'Historical record',
+  'markets.state.access_challenged': 'Access challenged',
+  'markets.granularity.weekly': 'Weekly',
+  'markets.granularity.monthly': 'Monthly',
+  'markets.flag.actual': 'Observed',
+  'markets.flag.aggregate': 'Aggregated',
+  'markets.flag.replaced': 'Replaced figure',
+  'markets.flag.unknown': 'Unflagged',
+
+  // --- Markets module · tabs ---
+  'markets.tab.overview': 'Overview',
+  'markets.tab.prices': 'Price explorer',
+  'markets.tab.history': 'Price history',
+  'markets.tab.regions': 'Regions and markets',
+  'markets.tab.insights': 'What the data shows',
+  'markets.tab.exchange': 'Foreign exchange',
+  'markets.tab.sources': 'Sources',
+
+  // --- Markets module · overview ---
+  'markets.ov.observations': 'Published prices',
+  'markets.ov.observationsNote': '{rows} surveyed rows carry no figure; they are listed as gaps.',
+  'markets.ov.commodities': 'Commodities covered',
+  'markets.ov.commoditiesNote': 'Across {units} publisher units, never merged.',
+  'markets.ov.markets': 'Markets surveyed',
+  'markets.ov.marketsNote': 'In {regions} regions; {mapped} carry a publisher coordinate.',
+  'markets.ov.periods': 'Survey periods',
+  'markets.ov.periodsNote': 'Distinct observation dates, spread over {months} months.',
+  'markets.ov.coverageTitle': 'What these surveys actually cover',
+  'markets.ov.coverageHint':
+    'Counts of published rows only — no average, no index, and no commodity a survey did not record.',
+  'markets.ov.newest': 'Newest observation',
+  'markets.ov.newestNote': 'Classified {tier} against its own publisher’s cadence.',
+  'markets.ov.oldest': 'Oldest observation',
+  'markets.ov.span': 'Survey months run from {from} to {to}.',
+  'markets.ov.publishers': 'Publishers answering',
+  'markets.ov.publishersNote': 'Each is loaded on its own, so one failure cannot empty this page.',
+  'markets.ov.currencies': 'Currencies as published',
+  'markets.ov.units': 'Units as published',
+  'markets.ov.unitsNote': 'A price per 100 KG and a price per KG are two series, never one average.',
+  'markets.ov.priceTypes': 'Price types',
+  'markets.ov.granularities': 'Chart granularity the publishers support: {list}.',
+  'markets.ov.catalogTitle': 'Commodities with published prices',
+  'markets.ov.catalogHint':
+    'Ordered by how many markets reported a figure. The list is read from the survey rows themselves, so a commodity no publisher surveyed is absent rather than empty.',
+  'markets.ov.catalogTruncated': 'Showing the {shown} deepest of {total} commodity-and-unit series; the explorer lists every one.',
+  'markets.ov.qualityTitle': 'Data quality the module can see',
+  'markets.ov.qualityHint': 'Each of these is a count of published rows — a coverage fact, not a correction.',
+  'markets.ov.gaps': 'Rows without a figure',
+  'markets.ov.gapsNote': 'Rendered as empty cells. A zero would be a different claim.',
+  'markets.ov.duplicates': 'Duplicate rows removed',
+  'markets.ov.duplicatesNote':
+    'Same publisher, market, commodity, unit, price type and date; the row carrying a figure is the one kept.',
+  'markets.ov.unmapped': 'Markets without coordinates',
+  'markets.ov.unmappedNote': '{mapped} markets are mappable. The rest stay in tables and are never placed by guess.',
+  'markets.ov.seasonal': 'Series deep enough for seasonality',
+  'markets.ov.seasonalNote': 'At least twelve survey months under one unit and price type.',
+  'markets.ov.limitTitle': 'What this module cannot say',
+  'markets.ov.limitBody':
+    'These are surveyed retail and wholesale prices at named markets — not a national price index, not a farm-gate price and not a forecast. No yield, income or saving is claimed, and a survey month with no figure stays missing.',
+
+  // --- Markets module · explorer ---
+  'markets.ex.title': 'Price explorer',
+  'markets.ex.hint':
+    'One page of published rows at a time. Filters name only values the surveys contain, and a row with no figure stays an empty cell.',
+  'markets.ex.search': 'Search market or commodity',
+  'markets.ex.searchPlaceholder': 'for example Mekele, or Teff',
+  'markets.ex.allCommodities': 'All commodities published',
+  'markets.ex.allMarkets': 'All markets',
+  'markets.ex.allSources': 'All publishers',
+  'markets.ex.anyUnit': 'Any unit',
+  'markets.ex.anyPriceType': 'Any price type',
+  'markets.ex.priceType': 'Price type',
+  'markets.ex.surveyRange': 'Survey window',
+  'markets.ex.surveyRangeHint': 'Filtered on the publishers’ own observation dates.',
+  'markets.ex.fromDate': 'Observations from',
+  'markets.ex.toDate': 'Observations to',
+  'markets.ex.pricedOnly': 'Only rows carrying a figure',
+  'markets.ex.clear': 'Clear {count} filters',
+  'markets.ex.clearAll': 'Clear all filters',
+  'markets.ex.loading': 'Loading published price rows',
+  'markets.ex.sourceLabel': 'Ethiopian market surveys',
+  'markets.ex.emptyTitle': 'No published rows match these filters',
+  'markets.ex.emptyHint':
+    'Filters match the publisher’s own spellings exactly, so a combination no survey reported returns nothing. Nothing is invented to fill the table.',
+  'markets.ex.tableCaption': 'Published Ethiopian market price observations',
+  'markets.ex.sortAria': 'Sort by {label}',
+  'markets.ex.price': 'Price',
+  'markets.ex.quality': 'Type and quality',
+  'markets.ex.freshness': 'Freshness',
+  'markets.ex.noFigure': 'This survey cell carries no published figure',
+  'markets.ex.perUnit': 'per {unit}',
+  'markets.ex.prev': 'Previous',
+  'markets.ex.next': 'Next',
+  'markets.ex.pageOf': 'Page {page} of {pages}',
+  'markets.ex.perPage': 'Rows per page',
+  'markets.ex.matched': '{total} rows match these filters',
+  'markets.ex.window': 'Newest in this result {newest}; oldest {oldest}.',
+  'markets.ex.staleTitle': 'Some rows are behind their publisher’s schedule',
+  'markets.ex.staleBody':
+    'Freshness is graded per publisher against the cadence that publisher declares, so a weekly survey and a monthly one are not judged by the same clock.',
+  'markets.ex.export': 'Export CSV',
+  'markets.ex.exportHint':
+    'Exports the {rows} rows of page {page} of {pages}, each with the publisher’s unit, currency, survey date, retrieval time and source link. Leading characters are neutralised so a spreadsheet cannot execute a name as a formula.',
+
+  // --- Markets module · history ---
+  'markets.hist.granularity': 'Bucket size',
+  'markets.hist.windowLabel': 'Periods shown',
+  'markets.hist.unitHint': 'The publisher’s unit; changing it changes the series.',
+  'markets.hist.average': 'Mean of period',
+  'markets.hist.lowest': 'Lowest figure',
+  'markets.hist.highest': 'Highest figure',
+  'markets.hist.derivedNote': 'Calculated here from published rows.',
+  'markets.hist.latestNote': 'Surveyed {when}, across {markets} markets.',
+  'markets.hist.lowestNote': 'Recorded at {when}.',
+  'markets.hist.highestNote': 'Recorded at {when}.',
+  'markets.hist.change': '{direction} {pct}% between survey periods',
+  'markets.hist.up': 'Up',
+  'markets.hist.down': 'Down',
+  'markets.hist.seriesNote':
+    '{commodity} · {unit} · {retail}: {periods} periods with figures, across {markets} markets that reported them.',
+  'markets.hist.fallbackTitle': 'Drawn monthly',
+  'markets.hist.fallbackBody':
+    'No publisher contributing {commodity} surveys weekly, so this series is bucketed by survey month. A weekly line would plot days nobody looked at.',
+  'markets.hist.gapTitle': 'Periods with no published figure',
+  'markets.hist.gapBody':
+    '{count} periods inside this window produced no price. The line breaks at each one; nothing is interpolated.',
+  'markets.hist.onePoint':
+    'Only {count} period in this window carries a figure, so no trend line is drawn — one point is not a trend.',
+  'markets.hist.byMarketTitle': 'The same statistic, market by market',
+  'markets.hist.byMarketHint':
+    'Each row is one market inside the same commodity, unit and price type. Percentage change is our arithmetic on the two most recent periods that carry figures.',
+  'markets.hist.publishersInSeries': 'Rows behind this series come from: {list}.',
+  'markets.hist.recheck': 'Re-read this series from the publisher',
+
+  // --- Markets module · regions ---
+  'markets.reg.monthHint': 'Only months with published figures for this commodity are offered.',
+  'markets.reg.marketsShown': '{count} markets reported',
+  'markets.reg.cheapest': 'Cheapest market',
+  'markets.reg.dearest': 'Dearest market',
+  'markets.reg.atMarket': 'At {market}.',
+  'markets.reg.spread': 'Dearest above cheapest',
+  'markets.reg.spreadNote': 'Calculated here between the two market means of this month, same unit and price type.',
+  'markets.reg.singleMarket':
+    'One market only published this month for this commodity, unit and price type, so there is no spread to report.',
+  'markets.reg.noneTitle': 'No published figures in this month',
+  'markets.reg.noneBody':
+    'In {month} the surveys returned no price for {commodity} per {unit} at the selected price type. Choose another month rather than reading an empty comparison as a cheap one.',
+  'markets.reg.mapTitle': 'Where the publisher places these markets',
+  'markets.reg.mapHint':
+    'Each dot sits on the coordinate the publisher published for that market, over geoBoundaries administrative outlines. A market with no coordinate is left off the map and stays in the table.',
+  'markets.reg.mapAria': 'Map of {count} surveyed Ethiopian markets plotted at their published coordinates',
+  'markets.reg.ramp': 'cheaper {low} to dearer {high} {currency} per {unit}',
+  'markets.reg.plotted': '{plotted} of {total} markets plotted',
+  'markets.reg.unplottedNote': 'The rest have no publisher coordinate.',
+  'markets.reg.loadingOutlines': 'Loading administrative outlines…',
+  'markets.reg.outlineNote':
+    'The administrative outlines could not be loaded, so the market points are shown without them. No boundary is drawn from memory.',
+  'markets.reg.byRegionTitle': 'Regional averages for the month',
+  'markets.reg.byRegionHint': 'The mean of the markets surveyed inside one region, in the publisher’s own region labels.',
+  'markets.reg.regionMarkets': '{count} markets surveyed · per {unit}',
+  'markets.reg.tableTitle': 'Market by market',
+  'markets.reg.tableCaption': 'One commodity, unit and price type compared across markets in a single survey month',
+  'markets.reg.tableNote': 'In {month}, {markets} markets published a figure for this series.',
+  'markets.reg.price': 'Price',
+  'markets.reg.aboveCheapest': 'Above cheapest',
+  'markets.reg.hasCoords': 'Publisher coordinate',
+  'markets.reg.noCoords': 'No coordinate published',
+  'markets.reg.publisherNote': 'Supplied by: {list}.',
+
+  // --- Markets module · insights ---
+  'markets.ins.title': 'What the observations support',
+  'markets.ins.hint':
+    'Each finding names the series, markets, row count and period behind it, and carries its own limitation. A correlation is never called a cause, and no price is projected forward.',
+  'markets.ins.noneTitle': 'No finding reaches the evidence bar',
+  'markets.ins.noneBody':
+    'A movement needs two consecutive survey periods with real figures, and a spread needs at least two markets reporting the identical commodity, unit and price type in the same month. Where those conditions are not met, no statement is made.',
+  'markets.ins.kind.price-rise': 'Price rise',
+  'markets.ins.kind.price-fall': 'Price fall',
+  'markets.ins.kind.market-spread': 'Gap between markets',
+  'markets.ins.kind.seasonal-coverage': 'Depth of coverage',
+  'markets.ins.kind.market-outdated': 'Markets not surveyed recently',
+  'markets.ins.kind.thin-coverage': 'Single-market commodity',
+  'markets.ins.price-rise':
+    'In {market}, {commodity} per {unit} ({retail}) was {pct}% higher in {to} than in {from}, at {price}.',
+  'markets.ins.price-fall':
+    'In {market}, {commodity} per {unit} ({retail}) was {pct}% lower in {to} than in {from}, at {price}.',
+  'markets.ins.market-spread':
+    'In {month}, {commodity} per {unit} ({retail}) cost {pct}% more in {dearest} than in {cheapest}, across {markets} markets.',
+  'markets.ins.seasonal-coverage':
+    '{series} commodity-and-unit series have at least twelve survey months; the deepest is {commodity} per {unit}, with {months} months across {markets} markets.',
+  'markets.ins.market-outdated':
+    '{months} markets have no survey row newer than {lastMonth}, while the newest survey month is {latestMonth} — among them {markets}.',
+  'markets.ins.thin-coverage':
+    '{commodity} per {unit} ({retail}) is surveyed in one market only ({market}), so no regional statement about it is possible.',
+  'markets.insightLimit.change':
+    'One market’s own survey, period on period. It is not a national index, and it does not explain why the price moved.',
+  'markets.insightLimit.spread':
+    'A gap between two market surveys in one month. Transport, local supply and survey timing all differ at once, so the gap is not attributable to any one of them.',
+  'markets.insightLimit.seasonal':
+    'Depth of coverage only: it says how many months were published, not that a seasonal pattern exists.',
+  'markets.insightLimit.coverage': 'A statement about the surveys themselves, not about the market.',
+  'markets.ins.seasonalTitle': 'Series with a year or more of coverage',
+  'markets.ins.seasonalHint':
+    'Months carrying figures, per commodity, unit and price type. Listed to show where a seasonal question could be asked at all.',
+  'markets.ins.wetVsDry': 'Wet months against the rest',
+  'markets.ins.seasonalLimitation':
+    'That figure compares June to September with the other months across whatever years were published. With one year of rows it describes that year, not a pattern, and it is never a forecast.',
+  'markets.ins.evidenceSeries': 'Series',
+  'markets.ins.evidenceRows': 'Rows',
+  'markets.ins.limitLabel': 'Limit',
+
+  // --- Markets module · source report ---
+  'markets.src.title': 'Publisher-by-publisher status',
+  'markets.src.hint':
+    'What this deployment’s own requests returned, per publisher: state, newest observation, retrieval time, coverage and the publisher’s own catalogue.',
+  'markets.src.none': 'No publisher report came back with this answer.',
+  'markets.src.answering': '{count} answering',
+  'markets.src.refusing': '{refused} refusing · {silent} silent',
+  'markets.src.chip': 'bot protection',
+  'markets.src.publisherSite': 'Publisher page',
+  'markets.src.challengeTitle': 'Reachable, and refusing the automated download',
+  'markets.src.challengeBody':
+    'The publisher’s bot protection answered our request instead of serving the file. We do not answer that challenge or imitate a browser, so no rows were retrieved and none are substituted. The catalogue below is the publisher’s own statement that the dataset exists and when it last changed.',
+  'markets.src.outageTitle': 'No answer from this publisher',
+  'markets.src.outageBody':
+    'The request did not return usable rows, so this publisher contributes nothing to the figures above. A cached copy is never kept as a substitute for a current reading.',
+  'markets.src.rows': 'Rows held',
+  'markets.src.publishedCount': 'the publisher counts',
+  'markets.src.truncated': 'fewer than published',
+  'markets.src.excluded': 'Rows held back',
+  'markets.src.excludedNote': 'Not prices — wage rows, or cells that could not be read as a figure.',
+  'markets.src.coverage': 'Coverage',
+  'markets.src.oldestObservation': 'Oldest observation',
+  'markets.src.ageDays': '{days} days old',
+  'markets.src.retrieved': 'Retrieved',
+  'markets.src.retrievalAge': '{days} days in our cache',
+  'markets.src.dataType': 'Kind of figure',
+  'markets.src.catalogue': 'Publisher’s own catalogue',
+  'markets.src.catalogueReachable': 'Reachable — the dataset was last changed {modified}.',
+  'markets.src.catalogueUnreachable': 'The catalogue endpoint did not answer either.',
+  'markets.src.notStated': 'date not stated',
+  'markets.src.rowPaging': 'rows paged as JSON',
+  'markets.src.fileOnly': 'whole-file download',
+  'markets.src.httpTitle': 'A successful request is not the same claim as a current dataset',
+  'markets.src.httpBody':
+    'State is derived from the newest observation date measured against the cadence that publisher declares, not from an HTTP status. A publisher can answer in milliseconds and still be weeks behind its own schedule; that is reported as behind schedule, not as connected.',
 
   // --- Soil module ---
   'soil.pageDescription':

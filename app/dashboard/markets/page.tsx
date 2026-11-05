@@ -4,7 +4,7 @@ import { MarketIntelligence } from '@/components/data/MarketIntelligence';
 export const metadata: Metadata = {
   title: 'Market Intelligence',
   description:
-    'Ethiopian commodity prices from the WFP rEMS market survey, with source attribution, observation months, and price-quality flags.',
+    'Ethiopian commodity prices surveyed by WFP rEMS and the FEWS NET weekly market survey, with publisher attribution, observation dates, units, freshness, and price-quality flags. Sources that do not answer are shown as unavailable.',
 };
 
 export default function MarketsPage() {
