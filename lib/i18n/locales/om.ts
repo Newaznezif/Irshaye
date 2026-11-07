@@ -321,7 +321,7 @@ export const om: Dictionary = {
     'Sukannaa fi kliimaa: Open-Meteo (CC BY 4.0) fi NASA POWER. Baay\'ina roobaafi normalii ho\'inaa: ERA5 deebisanii ilaaluu (reanalysis) Open-Meteo darbeetiin. Gatama gabaa: WFP Ethiopia rEMS fi sarara yeroon dhiyaatu Bankii Addunyaa HDX darbeetiin. Saffina jijjiirrama salfa (exchange): Bankii Itoophiyaa (NBE) fi Bankii Addunyaa. Daangaawwanfi kuusaawwan satilaayitii: geoBoundaries, NASA GIBS, Ethiopia.GeoPortal ArcGIS irratti, GRID3/WorldPop fi CDE — hayyamni isaanii fuula "Madda Daataa" irratti akka ibsame.',
 
   // --- Loading and notice primitives ---
-  'states.codeLabel': 'Code',
+  'states.codeLabel': 'Koodii',
   'states.codeNoSubstitute': 'Madda kanaaf gatiin bakka bu\'aa (substitute) hin agarsiifamu.',
 
   // --- Provenance blocks ---
@@ -643,7 +643,7 @@ export const om: Dictionary = {
   'markets.thMarket': 'Gaba',
   'markets.thLatest': 'Haaraa',
   'markets.thChange': 'Jijjiirama',
-  'markets.vs': 'vs',
+  'markets.vs': 'waliin',
   'markets.fxTitle': 'Saffina jijjiirrama salfa alaa (forex) Itoophiyaa — gosa sadi',
   'markets.fxHint':
     'Gatiin sirna mootummaa galmee guyyaa NBE dha; gatiin gabaa qe\'ee (parallel) giddugaleessa ji\'aa biyyoolessaa Bankii Addunyaa dha; gatiin madaallii (benchmark) gatii baraati. Gatiin sunniin gosa addaati — kanaaf adda baafamanii agarsiifamu.',

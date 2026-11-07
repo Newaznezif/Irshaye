@@ -109,9 +109,63 @@ function byKeyDiffers(entry, code) {
   return source !== undefined && source.value !== entry.value;
 }
 
+/*
+ * A string a locale writes exactly as English does is one of two things: a copy somebody forgot, or
+ * something that has no other form. The first is a defect; the second is correct and must be
+ * *declared*, because the difference between them is invisible in the data and a list without reasons
+ * is how "we'll localise it later" becomes permanent.
+ *
+ * `IRSHAYE` is the product's name and `AgroInnovation 2026` is the event's own printed title — a
+ * brand translated is a brand lost. `%`, `°C` and `V` are unit marks: the Cyrillic locales genuinely
+ * write `В` and Amharic `ቮ`, so those are translations, and the Latin-script locales writing `V` is
+ * the same symbol, not an English word left behind. `ET0 mm` is a scientific symbol for reference
+ * evapotranspiration with an SI unit attached; Russian localises it only by its own decimal comma.
+ * Swahili `Data` is the accepted loanword in the language's own technical usage — `Takwimu` would say
+ * "statistics" and change what the navigation item points at.
+ */
+const VERBATIM_ALLOWED = new Map([
+  ['*', ['shell.moduleFallback', 'landing.eventTag', 'field.unit.percent', 'field.unit.celsius']],
+  ['am', ['climate.thEt0Mm']],
+  ['om', ['climate.thEt0Mm', 'field.unit.volts']],
+  ['sw', ['climate.thEt0Mm', 'field.unit.volts', 'landing.navData']],
+]);
+
+const allowedVerbatim = (code, key) => {
+  for (const scope of ['*', code]) {
+    if ((VERBATIM_ALLOWED.get(scope) ?? []).includes(key)) return true;
+  }
+  return false;
+};
+
+const copied = [];
+const honoured = [];
+for (const code of LOCALES.filter((c) => c !== 'en')) {
+  for (const entry of dictionaries.get(code)) {
+    if (byKeyDiffers(entry, code)) continue;
+    if (allowedVerbatim(code, entry.key)) {
+      honoured.push(`${code}:${entry.key}`);
+      continue;
+    }
+    copied.push(`${code}: ${entry.key} = "${String(entry.value).slice(0, 40)}"`);
+  }
+}
+
+// The other direction matters as much: an exemption that no longer describes reality is a claim about
+// a locale that has stopped being true, and it would hide the next copy under the same name.
+const stale = [];
+for (const [scope, keys] of VERBATIM_ALLOWED) {
+  for (const key of keys) {
+    for (const locale of LOCALES.filter((c) => c !== 'en' && (scope === '*' || scope === c))) {
+      const entry = dictionaries.get(locale).find((candidate) => candidate.key === key);
+      if (entry !== undefined && byKeyDiffers(entry, locale)) stale.push(`${locale}: ${key} is no longer verbatim`);
+    }
+  }
+}
+
 console.log(`Locale files: ${LOCALES.join(', ')}`);
 console.log(`English keys: ${en.length}`);
 console.log(`Translated (not English-verbatim): ${coverage.join(' · ')}`);
+console.log(`Verbatim by design (${honoured.length} strings, declared): ${honoured.join(' · ') || 'none'}`);
 
 if (problems.length > 0) {
   console.error(`\n✗ ${problems.length} locale problem(s):`);
@@ -120,4 +174,20 @@ if (problems.length > 0) {
   process.exit(1);
 }
 
+if (copied.length > 0) {
+  console.error(`\n✗ ${copied.length} string(s) copied from English with no declared reason:`);
+  for (const item of copied.slice(0, 40)) console.error(`  ${item}`);
+  if (copied.length > 40) console.error(`  … ${copied.length - 40} more`);
+  console.error('  Translate them, or add the key to VERBATIM_ALLOWED with the reason it has no other form.');
+  process.exit(1);
+}
+
+if (stale.length > 0) {
+  console.error(`\n✗ ${stale.length} declared exemption(s) no longer describes a verbatim string:`);
+  for (const item of stale.slice(0, 20)) console.error(`  ${item}`);
+  console.error('  Remove it — a reason that no longer applies would excuse the next copy under the same name.');
+  process.exit(1);
+}
+
 console.log('\n✓ All locales carry every key, every placeholder, and every emphasis marker.');
+console.log('✓ Every string that equals the English one is either a declared brand, unit mark or symbol, or it is translated.');
