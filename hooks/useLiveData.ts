@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ProvenanceView, SourceErrorView } from '@/components/data/ProvenanceLabel';
 
 /**
- * Fetches one of the `/api/data/*` routes with cancellation, so a fast location
+ * Fetches one of the JSON API routes with cancellation, so a fast location
  * change cannot leave an older response landing after a newer one.
  *
  * The route's own `{ ok, data, provenance }` envelope is kept intact: a failed
@@ -49,7 +49,22 @@ export interface LiveDataState<T, P = ProvenanceView, Extra = unknown> {
 
 const RESERVED = new Set(['ok', 'data', 'provenance', 'error']);
 
-export function useLiveData<T, P = ProvenanceView, Extra = Record<string, never>>(path: string | null) {
+export interface LiveDataOptions {
+  /**
+   * The signed-in caller's bearer token, sent as an `Authorization` header.
+   *
+   * It is an option and not a URL query parameter on purpose: `/api/field/*` and
+   * `/api/hardware/devices*` authorize on that header (`lib/serverSupabase.ts:25`), a token in a
+   * path ends up in browser history, server logs and — since `path` is a React dependency here —
+   * in a refetch every time it is re-typed. Changing this value refetches, which is what a session
+   * refresh or a sign-out needs; a null value refetches as an anonymous caller and the route
+   * answers 401, which the UI renders as "signed out" rather than as "no data".
+   */
+  accessToken?: string | null;
+}
+
+export function useLiveData<T, P = ProvenanceView, Extra = Record<string, never>>(path: string | null, options?: LiveDataOptions) {
+  const accessToken = options?.accessToken ?? null;
   const [snapshot, setSnapshot] = useState<Snapshot<T, P, Extra> | null>(null);
   // Bumped by `reload`; part of the request identity so the pending state can be
   // derived during render instead of being set synchronously inside an effect.
@@ -63,7 +78,13 @@ export function useLiveData<T, P = ProvenanceView, Extra = Record<string, never>
 
     async function run() {
       try {
-        const res = await fetch(path as string, { signal: controller.signal, headers: { accept: 'application/json' } });
+        const res = await fetch(path as string, {
+          signal: controller.signal,
+          headers: {
+            accept: 'application/json',
+            ...(accessToken === null ? {} : { authorization: `Bearer ${accessToken}` }),
+          },
+        });
         const body = (await res.json()) as DataEnvelope<T, P> & Record<string, unknown>;
         if (controller.signal.aborted) return;
 
@@ -95,7 +116,7 @@ export function useLiveData<T, P = ProvenanceView, Extra = Record<string, never>
 
     void run();
     return () => controller.abort();
-  }, [path, attempt]);
+  }, [path, attempt, accessToken]);
 
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
 

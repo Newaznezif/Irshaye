@@ -68,7 +68,7 @@ begin
     select * from (values
       ('value_kind', array['observed', 'modeled', 'forecast', 'estimated', 'imputed']),
       ('quality',    array['high', 'medium', 'low'])
-    ) as declared (name text, allowed text[])
+    ) as declared (name, allowed)
   loop
     select t.oid, t.typtype::text, format_type(t.typbasetype, t.typtypmod)
       into v_oid, v_kind, v_base
@@ -240,6 +240,17 @@ end $$;
 
 do $$
 begin
+  -- Same guard section 5 uses. Without it this block aborts the file on any database where the
+  -- legacy table was never created: `'public.environmental_data'::regclass` is not a lookup that
+  -- returns null for a missing relation, it is an ERROR — `regclass` casts of unknown names are
+  -- rejected outright. A fresh project is exactly that database, so the relaxation this section
+  -- exists to perform would never be reached, and the pack would stop here after the schema and
+  -- domains had already been created.
+  if to_regclass('public.environmental_data') is null then
+    raise notice 'SKIP: public.environmental_data does not exist here, so there is no legacy NOT NULL to relax. Nothing to do.';
+    return;
+  end if;
+
   if exists (
     select 1 from pg_attribute
      where attrelid = 'public.environmental_data'::regclass

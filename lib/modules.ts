@@ -1,10 +1,10 @@
 import type { LucideIcon } from 'lucide-react';
-import { Bot, CloudSun, Database, Layers, LayoutDashboard, Settings, Sprout, Store } from 'lucide-react';
+import { Bot, CloudSun, Database, Layers, LayoutDashboard, Radar, Settings, Sprout, Store } from 'lucide-react';
 
 export type ModuleGroup = 'Today' | 'Intelligence' | 'Advisory' | 'Platform';
 
 /** Stable keys for the locale dictionaries; never renamed with the display label. */
-export type ModuleId = 'overview' | 'climate' | 'markets' | 'crops' | 'soil' | 'advisor' | 'sources' | 'settings';
+export type ModuleId = 'overview' | 'climate' | 'markets' | 'field-intelligence' | 'crops' | 'soil' | 'advisor' | 'sources' | 'settings';
 
 export type AppModule = {
   href: string;
@@ -50,6 +50,15 @@ export const MODULES: AppModule[] = [
     description: 'Ethiopian commodity prices with sources and observation dates.',
     group: 'Intelligence',
     icon: Store,
+  },
+  {
+    href: '/dashboard/field-intelligence',
+    id: 'field-intelligence',
+    label: 'Field Intelligence',
+    shortLabel: 'Field',
+    description: 'Registered field devices, their readings, alerts and positions for your cooperatives.',
+    group: 'Intelligence',
+    icon: Radar,
   },
   {
     href: '/dashboard/crops',
