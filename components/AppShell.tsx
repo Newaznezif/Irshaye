@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Menu, Moon, Sprout, Sun, X } from 'lucide-react';
+import { Menu, Moon, Sun, X } from 'lucide-react';
 import { MODULE_GROUPS, MODULES, moduleByHref } from '@/lib/modules';
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useWorkbench } from '@/context/WorkbenchContext';
 import { getCrop } from '@/lib/crops/catalog';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { BrandLogo } from '@/components/BrandLogo';
 import { SectionLabel } from '@/components/ui';
 import { cn } from '@/lib/utils';
 
@@ -24,11 +25,8 @@ function Brand({ onNavigate }: { onNavigate?: () => void }) {
       className="group flex items-center gap-3 rounded-xl px-1 py-1 outline-offset-4"
       aria-label={t('a11y.landingHome')}
     >
-      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand text-brand-ink shadow-[0_8px_18px_-8px_oklch(0.5_0.112_155/70%)] transition-transform duration-300 group-hover:-translate-y-0.5">
-        <Sprout size={19} strokeWidth={2.3} />
-      </span>
+      <BrandLogo size="sidebar" className="transition-transform duration-300 group-hover:-translate-y-0.5" />
       <span className="min-w-0 leading-tight">
-        <span className="block text-[17px] font-extrabold tracking-[-0.01em] text-ink">IRSHAYE</span>
         <span className="block text-[9.5px] font-bold tracking-[0.19em] text-brand-700 uppercase dark:text-brand-300">
           {t('brand.tagline')}
         </span>
@@ -172,11 +170,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <Menu size={17} />
               </button>
 
-              <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label={t('a11y.landingHome')}>
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-brand-ink">
-                  <Sprout size={15} strokeWidth={2.3} />
-                </span>
-                <span className="text-[15px] font-extrabold tracking-tight text-ink">IRSHAYE</span>
+              <Link href="/" className="flex items-center lg:hidden" aria-label={t('a11y.landingHome')}>
+                <BrandLogo size="compact" />
               </Link>
 
               <div className="hidden min-w-0 items-center gap-2 lg:flex">
