@@ -239,7 +239,7 @@ async function syncMarketPrices(): Promise<TaskReport> {
   const rows: Record<string, unknown>[] = [];
   let dropped = 0;
 
-  for (const r of result.data) {
+  for (const r of result.data.rows) {
     // A row with no figure is a parse artefact, not a price of zero.
     if (r.price === null) {
       dropped += 1;

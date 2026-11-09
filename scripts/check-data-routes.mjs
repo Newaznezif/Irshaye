@@ -232,6 +232,28 @@ async function errCase(name, query, status, code) {
   assert(`${name}: no data leaked on failure`, body?.data === undefined || body?.data === null, body?.data);
 }
 
+/**
+ * A route whose answer comes from one third-party publisher that is measured to refuse
+ * unattended requests. The contract being verified is our own behaviour, not their uptime:
+ * either real data with provenance, or an honest refusal with a code and a provenance — never
+ * a substitute value. `reason` states the measured fact that makes refusal an expected outcome,
+ * so an outage of this kind does not read as a regression in the module under test.
+ */
+async function refusableCase(name, query, reason, inspect) {
+  const { res, body } = await get(query);
+  if (res.status === 200 && body?.ok === true) {
+    checkProvenance(name, body.provenance);
+    inspect(body.data, body);
+    return;
+  }
+  assert(`${name}: a refusal is an explicit failure, not an empty success`, body?.ok === false, { status: res.status, body });
+  assert(`${name}: the refusal carries a code`, nonEmpty(body?.error?.code), body?.error);
+  assert(`${name}: the refusal carries a readable message`, nonEmpty(body?.error?.message), body?.error);
+  assert(`${name}: the refusal still names its publisher`, nonEmpty(body?.provenance?.source) && nonEmpty(body?.provenance?.sourceUrl), body?.provenance);
+  assert(`${name}: nothing is presented as data alongside a refusal`, body?.data === undefined || body?.data === null, body?.data);
+  console.log(`  note  upstream — ${name}: ${body?.error?.message ?? `HTTP ${res.status}`} (${reason})`);
+}
+
 async function main() {
   console.log(`Data-route contract check against ${BASE}`);
 
@@ -581,42 +603,96 @@ async function main() {
   await errCase('vector bbox inverted', '/api/data/geospatial?view=vector&layer=eth-kebele&bbox=39.0,9.2,38.6,8.8', 400, 'bad_input');
   await errCase('vector bbox out of coordinate range', '/api/data/geospatial?view=vector&layer=eth-kebele&bbox=999,8.8,39.0,9.2', 400, 'bad_input');
 
-  section('market prices (WFP rEMS)');
-  await okCase('markets overview', '/api/data/markets?mode=overview', (d) => {
-    assert('overview: survey month', isDate(d.asOf), d.asOf);
-    assert('overview: grain rows present', d.commodities.length > 0, d.commodities);
-    const teff = d.commodities.find((c) => /teff/i.test(c.commodity));
-    assert('overview: teff priced in ETB per a stated unit', teff && teff.avgEtbPerUnit > 0 && nonEmpty(teff.unit), teff);
-    assert('overview: markets counted per commodity', d.commodities.every((c) => isNum(c.markets) && c.markets > 0), d.commodities[0]);
-    assert('overview: no silent unit merge', d.commodities.every((c) => nonEmpty(c.unit) && c.unit !== 'unknown'), d.commodities.map((c) => c.unit));
-  });
+  section('market intelligence (WFP rEMS monthly + FEWS NET weekly survey rows)');
+  // The contract the market module is built on: every figure names its publisher, its
+  // survey date, its unit and its currency; freshness is graded from the cadence that
+  // publisher itself declares; each publisher is reported on its own so one refusal cannot
+  // blank the module; and a granularity is only offered when a publisher surveys that often.
+  const MARKET_STATES = new Set(['connected', 'stale', 'historical', 'unavailable', 'auth_required', 'not_configured']);
+  const FRESHNESS_TIERS = new Set(['current', 'recent', 'stale', 'historical', 'unknown']);
+  const DATA_TYPES = new Set(['market-survey', 'reference-price', 'projection', 'administrative']);
+  const CADENCES = new Set(['realtime', 'hourly', 'daily', '8daily', 'weekly', 'monthly', 'quarterly', 'annual', 'irregular']);
+  const WEEKLY_OR_FINER = new Set(['realtime', 'hourly', 'daily', '8daily', 'weekly']);
 
-  for (const commodity of ['Teff', 'Maize', 'Wheat', 'Sorghum', 'Coffee']) {
-    await okCase(`markets history ${commodity}`, `/api/data/markets?mode=history&commodity=${commodity}&months=36`, (d) => {
-      assert(`history[${commodity}]: rows returned`, Array.isArray(d.series) && d.series.length > 0, d.series?.length);
-      const r = d.series?.[0];
-      assert(`history[${commodity}]: currency is ETB`, d.series.every((x) => x.currency === 'ETB'), r?.currency);
-      assert(`history[${commodity}]: observation dated`, r && isDate(r.observedOn), r?.observedOn);
-      assert(`history[${commodity}]: price type labelled`, r && (r.retail === 'Retail' || r.retail === 'Wholesale' || r.retail === 'aggregate' || r.retail === 'unknown'), r?.retail);
-      assert(`history[${commodity}]: unit preserved verbatim`, r && nonEmpty(r.unit), r?.unit);
-      assert(`history[${commodity}]: rows sorted by date`, d.series.every((x, i, a) => i === 0 || a[i - 1].observedOn <= x.observedOn), undefined);
-    });
+  function checkMarketSources(label, sources) {
+    assert(`${label}: sources block present and non-empty`, Array.isArray(sources) && sources.length > 0, sources);
+    if (!Array.isArray(sources)) return;
+    assert(`${label}: every publisher this module queries is reported`, sources.length >= 2, sources.map((s) => s.sourceId));
+    for (const s of sources) {
+      assert(`${label}[${s.sourceId}]: state is a declared value`, MARKET_STATES.has(s.state), s.state);
+      assert(`${label}[${s.sourceId}]: publisher named with a link`, nonEmpty(s.sourceName) && String(s.sourceUrl).startsWith('https://'), s);
+      assert(`${label}[${s.sourceId}]: licence disclosed`, nonEmpty(s.license), s.license);
+      assert(`${label}[${s.sourceId}]: cadence is a declared value`, CADENCES.has(s.cadence), s.cadence);
+      assert(`${label}[${s.sourceId}]: a failure carries its code`, s.state === 'connected' || s.state === 'stale' || s.state === 'historical' || nonEmpty(s.code), s);
+      assert(`${label}[${s.sourceId}]: dates are real or explicitly null`, [s.latestObservation, s.earliestObservation, s.retrievedAt].every((v) => v === null || isDate(v)), s);
+      assert(`${label}[${s.sourceId}]: freshness tier is declared or null`, s.freshness === null || FRESHNESS_TIERS.has(s.freshness), s.freshness);
+      assert(`${label}[${s.sourceId}]: observation age and retrieval age are separate numbers or null`,
+        [s.observationAgeSeconds, s.retrievalAgeSeconds].every((v) => v === null || (isNum(v) && v >= 0)), s);
+      assert(`${label}[${s.sourceId}]: row counts are counted, not guessed`, [s.rows, s.markets, s.commodities].every((v) => isNum(v) && v >= 0), s);
+      assert(`${label}[${s.sourceId}]: a publisher that answered has a newest survey date`, s.rows === 0 || isDate(s.latestObservation), s);
+      // §6: the publisher's own row total, the rows we deliberately held out, and whether
+      // fewer rows reached us than the publisher counts. Null and 0 are different claims.
+      assert(`${label}[${s.sourceId}]: row accounting is counted, nullable, never negative`,
+        [s.surveyDates, s.publishedRows, s.excludedRows].every((v) => v === null || (isNum(v) && v >= 0)), s);
+      assert(`${label}[${s.sourceId}]: truncation is a stated boolean`, typeof s.truncated === 'boolean', s.truncated);
+      assert(`${label}[${s.sourceId}]: a bot-protection refusal is flagged as its own fact`, typeof s.accessChallenged === 'boolean', s.accessChallenged);
+      assert(`${label}[${s.sourceId}]: a challenge flag only ever travels with a failure`, s.accessChallenged ? s.state === 'unavailable' : true, s);
+      if (s.catalogue !== null && s.catalogue !== undefined) {
+        assert(`${label}[${s.sourceId}]: catalogue states reachability`, typeof s.catalogue.reachable === 'boolean', s.catalogue);
+        assert(`${label}[${s.sourceId}]: catalogue resources are named with a size and a date or null`,
+          s.catalogue.resources.every((r) => nonEmpty(r.name) && (r.sizeBytes === null || isNum(r.sizeBytes))), s.catalogue.resources?.[0]);
+      }
+    }
   }
 
-  await okCase('markets snapshot', '/api/data/markets?mode=snapshot&months=6&limit=400', (d) => {
-    assert('snapshot: as-of date', isDate(d.asOfLatestObservation), d.asOfLatestObservation);
-    assert('snapshot: rows bounded by limit', d.rows.length <= 400, d.rows.length);
-    assert('snapshot: change rows exist', d.changes.length > 0, d.changes.length);
-    const c = d.changes[0];
-    assert('snapshot: change compares same market and unit', c && c.market && c.unit && c.latestPrice > 0, c);
-    assert('snapshot: changePct null unless a previous price exists', d.changes.every((x) => (x.previousPrice === null ? x.changePct === null : isNum(x.changePct))), d.changes.find((x) => x.previousPrice === null && x.changePct !== null));
+  await okCase('markets summary', '/api/data/markets?mode=summary', (d, body) => {
+    checkMarketSources('summary', body.sources);
+    const s = d.summary;
+    assert('summary: commodities with data are counted from rows', isNum(s.commoditiesWithData) && s.commoditiesWithData > 0, s.commoditiesWithData);
+    // Counted from whatever actually arrived: with one of the two publishers refusing
+    // automation, a threshold tuned to the other one would fail for a reason that is not a bug.
+    assert('summary: markets and regions are counted, not assumed', s.marketsMonitored >= 1 && s.regionsMonitored >= 1, s);
+    assert('summary: survey window is dated at both ends', isDate(s.earliestObservation) && isDate(s.latestObservation), s);
+    assert('summary: granularity list is declared and never offers daily', s.supportedGranularity.length > 0
+      && s.supportedGranularity.every((g) => g === 'weekly' || g === 'monthly'), s.supportedGranularity);
+    assert('summary: weekly is offered only when a publisher with rows surveys at least weekly',
+      !s.supportedGranularity.includes('weekly') || body.sources.some((x) => x.rows > 0 && WEEKLY_OR_FINER.has(x.cadence)), s.supportedGranularity);
+    assert('summary: freshness is a declared tier', FRESHNESS_TIERS.has(s.freshness), s.freshness);
+    assert('summary: currencies are the publisher’s own', s.currencies.length > 0 && s.currencies.every((c) => /^[A-Z]{3}$/.test(c)), s.currencies);
+    assert('summary: units kept verbatim and never merged', s.units.every((u) => nonEmpty(u)), s.units);
+    assert('summary: rows without a figure are counted, not dropped', isNum(s.rowsWithoutPrice) && s.rowsWithPrice + s.rowsWithoutPrice === s.observations, s);
+    assert('summary: duplicates removed are reported', isNum(s.duplicateRows), s.duplicateRows);
+    assert('summary: mappable markets never exceed markets', s.marketsWithCoordinates <= s.marketsMonitored, s);
+    assert('summary: distinct survey dates never exceed the observations that carry them', s.surveyDates <= s.observations, s);
+    assert('summary: movers each carry their own evidence', s.topMovers.every((i) => nonEmpty(i.kind) && i.evidence.sourceName && Array.isArray(i.evidence.markets)), s.topMovers?.[0]);
+    assert('summary: the catalogue matches the summary it travels with', d.catalog.markets.length === s.marketsMonitored, { catalog: d.catalog.markets.length, summary: s.marketsMonitored });
+    const answered = body.sources.filter((x) => x.rows > 0).map((x) => `${x.sourceName}=${x.rows}`);
+    const refused = body.sources.filter((x) => x.rows === 0).map((x) => `${x.sourceName}(${x.state}${x.accessChallenged ? '/bot-challenge' : ''})`);
+    console.log(`  note  ${s.commoditiesWithData} commodity/unit groups, ${s.marketsMonitored} markets, ${s.surveyDates} survey dates, newest ${s.latestObservation}, freshness ${s.freshness}, granularity ${s.supportedGranularity.join('/')}`);
+    console.log(`  note  answering publishers: ${answered.join(', ') || 'none'}${refused.length ? ` — reporting no rows: ${refused.join(', ')}` : ''}`);
   });
-  // Normalization invariants — the checks a fixture suite would otherwise own, run against
-  // real parsed survey rows instead. They are about what the parser must NOT do: turn a blank
-  // cell into 0, invent a coordinate, or launder an aggregated figure into an actual price.
-  await okCase('markets rows', '/api/data/markets?mode=snapshot&months=3&limit=600', (d) => {
-    const rows = d.rows ?? [];
-    assert('rows: sample is large enough to be evidence', rows.length >= 200, rows.length);
+
+  await okCase('markets records', '/api/data/markets?mode=records&pageSize=200&sort=price&direction=desc&pricedOnly=1', (d, body) => {
+    checkMarketSources('records', body.sources);
+    const rows = d.records ?? [];
+    assert('records: page is bounded by the requested size', rows.length > 0 && rows.length <= 200, rows.length);
+    assert('records: totals account for the whole filter, not the page', d.total >= rows.length && d.pages === Math.ceil(d.total / d.pageSize), { total: d.total, pages: d.pages });
+    assert('records: pricedOnly really excludes figureless rows', rows.every((r) => r.price !== null), rows.find((r) => r.price === null));
+    assert('records: sorted on the requested field', rows.every((r, i, a) => i === 0 || (a[i - 1].price ?? -Infinity) >= (r.price ?? -Infinity)), undefined);
+    assert('records: each row is attributable on its own', rows.every((r) => nonEmpty(r.sourceId) && nonEmpty(r.sourceName) && String(r.sourceUrl).startsWith('https://')), rows[0]);
+    assert('records: a row names a publisher this module registers', rows.every((r) => body.sources.some((s) => s.sourceId === r.sourceId)), rows.find((r) => !body.sources.some((s) => s.sourceId === r.sourceId))?.sourceId);
+    assert('records: data type is declared per row', rows.every((r) => DATA_TYPES.has(r.dataType)), rows.find((r) => !DATA_TYPES.has(r.dataType)));
+    assert('records: retrieval timestamp travels with the row', rows.every((r) => isDate(r.retrievedAt)), rows[0]?.retrievedAt);
+    assert('records: row freshness is a declared tier', rows.every((r) => FRESHNESS_TIERS.has(r.freshness)), rows.find((r) => !FRESHNESS_TIERS.has(r.freshness)));
+    assert('records: row id is stable identity, not a row number', rows.every((r) => nonEmpty(r.id) && r.id.includes(r.market)), rows[0]?.id);
+    assert('records: window dates come from the filtered rows', isDate(d.latestObservation) && isDate(d.oldestObservation) && d.oldestObservation <= d.latestObservation, d);
+  });
+
+  // Normalization invariants on unfiltered rows: what the parser must NOT do — turn a blank
+  // cell into 0, invent a coordinate, or launder a replaced figure into a market observation.
+  await okCase('markets rows (unfiltered)', '/api/data/markets?mode=records&pageSize=200&page=3', (d) => {
+    const rows = d.records ?? [];
+    assert('rows: a third page exists, so the dataset is a real window', rows.length > 0, rows.length);
     const bad = (fn) => rows.find(fn);
     assert('rows: a missing price stays null, never 0', !bad((r) => r.price === 0), bad((r) => r.price === 0));
     assert('rows: a missing USD conversion stays null', !bad((r) => r.usdPrice === 0), bad((r) => r.usdPrice === 0));
@@ -628,18 +704,215 @@ async function main() {
     assert('rows: market and commodity named', rows.every((r) => nonEmpty(r.market) && nonEmpty(r.commodity)), bad((r) => !nonEmpty(r.market) || !nonEmpty(r.commodity)));
     assert('rows: unit never invented', rows.every((r) => nonEmpty(r.unit)), bad((r) => !nonEmpty(r.unit)));
     assert('rows: observation date is a survey month, not a fetch date', rows.every((r) => /^\d{4}-\d{2}-\d{2}$/.test(r.observedOn)), bad((r) => !/^\d{4}-\d{2}-\d{2}$/.test(r.observedOn)));
+    assert('rows: a row never dated in the future', rows.every((r) => r.observedOn <= new Date().toISOString().slice(0, 10)), bad((r) => r.observedOn > new Date().toISOString().slice(0, 10)));
+    // §6 asks for the publisher's own cells to survive normalization: without this, a reader
+    // could not check a quoted figure against the published row, and neither could we.
+    assert('rows: the published cells behind each figure are kept', rows.every((r) => r.sourceFields && typeof r.sourceFields === 'object' && Object.keys(r.sourceFields).length > 0), bad((r) => !r.sourceFields));
+    assert('rows: a figure we hold was published as a number', rows.every((r) => r.price === null || (isNum(r.price) && Number.isFinite(r.price))), bad((r) => r.price !== null && !Number.isFinite(r.price)));
     const flagged = rows.filter((r) => r.priceFlag !== 'actual');
     console.log(`  note  ${flagged.length}/${rows.length} rows are aggregate or replaced survey figures, labelled as such`);
   });
-  await errCase('markets history without commodity', '/api/data/markets?mode=history', 400, 'bad_input');
+
+  // Filters must actually filter: a region, a publisher and a commodity must not return
+  // each other's rows.
+  const summaryBody = (await get('/api/data/markets?mode=summary')).body;
+  const catalogue = summaryBody?.data?.catalog ?? {};
+  const regions = catalogue.regions ?? [];
+  const commodities = catalogue.commodities ?? [];
+  const marketSources = summaryBody?.sources ?? [];
+  {
+    const region = regions[0]?.name;
+    const commodity = commodities.find((c) => c.markets >= 3)?.name;
+    const unit = commodities.find((c) => c.name === commodity)?.units[0];
+    if (region) {
+      await okCase(`markets records region=${region}`, `/api/data/markets?mode=records&region=${encodeURIComponent(region)}&pageSize=100`, (d) => {
+        assert(`records[${region}]: every row is in the requested region`, d.records.every((r) => r.admin1 === region), d.records.find((r) => r.admin1 !== region)?.admin1);
+      });
+    }
+    if (commodity && unit) {
+      await okCase(`markets records ${commodity}/${unit}`, `/api/data/markets?mode=records&commodity=${encodeURIComponent(commodity)}&unit=${encodeURIComponent(unit)}&priceType=Retail&pageSize=100`, (d) => {
+        assert(`records[${commodity}]: commodity filter is exact`, d.records.every((r) => r.commodity === commodity), d.records.find((r) => r.commodity !== commodity)?.commodity);
+        assert(`records[${commodity}]: unit filter is exact, so no cross-unit comparison is possible`, d.records.every((r) => r.unit === unit), d.records.find((r) => r.unit !== unit)?.unit);
+        assert(`records[${commodity}]: price type filter is exact`, d.records.every((r) => r.retail === 'Retail'), d.records.find((r) => r.retail !== 'Retail')?.retail);
+      });
+    }
+    // With two publishers merged into one table, the source filter is the only thing that keeps
+    // a reader able to isolate one survey — so it must be provably exact.
+    for (const source of marketSources.filter((s) => s.rows > 0)) {
+      await okCase(`markets records source=${source.sourceId}`, `/api/data/markets?mode=records&sourceId=${encodeURIComponent(source.sourceId)}&pageSize=100`, (d) => {
+        assert(`records[${source.sourceId}]: only that publisher’s rows come back`, d.records.every((r) => r.sourceId === source.sourceId), d.records.find((r) => r.sourceId !== source.sourceId)?.sourceId);
+        assert(`records[${source.sourceId}]: the total agrees with that publisher’s own report`, d.total <= source.rows, { total: d.total, reported: source.rows });
+      });
+    }
+  }
+
+  /*
+   * Series checks run on whatever the publishers actually spell, read from the catalogue built
+   * from their rows — not on a hardcoded commodity list, which would fail for a reason that has
+   * nothing to do with the contract. TEFF is published as "Teff, red"/"Teff, white" by one
+   * publisher and "Teff" by the other, and both spellings are legitimate.
+   */
+  const seriesPicks = commodities.filter((c) => c.markets >= 2).slice(0, 3);
+  for (const pick of seriesPicks) {
+    const unit = pick.units[0];
+    for (const granularity of ['monthly', 'weekly']) {
+      const query = `/api/data/markets?mode=series&commodity=${encodeURIComponent(pick.name)}&unit=${encodeURIComponent(unit)}&granularity=${granularity}`;
+      await okCase(`markets series ${pick.name} [${granularity}]`, query, (d, body) => {
+        checkMarketSources(`series[${pick.name}/${granularity}]`, body.sources);
+        assert(`series[${pick.name}/${granularity}]: points exist`, Array.isArray(d.points) && d.points.length > 0, d.points?.length);
+        // The request is honoured only when a publisher surveys that often; otherwise the service
+        // says so and drops to monthly rather than plotting days nobody looked at.
+        assert(`series[${pick.name}/${granularity}]: granularity is stated, and weekly only when supported`,
+          d.granularity === granularity || (granularity === 'weekly' && d.granularity === 'monthly' && !d.weeklySupported), { asked: granularity, got: d.granularity, supported: d.weeklySupported });
+        assert(`series[${pick.name}/${granularity}]: one unit for the whole series`, d.points.every((p) => p.unit === d.unit), d.points.map((p) => p.unit).slice(0, 4));
+        assert(`series[${pick.name}/${granularity}]: one currency for the whole series`, d.points.every((p) => p.currency === d.stats?.currency), d.points.map((p) => p.currency).slice(0, 4));
+        assert(`series[${pick.name}/${granularity}]: point average sits between its own min and max`, d.points.every((p) => p.minimum <= p.average && p.average <= p.maximum), d.points.find((p) => p.average < p.minimum || p.average > p.maximum));
+        assert(`series[${pick.name}/${granularity}]: every point counts its own markets and rows`, d.points.every((p) => p.markets >= 1 && p.observations >= p.markets), d.points[0]);
+        assert(`series[${pick.name}/${granularity}]: every point carries the real survey date inside it`,
+          d.points.every((p) => isDate(p.latestObservation) && p.latestObservation >= p.observedOn), d.points.find((p) => !isDate(p.latestObservation)) ?? d.points[0]);
+        if (d.granularity === 'weekly') {
+          // A weekly point is a published survey date, not the first of a month: plotting month
+          // starts here would be inventing the days between surveys.
+          assert(`series[${pick.name}](weekly): points are named survey dates`,
+            d.points.every((p) => /^\d{4}-\d{2}-\d{2}$/.test(p.observedOn) && p.observedOn === p.latestObservation), d.points.slice(0, 3).map((p) => p.observedOn));
+        } else {
+          assert(`series[${pick.name}](monthly): dates are month starts in ascending order`,
+            d.points.every((p, i, a) => i === 0 || (a[i - 1].observedOn < p.observedOn && /^\d{4}-\d{2}-01$/.test(p.observedOn))), d.points.slice(0, 3).map((p) => p.observedOn));
+        }
+        assert(`series[${pick.name}/${granularity}]: statistics exist and agree with the points`, d.stats && isNum(d.stats.average) && d.stats.minimum.value <= d.stats.maximum.value, d.stats);
+        assert(`series[${pick.name}/${granularity}]: change is only reported between two real periods`, (d.stats.changePct === null) === (d.stats.changeFrom === null), d.stats);
+        assert(`series[${pick.name}/${granularity}]: the series names the publishers it drew on`,
+          d.sourceIds.length > 0 && d.sourceIds.every((id) => body.sources.some((s) => s.sourceId === id)), d.sourceIds);
+        assert(`series[${pick.name}/${granularity}]: a weekly claim needs a weekly publisher`,
+          d.granularity !== 'weekly' || body.sources.some((s) => d.sourceIds.includes(s.sourceId) && WEEKLY_OR_FINER.has(s.cadence)), { sourceIds: d.sourceIds, cadences: body.sources.map((s) => `${s.sourceId}:${s.cadence}`) });
+        assert(`series[${pick.name}/${granularity}]: missing periods are listed, never filled`,
+          d.missingDates.every((m) => !d.points.some((p) => p.observedOn.startsWith(m))), d.missingDates);
+        assert(`series[${pick.name}/${granularity}]: per-market comparisons carry their own statistics`, d.byMarket.every((m) => m.stats && nonEmpty(m.market)), d.byMarket[0]);
+        assert(`series[${pick.name}/${granularity}]: a coordinate is either the publisher's or null`,
+          d.byMarket.every((m) => (m.latitude === null && m.longitude === null) || (m.latitude > 3 && m.latitude < 18 && m.longitude > 32 && m.longitude < 49)),
+          d.byMarket.find((m) => m.latitude !== null && !(m.latitude > 3 && m.latitude < 18)));
+        console.log(`  note  ${pick.name} ${d.unit} at ${d.granularity}: ${d.points.length} periods, latest ${d.stats.latest?.value.toFixed(2)} ${d.stats.currency} on ${d.stats.latest?.observedOn}, range ${d.stats.minimum?.value.toFixed(2)}–${d.stats.maximum?.value.toFixed(2)}, ${d.missingDates.length} gap(s), from ${d.sourceIds.join('+')}`);
+      });
+    }
+  }
+
+  await okCase('markets compare', '/api/data/markets?mode=compare', (d, body) => {
+    checkMarketSources('compare', body.sources);
+    assert('compare: a real survey month is chosen from the data', /^\d{4}-\d{2}$/.test(d.month) && d.monthsAvailable.includes(d.month), d.month);
+    assert('compare: month list is the publisher’s own months', d.monthsAvailable.length > 1 && d.monthsAvailable.every((m) => /^\d{4}-\d{2}$/.test(m)), d.monthsAvailable?.slice(0, 3));
+    assert('compare: the chosen month is the newest available unless asked', d.month === d.monthsAvailable.at(-1), { month: d.month, newest: d.monthsAvailable.at(-1) });
+    assert('compare: one commodity, one unit, one price type', nonEmpty(d.commodity) && nonEmpty(d.unit) && (d.retail === 'Retail' || d.retail === 'Wholesale'), d);
+    assert('compare: the spread names the publishers behind it', d.sourceIds.length > 0 && d.sourceIds.every((id) => body.sources.some((s) => s.sourceId === id)), d.sourceIds);
+    if (d.spread) {
+      assert('compare: every market in the spread matches the lock', d.spread.markets.every((m) => m.unit === d.unit), d.spread.markets.find((m) => m.unit !== d.unit));
+      assert('compare: one row per market', new Set(d.spread.markets.map((m) => m.market)).size === d.spread.markets.length, d.spread.markets.length);
+      assert('compare: markets ordered dearest first', d.spread.markets.every((m, i, a) => i === 0 || a[i - 1].price >= m.price), undefined);
+      assert('compare: cheapest and dearest agree with the ordering', d.spread.cheapest.price <= d.spread.markets.at(-1).price + 1e-6 && d.spread.dearest.price >= d.spread.markets[0].price - 1e-6, d.spread);
+      assert('compare: spread percent is derived from the two extremes', Math.abs(d.spread.spreadPct - Math.round(((d.spread.dearest.price - d.spread.cheapest.price) / d.spread.cheapest.price) * 1000) / 10) < 0.05, d.spread);
+      assert('compare: mappable count never exceeds markets with coordinates', d.spread.mappable <= d.spread.markets.length && d.spread.markets.filter((m) => m.latitude !== null).length === d.spread.mappable, d.spread);
+      assert('compare: coordinates that exist are inside Ethiopia', d.spread.markets.every((m) => m.latitude === null || (m.latitude > 3 && m.latitude < 18 && m.longitude > 32 && m.longitude < 49)), d.spread.markets.find((m) => m.latitude !== null && m.latitude > 18));
+      assert('compare: every market is measured against the cheapest', d.spread.markets.every((m) => m.aboveCheapestPct === null || isNum(m.aboveCheapestPct)), undefined);
+      // §5D: each market's own survey date travels with its figure, so a same-month comparison
+      // between a weekly and a monthly survey is visible rather than implied.
+      assert('compare: each market carries the observation date it was measured on',
+        d.spread.markets.every((m) => isDate(m.observedOn) && m.observedOn.slice(0, 7) === d.month), d.spread.markets[0]);
+    } else {
+      console.log('  note  compare: no month has two markets for this commodity/unit — the UI must show the gap.');
+    }
+    assert('compare: regions agree with the market rows', d.byRegion.every((r) => r.markets >= 1 && isNum(r.average) && r.average > 0), d.byRegion?.[0]);
+    assert('compare: a region average is labelled as ours, with its unit and currency intact',
+      d.byRegion.every((r) => nonEmpty(r.unit) && /^[A-Z]{3}$/.test(r.currency)), d.byRegion?.[0]);
+  });
+
+  // The regional picker sends a month, so an explicit choice has to be honoured rather than
+  // quietly replaced by the newest one — a reader who asked for March and is shown October is
+  // being shown a map they did not ask for. Both accepted shapes are checked, plus refusal of
+  // the shapes that are not a month.
+  {
+    const months = catalogue.months ?? [];
+    const oldest = months.find((m) => m !== months.at(-1));
+    if (oldest) {
+      await okCase(`markets compare month=${oldest}`, `/api/data/markets?mode=compare&month=${oldest}`, (d) => {
+        assert('compare(month): the requested month is the month served', d.month === oldest, { asked: oldest, got: d.month });
+        assert('compare(month): not silently replaced by the newest survey month', d.month !== months.at(-1), { got: d.month, newest: months.at(-1) });
+        assert('compare(month): every market quoted really was surveyed in it',
+          d.spread === null || d.spread.markets.every((m) => m.observedOn.slice(0, 7) === oldest), d.spread?.markets?.[0]);
+        assert('compare(month): an empty month is an empty spread, not a borrowed one',
+          d.spread === null || d.byRegion.every((r) => r.markets >= 1), d.byRegion?.[0]);
+      });
+      await okCase(`markets compare month=${oldest}-17`, `/api/data/markets?mode=compare&month=${oldest}-17`, (d) => {
+        assert('compare(date inside a month): normalised onto that survey month', d.month === oldest, { asked: `${oldest}-17`, got: d.month });
+      });
+      await okCase(`markets compare month=${oldest} with a stated commodity`, `/api/data/markets?mode=compare&month=${oldest}&commodity=${encodeURIComponent(commodities[0]?.name ?? '')}&unit=${encodeURIComponent(commodities[0]?.units[0] ?? '')}`, (d) => {
+        assert('compare(commodity): the requested commodity is the one compared', d.commodity === commodities[0]?.name, { asked: commodities[0]?.name, got: d.commodity });
+        assert('compare(unit): the requested publisher unit is the one compared', d.unit === commodities[0]?.units[0], { asked: commodities[0]?.units[0], got: d.unit });
+      });
+    }
+    await errCase('markets compare month is a word', '/api/data/markets?mode=compare&month=september', 400, 'bad_input');
+    await errCase('markets compare month 13', '/api/data/markets?mode=compare&month=2026-13', 400, 'bad_input');
+    await errCase('markets compare month with a long tail', '/api/data/markets?mode=compare&month=2026-09-30T00:00', 400, 'bad_input');
+  }
+
+  // The region and source scopes must actually scope a comparison, never widen it back to all
+  // publishers — that is the difference between a regional view and a merged national average.
+  {
+    const region = regions[1]?.name ?? regions[0]?.name;
+    if (region) {
+      await okCase(`markets compare region=${region}`, `/api/data/markets?mode=compare&region=${encodeURIComponent(region)}`, (d) => {
+        assert(`compare[${region}]: every region row is the requested region`, d.byRegion.every((r) => r.region === region), d.byRegion.map((r) => r.region));
+        if (d.spread) assert(`compare[${region}]: every market sits in that region`, d.spread.markets.every((m) => m.admin1 === region), d.spread.markets.find((m) => m.admin1 !== region)?.admin1);
+      });
+    }
+    for (const source of marketSources.filter((s) => s.rows > 0).slice(0, 1)) {
+      await okCase(`markets compare source=${source.sourceId}`, `/api/data/markets?mode=compare&sourceId=${encodeURIComponent(source.sourceId)}`, (d) => {
+        assert(`compare[${source.sourceId}]: only that publisher contributes`, d.sourceIds.length === 1 && d.sourceIds[0] === source.sourceId, d.sourceIds);
+      });
+    }
+  }
+
+  await okCase('markets insights', '/api/data/markets?mode=insights&limit=6', (d, body) => {
+    checkMarketSources('insights', body.sources);
+    const INSIGHT_KINDS = new Set(['price-rise', 'price-fall', 'market-spread', 'seasonal-coverage', 'market-outdated', 'thin-coverage']);
+    assert('insights: at least one finding', d.insights.length > 0, d.insights?.length);
+    assert('insights: kind is declared', d.insights.every((i) => INSIGHT_KINDS.has(i.kind)), d.insights.map((i) => i.kind));
+    assert('insights: each names its limitation key', d.insights.every((i) => /^markets\.insightLimit\./.test(i.limitationKey)), d.insights[0]);
+    assert('insights: each names its publisher', d.insights.every((i) => nonEmpty(i.evidence.sourceName)), d.insights.find((i) => !nonEmpty(i.evidence.sourceName)));
+    assert('insights: params are raw values, not formatted strings', d.insights.every((i) => Object.values(i.params).every((v) => typeof v === 'string' || typeof v === 'number')), undefined);
+    assert('insights: movements quote both months they compare', d.insights.filter((i) => i.kind === 'price-rise' || i.kind === 'price-fall')
+      .every((i) => isDate(i.period.from) && isDate(i.period.to) && i.period.from < i.period.to), d.insights.find((i) => (i.kind === 'price-rise' || i.kind === 'price-fall') && !(i.period.from < i.period.to)));
+    assert('insights: nothing projects a price forward', !d.insights.some((i) => /forecast|predict|will/i.test(i.kind)), d.insights.map((i) => i.kind));
+    assert('insights: seasonal claims need a year of coverage', d.insights.filter((i) => i.kind === 'seasonal-coverage').every((i) => i.params.months >= 12), d.insights.find((i) => i.kind === 'seasonal-coverage'));
+    assert('insights: spread claims need two markets and a real gap', d.insights.filter((i) => i.kind === 'market-spread').every((i) => i.evidence.markets.length >= 2 && i.params.pct >= 10), d.insights.find((i) => i.kind === 'market-spread'));
+    console.log(`  note  ${d.insights.length} findings: ${d.insights.map((i) => i.kind).join(', ')}`);
+  });
+
+  await errCase('markets series without commodity', '/api/data/markets?mode=series', 400, 'bad_input');
+  await errCase('markets unknown mode', '/api/data/markets?mode=nonsense', 400, 'bad_input');
   await errCase('markets bad priceType', '/api/data/markets?priceType=Blackmarket', 400, 'bad_input');
+  await errCase('markets bad sort', '/api/data/markets?mode=records&sort=everything', 400, 'bad_input');
+  await errCase('markets bad date filter', '/api/data/markets?mode=records&from=2026-13-99', 400, 'bad_input');
+  await errCase('markets inverted date range', '/api/data/markets?mode=records&from=2026-05-01&to=2025-05-01', 400, 'bad_input');
+  // A daily granularity is refused rather than silently served: no publisher in this module
+  // surveys daily, so the only way to draw one would be to invent the missing days.
+  await errCase('markets daily granularity', '/api/data/markets?mode=series&commodity=Maize&granularity=daily', 400, 'bad_input');
+  {
+    // A commodity the publisher never surveyed must be reported as an absence, not answered
+    // with an empty series the UI could style as a flat price.
+    const { res, body } = await get('/api/data/markets?mode=series&commodity=Quinoa-Unlisted');
+    assert('markets series: an uncovered commodity is a 404 with a code', res.status === 404 && body?.ok === false && body?.error?.code === 'no_data', { status: res.status, error: body?.error });
+    assert('markets series: the failure still reports the source state', Array.isArray(body?.sources) && body.sources.length > 0, body?.sources);
+  }
 
   section('exchange and economic context');
   await okCase('exchange official', '/api/data/exchange?focus=official-series&points=6', (d) => {
     assert('official: dated USD/ETB points', Array.isArray(d) && d.length > 0 && isDate(d[0].observedOn), d?.[0]);
     assert('official: rate positive', d.every((p) => p.usdToEtb === null || p.usdToEtb > 0), d[0]);
   });
-  await okCase('exchange unofficial', '/api/data/exchange?focus=unofficial&months=12', (d) => {
+  // The parallel-rate file is published by the World Bank but served through HDX, whose front
+  // door refuses unattended downloads (measured 2026-11-04: empty 202 challenge / 406 on every
+  // attempt from four different clients). A refusal is therefore an expected outcome here; an
+  // invented rate is not.
+  await refusableCase('exchange unofficial', '/api/data/exchange?focus=unofficial&months=12', 'HDX bot protection on the World Bank real-time price file', (d) => {
     assert('unofficial: monthly series', Array.isArray(d.series) && d.series.length > 3, d.series?.length);
     assert('unofficial: dated by month', isDate(d.series[0].observedOn), d.series[0]);
     assert('unofficial: a blank month is skipped, not zero', d.series.every((p) => isNum(p.unofficialUsdToEtb) && p.unofficialUsdToEtb > 0), d.series.find((p) => !(isNum(p.unofficialUsdToEtb) && p.unofficialUsdToEtb > 0)));
@@ -745,7 +1018,8 @@ async function main() {
   {
     const probes = [
       '/api/data/weather?place=Addis%20Ababa',
-      '/api/data/markets?mode=overview',
+      '/api/data/markets?mode=summary',
+      '/api/data/markets?mode=records&pageSize=20',
       '/api/data/exchange?focus=all',
       '/api/data/geospatial?view=layers',
       '/api/data/geospatial?view=vectors',

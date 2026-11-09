@@ -7,7 +7,7 @@ import { useLiveData } from '@/hooks/useLiveData';
 import { Badge, Button, Panel, Refreshing, SectionLabel, SegmentedControl, StateNotice, stamp } from '@/components/ui';
 import type { BadgeTone } from '@/components/ui';
 
-type Cadence = 'realtime' | 'hourly' | 'daily' | '8daily' | 'monthly' | 'quarterly' | 'annual' | 'irregular';
+type Cadence = 'realtime' | 'hourly' | 'daily' | '8daily' | 'weekly' | 'monthly' | 'quarterly' | 'annual' | 'irregular';
 
 interface SourceRow {
   id: string;

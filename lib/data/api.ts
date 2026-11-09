@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-import type { ConnectorResult, Provenance, SourceError, SourceErrorCode } from './types';
+import type { ConnectorResult, Provenance, SourcedResult, SourceError, SourceErrorCode } from './types';
 
 /**
  * Shared plumbing for the read-only data routes.
@@ -50,6 +50,28 @@ export function fromConnector<T>(result: ConnectorResult<T>, maxAgeSeconds = 300
   }
 
   return errorResponse(result.error, result.provenance);
+}
+
+/**
+ * A module reading several publishers answers with one payload plus one status entry
+ * per publisher. The `sources` block survives failure, because the reason a section is
+ * empty is itself information the reader needs — and it is the only thing that
+ * distinguishes "this source is down" from "the whole module is broken".
+ */
+export function fromSourced<T, R>(result: SourcedResult<T, R>, maxAgeSeconds = 300): NextResponse {
+  if (result.ok) {
+    return NextResponse.json(
+      { ok: true, data: result.data, provenance: result.provenance, sources: result.sources },
+      {
+        status: 200,
+        headers: { 'cache-control': `public, s-maxage=${maxAgeSeconds}, stale-while-revalidate=${maxAgeSeconds * 3}` },
+      },
+    );
+  }
+  return NextResponse.json(
+    { ok: false, error: sanitized(result.error), provenance: result.provenance, sources: result.sources },
+    { status: STATUS_BY_CODE[result.error.code] },
+  );
 }
 
 /**
@@ -111,6 +133,25 @@ export function isoDateParam(url: URL, name: string): string | null | 'invalid' 
   const probe = new Date(Date.UTC(year, month - 1, day));
   const roundTrips = probe.getUTCFullYear() === year && probe.getUTCMonth() === month - 1 && probe.getUTCDate() === day;
   return roundTrips ? raw : 'invalid';
+}
+
+/**
+ * A survey month, accepted either as `YYYY-MM` or as any real date inside the month.
+ *
+ * Market publishers name months, not days, so the comparison routes bucket rows by
+ * `YYYY-MM`. A caller that sends `month=2026-09-17` means September and is normalised
+ * rather than rejected; a caller that sends `month=september` is told the shape we
+ * accept instead of silently receiving the newest month.
+ */
+export function monthParam(url: URL, name: string): string | null | 'invalid' {
+  const raw = stringParam(url, name);
+  if (raw === null) return null;
+  const month = raw.slice(0, 7);
+  if (!/^\d{4}-\d{2}$/.test(month)) return 'invalid';
+  if (raw.length > 7 && !/^\d{4}-\d{2}-\d{2}$/.test(raw)) return 'invalid';
+  const [year, value] = month.split('-').map(Number);
+  if (value < 1 || value > 12 || year < 1970 || year > 2100) return 'invalid';
+  return month;
 }
 
 export function intParam(url: URL, name: string, min: number, max: number, fallback: number): number {

@@ -24,6 +24,13 @@ export interface HttpOptions {
   headers?: Record<string, string>;
   /** Only for sources that accept a body; all of ours are GET. */
   method?: 'GET' | 'HEAD';
+  /**
+   * Retry a timeout as well as a rejectable status. True by default: on a small
+   * JSON call a stall is usually momentary. A connector fetching a multi-megabyte
+   * file should set this false — a second attempt on a link that just spent two
+   * minutes not delivering the bytes doubles the wait for the farmer watching it.
+   */
+  retryOnTimeout?: boolean;
 }
 
 type HttpOk =
@@ -87,6 +94,18 @@ async function readCapped(res: Response, maxBytes: number): Promise<Uint8Array |
   return out;
 }
 
+/**
+ * Real media types. Sending the internal kind name (`accept: text`) is not a media type at
+ * all, and HDX answers it with 406 — which this app then reported as the publisher
+ * refusing us. Each request asks for what it will parse, with a wildcard last so a
+ * publisher serving a CSV as octet-stream still answers.
+ */
+const ACCEPT_BY_KIND: Record<'json' | 'text' | 'bytes', string> = {
+  json: 'application/json;q=1.0,*/*;q=0.9',
+  text: 'text/csv;q=1.0,text/plain;q=0.9,*/*;q=0.8',
+  bytes: '*/*',
+};
+
 async function attempt(
   url: string,
   wanted: 'json' | 'text' | 'bytes',
@@ -102,7 +121,7 @@ async function attempt(
       method: options.method ?? 'GET',
       redirect: 'follow',
       signal: controller.signal,
-      headers: { 'user-agent': USER_AGENT, accept: wanted === 'bytes' ? '*/*' : wanted, ...options.headers },
+      headers: { 'user-agent': USER_AGENT, accept: ACCEPT_BY_KIND[wanted], ...options.headers },
     });
 
     const retryAfter = res.headers.get('retry-after');
@@ -113,16 +132,33 @@ async function attempt(
     // the publisher had served an empty file.
     if (!res.ok || res.status !== 200) {
       const code = classify(res.status);
+      /*
+       * HDX puts AWS WAF in front of its file host. Measured across four client configurations
+       * on the same URL — Node with our headers, Node with none, curl with our headers, curl with
+       * a browser's — every unattended request was refused: an empty `202` carrying
+       * `x-amzn-waf-action: challenge`, or a `406` from inside this app's own HTTP runtime. None
+       * returned a single byte of the CSV, and re-requesting a moment later did not clear it.
+       *
+       * So this is reported, not worked around. Solving the JavaScript challenge, or rotating
+       * headers until the filter lets us through, would be evading the publisher's own access
+       * control, and no dashboard is worth that. One re-attempt is still made, because a
+       * rate-limit-shaped `429`/`503` genuinely does clear and shares this code path; it is cheap
+       * and it is not a claim that the file will arrive.
+       */
+      const challenged = res.headers.get('x-amzn-waf-action') === 'challenge';
       const error: SourceError = {
         code,
         // Status only. The upstream body can be an HTML error page or contain
         // request details, and none of it helps a farmer.
-        message: `Upstream responded ${res.status}`,
+        message: challenged
+          ? `Upstream responded ${res.status} — the publisher's bot protection is refusing automated requests, so no file was retrieved`
+          : `Upstream responded ${res.status} with no usable payload`,
         status: res.status,
+        ...(challenged ? { botChallenge: true } : {}),
         retryAfterSeconds: retryAfter ? Number(retryAfter) || undefined : undefined,
       };
-      // 5xx and rate limits are worth another try; 4xx other than 429 are not.
-      const worthRetrying = res.status === 429 || res.status === 503 || res.status >= 500;
+      // 5xx, rate limits and the challenge gate are worth another try; 4xx other than 429 are not.
+      const worthRetrying = res.status === 429 || res.status === 503 || res.status === 202 || res.status >= 500;
       return { retry: worthRetrying, error };
     }
 
@@ -147,7 +183,9 @@ async function attempt(
       // so logs and API responses stay free of internal topology.
       message: aborted ? `Request timed out after ${timeoutMs}ms` : 'Could not reach the upstream host',
     };
-    return { retry: true, error };
+    // A timeout is the one failure a second attempt cannot help when the payload is
+    // a whole survey file: it would spend the timeout budget twice.
+    return { retry: aborted ? (options.retryOnTimeout ?? true) : true, error };
   } finally {
     clearTimeout(timer);
   }
@@ -164,7 +202,8 @@ async function request<K extends HttpKind>(url: string, wanted: K, options: Http
     last = (outcome as { error: SourceError }).error;
     const shouldRetry = (outcome as { retry?: boolean }).retry === true;
     if (!shouldRetry || attemptIndex === retries) break;
-    await sleep(retryDelayMs(attemptIndex, last.retryAfterSeconds ? String(last.retryAfterSeconds) : null));
+    const delay = retryDelayMs(attemptIndex, last.retryAfterSeconds ? String(last.retryAfterSeconds) : null);
+    await sleep(last.status === 202 ? Math.max(delay, 1_500) : delay);
   }
 
   return { ok: false, error: last };

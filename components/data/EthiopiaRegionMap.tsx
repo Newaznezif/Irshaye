@@ -285,7 +285,32 @@ const stamp = (iso: string | null): string => {
  * The map
  * ------------------------------------------------------------------ */
 
-export const EthiopiaRegionMap = () => {
+export interface MapMarker {
+  id: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+  /** Which colour the marker takes; the meaning of the word is decided by the caller's legend. */
+  tone: 'brand' | 'gold' | 'clay' | 'neutral';
+  /** Rendered in the tooltip beside the label — a device id, a site name, nothing invented. */
+  detail?: string;
+}
+
+/**
+ * An overlay drawn on the same projection as the tiles and the vector layers.
+ *
+ * A caller hands in coordinates it already has; nothing here samples, snaps, clamps or interpolates
+ * a position, so a marker can only appear where a record says the thing is. The markers pan and zoom
+ * with the map because they are drawn in the same viewBox units as the rest of the scene.
+ */
+const MARKER_FILL: Record<MapMarker['tone'], string> = {
+  brand: '#047857',
+  gold: '#b45309',
+  clay: '#b91c1c',
+  neutral: '#4b5563',
+};
+
+export const EthiopiaRegionMap = ({ markers = [] }: { markers?: MapMarker[] }) => {
   const [rasterId, setRasterId] = useState('VIIRS_SNPP_NDVI_8Day');
   const [view, setView] = useState<View>(HOME);
   /**
@@ -740,6 +765,27 @@ export const EthiopiaRegionMap = () => {
                 </circle>
               );
             })}
+
+            {markers.map((marker) => (
+              <circle
+                key={marker.id}
+                cx={xOf(marker.longitude, view.zoom)}
+                cy={yOf(marker.latitude, view.zoom)}
+                r={3.4}
+                fill={MARKER_FILL[marker.tone]}
+                stroke="#f8faf5"
+                strokeWidth={1}
+                vectorEffect="non-scaling-stroke"
+                className="cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (suppressClick.current) return;
+                  setPoint({ latitude: marker.latitude, longitude: marker.longitude, label: marker.label });
+                }}
+              >
+                <title>{marker.detail === undefined ? marker.label : `${marker.label} — ${marker.detail}`}</title>
+              </circle>
+            ))}
 
             <circle cx={xOf(point.longitude, view.zoom)} cy={yOf(point.latitude, view.zoom)} r={5} fill="none" stroke="#dc2626" strokeWidth={1.6} vectorEffect="non-scaling-stroke" />
             <circle cx={xOf(point.longitude, view.zoom)} cy={yOf(point.latitude, view.zoom)} r={1.4} fill="#dc2626" />

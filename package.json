@@ -10,7 +10,14 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "check:data": "node scripts/check-data-routes.mjs",
-    "check:i18n": "node scripts/check-i18n.mjs"
+    "check:field": "node scripts/check-field-routes.mjs",
+    "check:fieldintel": "node scripts/check-field-intel-routes.mjs",
+    "check:management": "node scripts/check-hardware-routes.mjs",
+    "check:i18n": "node scripts/check-i18n.mjs",
+    "test:market": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/register-ts.mjs scripts/test-market-unit.mjs",
+    "test:field": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/register-ts.mjs scripts/test-field-unit.mjs",
+    "test:fieldintel": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/register-ts.mjs scripts/test-field-intel-unit.mjs",
+    "test:management": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/register-ts.mjs scripts/test-management-unit.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

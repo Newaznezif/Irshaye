@@ -49,6 +49,23 @@ export const SOURCES = {
     cadence: 'monthly',
     requiresKey: false,
   },
+  fewsNetPrices: {
+    id: 'fews-net-ethiopia-prices',
+    name: 'FEWS NET Ethiopia Staple Food Prices (Food Data Watch)',
+    category: 'market_prices',
+    homeUrl: 'https://fdw.fews.net/api/marketpricefacts/',
+    // The publisher states its own permission on every row of the response rather than on a
+    // licence page served alongside it, so the claim quotes the field it quotes.
+    license: 'FEWS NET / USAID; every row carries data_usage_policy: "Public" — attribution to FEWS NET required',
+    cadence: 'weekly',
+    // Measured on 2026-11-04: survey week 2026-09-30 carries created 2026-10-09 and
+    // revised 2026-10-12. The release itself trails collection by about ten days; the
+    // newest published week on that date was five weeks old. The declared lag is the
+    // release delay only, so the gap between the two is reported as staleness, which is
+    // what it is: the publisher had not released October prices yet.
+    publicationLagSeconds: 10 * 86_400,
+    requiresKey: false,
+  },
   worldBankPrices: {
     id: 'worldbank-realtime-prices',
     name: 'World Bank Ethiopia Real-Time Prices',
@@ -132,12 +149,27 @@ export const SOURCES = {
   },
 } satisfies Record<string, SourceDescriptor>;
 
+/**
+ * Look a registered publisher up by the id stored on a row.
+ *
+ * Code that merges several publishers' rows has ids, not descriptors, and freshness is
+ * graded per publisher — a weekly survey and a monthly one cannot share one threshold.
+ * Returns null rather than a default so an unregistered id is a visible bug, not a
+ * silently wrong freshness label.
+ */
+export const descriptorFor = (id: string): SourceDescriptor | null =>
+  Object.values(SOURCES).find((s) => s.id === id) ?? null;
+
 /** How long a value may be shown as current before the UI must call it stale. */
 const MAX_AGE_BY_CADENCE: Record<SourceDescriptor['cadence'], number> = {
   realtime: 5 * 60,
   hourly: 6 * 3600,
   daily: 36 * 3600,
   '8daily': 11 * 86400,
+  // A weekly publisher answers a weekly question: one and a half publication cycles is the
+  // same ratio the monthly entry uses, and the publisher's own release lag is added on top
+  // of it by `isObservationLate`, not folded in here.
+  weekly: 10 * 86400,
   monthly: 45 * 86400,
   quarterly: 120 * 86400,
   annual: 420 * 86400,
