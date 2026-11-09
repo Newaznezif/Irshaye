@@ -35,6 +35,12 @@ export function LandingHeader() {
               {t(section.key)}
             </a>
           ))}
+          <Link
+            href="/about"
+            className="rounded-lg px-3 py-2 text-[13px] font-semibold text-brand-100/85 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            {t('landing.navAbout')}
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">
