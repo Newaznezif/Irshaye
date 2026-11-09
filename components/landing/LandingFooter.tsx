@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Sprout } from 'lucide-react';
+import { BrandLogo } from '@/components/BrandLogo';
 import { useLanguage } from '@/hooks/useLanguage';
 import { MODULES } from '@/lib/modules';
 
@@ -22,10 +22,7 @@ export function LandingFooter() {
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:gap-12">
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5" aria-label={t('a11y.landingHome')}>
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-500 text-white">
-                <Sprout size={17} strokeWidth={2.4} />
-              </span>
-              <span className="text-[16px] font-extrabold tracking-[-0.01em] text-white">IRSHAYE</span>
+              <BrandLogo size="footer" />
             </Link>
             <p className="mt-4 max-w-xs text-[12.5px] leading-relaxed text-brand-100/65">{t('footer.about')}</p>
             <p className="mt-4 text-[10px] font-bold tracking-[0.18em] text-brand-300 uppercase">
