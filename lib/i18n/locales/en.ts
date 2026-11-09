@@ -131,6 +131,7 @@ export const en = {
   'about.backgroundTitle': 'A systems-minded approach',
   'about.backgroundBody': 'I hold a Bachelor of Science in Information Systems from Wolkite University. My professional experience in cybersecurity and technical operations has shaped how I approach software: understand the system, verify the evidence, account for failure, and make the result understandable to the people using it.',
   'about.motivationTitle': 'Why IRSHAYE',
+  'about.motivationQuote': 'Agriculture deserves decision tools grounded in evidence.',
   'about.motivationBody': 'Agricultural decisions depend on many connected signals: local weather, seasonal patterns, crop requirements, soil-management practices and market information. These signals are often scattered across different sources. IRSHAYE is my effort to bring relevant information into one practical workflow for Ethiopia, while keeping the origin, date and limitations of the data visible.',
   'about.platformTitle': 'What I’m building',
   'about.platformBody': 'IRSHAYE is an AI-assisted digital platform for climate-smart agriculture in Ethiopia. It brings together location-based climate intelligence, documented crop guidance, soil-conservation information and agricultural market data. Its advisory layer is designed to work from the evidence the platform can retrieve, explain uncertainty and avoid presenting estimates as measurements.',
