@@ -194,7 +194,7 @@ export async function advise(o: { question: string; evidence: AdvisorEvidence })
 
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY as string);
   const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash-latest',
+    model: 'gemini-3.8-flash',
     generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
   });
 
