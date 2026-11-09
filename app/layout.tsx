@@ -10,9 +10,9 @@ export const metadata: Metadata = {
     "IRSHAYE is an AI-assisted digital platform for climate-smart agriculture in Ethiopia: location-based climate intelligence, crop advisory, soil-management guidance, agricultural market prices, and evidence-based recommendations with full data transparency.",
   applicationName: "IRSHAYE",
   icons: {
-    icon: [{ url: "/Logo.svg", type: "image/svg+xml" }],
-    shortcut: "/Logo.svg",
-    apple: "/Logo.svg",
+    icon: [{ url: "/Irshayelogos/3.png", type: "image/png", sizes: "any" }],
+    shortcut: "/Irshayelogos/3.png",
+    apple: [{ url: "/Irshayelogos/3.png" }],
   },
 };
 
