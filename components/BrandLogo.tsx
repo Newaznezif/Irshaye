@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
 type BrandLogoSize = 'landing' | 'footer' | 'sidebar' | 'compact';
@@ -26,6 +26,18 @@ function getPageLogoIndex(): number {
   }
 
   return pageLogoIndex;
+}
+
+function subscribeToLogoSelection(): () => void {
+  return () => {};
+}
+
+function getLogoSnapshot(): number {
+  return getPageLogoIndex();
+}
+
+function getServerLogoSnapshot(): number {
+  return 0;
 }
 
 const LOGOS = [
@@ -71,13 +83,13 @@ export function BrandLogo({
   className?: string;
 }) {
   const { dark } = useTheme();
-  const [index, setIndex] = useState(0);
+  const index = useSyncExternalStore(
+    subscribeToLogoSelection,
+    getLogoSnapshot,
+    getServerLogoSnapshot,
+  );
   const logo = LOGOS[index] ?? LOGOS[0];
   const src = dark ? logo.dark : logo.light;
-
-  useEffect(() => {
-    setIndex(getPageLogoIndex());
-  }, []);
 
   return (
     <span
