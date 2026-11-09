@@ -64,11 +64,11 @@ export function AboutPageContent() {
         </div>
       </section>
 
-      <section className="border-y border-line bg-surface-subtle">
+      <section className="border-y border-line bg-surface-sunken">
         <div className="mx-auto grid w-full max-w-[1180px] gap-12 px-5 py-16 md:grid-cols-2 md:gap-20 md:px-8 md:py-20">
           <div>
             <p className="text-[11px] font-bold tracking-[0.2em] text-brand-700 uppercase">{t('about.motivationTitle')}</p>
-            <p className="mt-5 text-2xl font-bold leading-snug tracking-tight text-ink sm:text-3xl">Agriculture deserves decision tools grounded in evidence.</p>
+            <p className="mt-5 text-2xl font-bold leading-snug tracking-tight text-ink sm:text-3xl">{t('about.motivationQuote')}</p>
           </div>
           <p className="text-base leading-8 text-ink-muted">{t('about.motivationBody')}</p>
         </div>
