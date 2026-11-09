@@ -44,6 +44,9 @@ export function LandingHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Link href="/about" className="rounded-lg px-2.5 py-2 text-[12px] font-semibold text-brand-100/85 transition-colors hover:bg-white/10 hover:text-white md:hidden">
+            {t('landing.navAbout')}
+          </Link>
           <LanguageSelector tone="onDark" />
           <Link
             href="/dashboard/sources"
