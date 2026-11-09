@@ -74,6 +74,11 @@ export function LandingFooter() {
             </h2>
             <ul className="mt-4 space-y-2.5">
               <li>
+                <Link href="/about" className="text-[12.5px] font-semibold text-brand-50/75 transition-colors hover:text-white">
+                  {t('landing.navAbout')}
+                </Link>
+              </li>
+              <li>
                 <a
                   href="#how-it-works"
                   className="text-[12.5px] font-semibold text-brand-50/75 transition-colors hover:text-white"
