@@ -13,7 +13,7 @@ let pageLogoIndex: number | null = null;
  * Select one logo once per full page load. Every BrandLogo instance shares the
  * same selection, while the next index is persisted for the next refresh.
  */
-function getPageLogoIndex(): number {
+function initializePageLogoIndex(): number {
   if (pageLogoIndex !== null) return pageLogoIndex;
 
   try {
@@ -33,12 +33,15 @@ function subscribeToLogoSelection(): () => void {
 }
 
 function getLogoSnapshot(): number {
-  return getPageLogoIndex();
+  return pageLogoIndex ?? 0;
 }
 
 function getServerLogoSnapshot(): number {
   return 0;
 }
+
+// Initialize once in the browser module, not during React rendering.
+pageLogoIndex = typeof window === 'undefined' ? null : initializePageLogoIndex();
 
 const LOGOS = [
   {
