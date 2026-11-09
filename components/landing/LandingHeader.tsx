@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Sprout } from 'lucide-react';
+import { BrandLogo } from '@/components/BrandLogo';
 import { useLanguage } from '@/hooks/useLanguage';
 import { LanguageSelector } from '@/components/LanguageSelector';
 
@@ -19,14 +19,9 @@ export function LandingHeader() {
     <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-950/70 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1180px] items-center justify-between gap-4 px-5 md:px-8">
         <Link href="/" className="flex items-center gap-2.5 outline-offset-4" aria-label={t('a11y.landingHome')}>
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-500 text-white shadow-[0_8px_20px_-10px_oklch(0.6_0.13_155/90%)]">
-            <Sprout size={17} strokeWidth={2.4} />
-          </span>
-          <span className="leading-none">
-            <span className="block text-[16px] font-extrabold tracking-[-0.01em] text-white">IRSHAYE</span>
-            <span className="mt-1 block text-[9px] font-bold tracking-[0.2em] text-brand-200 uppercase">
-              {t('landing.eventTag')}
-            </span>
+          <BrandLogo size="landing" />
+          <span className="mt-1 hidden text-[9px] font-bold tracking-[0.2em] text-brand-200 uppercase sm:block">
+            {t('landing.eventTag')}
           </span>
         </Link>
 
